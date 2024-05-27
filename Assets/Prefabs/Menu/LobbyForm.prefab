@@ -206,6 +206,7 @@ MonoBehaviour:
   _content: {fileID: 5388965104255247664}
   _userRowGO: {fileID: 219382965124225631, guid: a1e26b408a74e404db6494688064bd2e, type: 3}
   _lobbiesFormGO: {fileID: 2063063449683148150, guid: 463f170d5ca43a34d94ad13b34ff8fd2, type: 3}
+  _gameGO: {fileID: 0}
   _lobbyNameText: {fileID: 1792599343402723797}
 --- !u!1 &1534133521944559874
 GameObject:
@@ -835,9 +836,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: LobbiesForm, Assembly-CSharp
-        m_MethodName: JoinLobbyButton
+      - m_Target: {fileID: 8619378493616330938}
+        m_TargetAssemblyTypeName: LobbyForm, Assembly-CSharp
+        m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
