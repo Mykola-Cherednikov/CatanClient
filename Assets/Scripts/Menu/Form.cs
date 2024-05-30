@@ -17,8 +17,8 @@ public class Form : MonoBehaviour
 
     protected void SetDefaultInfoAndErrorForm()
     {
-        _infoFormGO = Resources.Load<GameObject>("Prefabs/InfoForm");
-        _errorFormGO = Resources.Load<GameObject>("Prefabs/ErrorForm");
+        _infoFormGO = Resources.Load<GameObject>("Prefabs/Form/InfoForm");
+        _errorFormGO = Resources.Load<GameObject>("Prefabs/Form/ErrorForm");
     }
 
     protected void CreateErrorForm(string error)

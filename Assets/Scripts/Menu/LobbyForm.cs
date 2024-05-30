@@ -6,7 +6,6 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.UIElements.UxmlAttributeDescription;
 using Random = UnityEngine.Random;
 
 public class LobbyForm : Form
@@ -60,7 +59,7 @@ public class LobbyForm : Form
 
     public void DisconnectFromLobby()
     {
-        Multiplayer.Instance.DisconnectFromLobby();
+        Multiplayer.Instance.Disconnect();
         Instantiate(_lobbiesFormGO, transform.parent);
         Destroy(gameObject);
     }
@@ -79,9 +78,10 @@ public class LobbyForm : Form
 
     private void OnStartGame(object data)
     {
-        Debug.Log("LETS START");
-        Game g = Instantiate(_gameGO, transform.parent).GetComponent<Game>();
-        g.SetStartGameData();
+        SocketBroadcastStartGameDTO dto = (SocketBroadcastStartGameDTO)data;
+        Game g = Instantiate(_gameGO, transform.parent.parent).GetComponent<Game>();
+        g.SetStartGameData(dto.map, dto.hexes, transform.parent.gameObject);
+        UIGameHandler uiGameHandler = g.GetComponent<UIGameHandler>();
         Destroy(gameObject);
     }
 

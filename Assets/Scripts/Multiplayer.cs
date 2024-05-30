@@ -14,6 +14,7 @@ public enum EventType
     RESPONSE_CONNECT_TO_LOBBY,
     REQUEST_DISCONNECT_FROM_LOBBY,
     REQUEST_START_GAME,
+    REQUEST_READY_AND_LOAD,
 
     BROADCAST_USER_CONNECTION_TO_LOBBY,
     BROADCAST_USER_DISCONNECT_FROM_LOBBY,
@@ -55,7 +56,7 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USER_CONNECTION_TO_LOBBY, typeof(SocketBroadcastUserConnectionToLobbyDTO) },
             { EventType.BROADCAST_USER_DISCONNECT_FROM_LOBBY, typeof(SocketBroadcastUserDisconnectFromLobbyDTO) },
             { EventType.BROADCAST_NEW_HOST_IN_LOBBY, typeof(SocketBroadcastNewHostDTO) },
-            { EventType.BROADCAST_START_GAME, typeof(SocketDTOClass) }
+            { EventType.BROADCAST_START_GAME, typeof(SocketBroadcastStartGameDTO) }
         };
         _eventsToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
         {
@@ -108,8 +109,8 @@ public class Multiplayer : MonoBehaviour
 
     private void GetConnectMessageFromServer()
     {
-        _client.ReceiveTimeout = 10000;
-        byte[] buffer = new byte[1024];
+        _client.ReceiveTimeout = StaticVariables.Timeout * 1000;
+        byte[] buffer = new byte[4096];
         int numOfBytes = _client.Receive(buffer, SocketFlags.None);
         string message = Encoding.UTF8.GetString(buffer[..numOfBytes]);
         HandleMessage(message);
@@ -122,7 +123,7 @@ public class Multiplayer : MonoBehaviour
         try
         {
             Debug.Log("Listen Server: Start listen server");
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[4096];
             int numOfBytes;
             while ((numOfBytes = await _client.ReceiveAsync(buffer, SocketFlags.None)) != 0)
             {
@@ -160,7 +161,7 @@ public class Multiplayer : MonoBehaviour
         }
     }
 
-    public void DisconnectFromLobby()
+    public void Disconnect()
     {
         Debug.Log("Disconnect From Lobby: Trying to disconnect");
 
@@ -198,8 +199,16 @@ public class Multiplayer : MonoBehaviour
 
     public async Task SocketStartGameMessage()
     {
-        SocketDTOClass socketDTOClass = new SocketDTOClass();
+        SocketStartGameRequestDTO socketDTOClass = new SocketStartGameRequestDTO();
+        socketDTOClass.map = new List<int> { 4, 5, 6, 7, 6, 5, 4 };
         socketDTOClass.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_START_GAME);
+        await _client.SendToServer(socketDTOClass);
+    }
+
+    public async Task SocketReadyAndLoadMessage()
+    {
+        SocketDTOClass socketDTOClass = new SocketDTOClass();
+        socketDTOClass.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_READY_AND_LOAD);
         await _client.SendToServer(socketDTOClass);
     }
     #endregion

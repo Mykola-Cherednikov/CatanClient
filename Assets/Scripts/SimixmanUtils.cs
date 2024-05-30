@@ -17,7 +17,7 @@ namespace Assets.Scripts
         public static async Task<RestResult> SendRequest<T>(string uri, T content, HttpMethod method, bool isBody = true, bool isAuthorized = false) where T : RestDTOClass
         {
             using HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(60);
+            client.Timeout = TimeSpan.FromSeconds(StaticVariables.Timeout);
             using HttpRequestMessage httpRequest = new HttpRequestMessage();
             if (isAuthorized)
             {

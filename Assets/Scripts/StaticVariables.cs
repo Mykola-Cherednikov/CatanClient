@@ -13,4 +13,6 @@ public class StaticVariables
     public static short SERVER_PORT = 8090;
 
     public static string TOKEN;
+
+    public static int Timeout = 60;
 }

@@ -1,55 +1,47 @@
+using Assets.Scripts.Game;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Game : MonoBehaviour
 {
-    [SerializeField] private GameObject _desertHexGO;
-    [SerializeField] private GameObject _fieldHexGO;
-    [SerializeField] private GameObject _forestHexGO;
-    [SerializeField] private GameObject _hillHexGO;
-    [SerializeField] private GameObject _mountainHexGO;
-    [SerializeField] private GameObject _pastureHexGO;
-    private GameObject[] _hexArray;
 
-    [SerializeField] private GameObject _testPosition;
+    [SerializeField]private GameObject _lobbyFormGO;
 
-    private void Start()
+    private GameObject _camera;
+    private GameObject _canvas;
+    private UIGameHandler _uiHandler;
+
+
+    private List<Hex> _hexes;
+    private List<Vertex> _vertexes;
+    private List<Edge> _edges;
+    private List<Player> _player;
+
+    private void Awake()
     {
-        _hexArray = new GameObject[] { _desertHexGO, _fieldHexGO, _forestHexGO, _hillHexGO, _mountainHexGO, _pastureHexGO };
-        foreach (int num in numInRow)
-        {
-            string s = "";
-            if (num % 2 == 0)
-            {
-                for (float i = -(num - 1) / 2f; i <= (num - 1) / 2f; i++)
-                {
-                    s += i + " ";
-                }
-            }
-            else
-            {
-                for(int i = -((num - 1) / 2); i <= ((num - 1) / 2); i++)
-                {
-                    s += i + " ";
-                }
-            }
-            Debug.Log(s);
-        }
+        Multiplayer.Instance.CONNECTION_ERROR_EVENT.AddListener(OnConnectionError);
+        _camera = Camera.main.gameObject;
+        _camera.transform.position = new Vector3(0f, 0f, -10f);
     }
 
-    private float offsetX = 2.35f;
-    private float offsetY = 4f;
-
-    private int[] numInRow = new int[] { 3, 4, 5, 4, 3 };
-
-    public void SetStartGameData()
+    public async void SetStartGameData(List<int> numInRows, List<HexDTO> hexes, GameObject canvas)
     {
-        foreach (int i in numInRow)
-        {
-            float startRowY = (numInRow.Length) - 1 / 2 * offsetY;
-            float startRowX = i - 1 / 2 * (offsetX * 2);
-            //Instantiate(_);
-        }
+        _canvas = canvas;
+        MapBuilder mapCreator = gameObject.AddComponent<MapBuilder>();
+        MapData md = mapCreator.CreateMap(numInRows, hexes);
+        _hexes = md.hexes;
+        _vertexes = md.vertices;
+        _edges = md.edges;
+        Destroy(mapCreator);
+        _uiHandler = _canvas.AddComponent<UIGameHandler>();
+
+        //await Multiplayer.Instance.SocketReadyAndLoadMessage();
     }
 
-
+    private void OnConnectionError(object data)
+    {
+        Destroy(_uiHandler);
+        Instantiate(_lobbyFormGO, _canvas.transform);
+        Destroy(gameObject);
+    }
 }

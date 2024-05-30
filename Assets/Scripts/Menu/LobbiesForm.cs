@@ -62,6 +62,8 @@ public class LobbiesForm : Form
         else
         {
             Debug.Log("Connection to lobby failed");
+            TurnOnInteractables();
+            _joinButton.interactable = false;
         }
     }
 

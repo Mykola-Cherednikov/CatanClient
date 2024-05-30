@@ -1,3 +1,4 @@
+using Assets.Scripts.Game;
 using Assets.Scripts.RestDTO;
 using System;
 using System.Collections;
@@ -39,11 +40,17 @@ public class SocketBroadcastUserDisconnectFromLobbyDTO : SocketDTOClass
 }
 
 [Serializable]
+public class SocketStartGameRequestDTO : SocketDTOClass
+{
+    public List<int> map;
+}
+
+[Serializable]
 public class SocketBroadcastStartGameDTO : SocketDTOClass
 {
-    public UserInLobbyDTO[] users;
+    public List<int> map = new();
 
-    public int userId;
+    public List<HexDTO> hexes = new();
 }
 
 [Serializable]
