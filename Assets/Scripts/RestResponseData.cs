@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace Assets.Scripts.RestDTO
 {
     [Serializable]
-    public class RestResult
+    public class RestResponseData
     {
         public HttpStatusCode resultStatusCode;
 
-        public string resultData;
+        public string jsonResponseBody;
     }
 }

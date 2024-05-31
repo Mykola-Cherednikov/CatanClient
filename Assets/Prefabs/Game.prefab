@@ -44,5 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8280359c47d89d42a37196a725cb27c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _lobbyFormGO: {fileID: 1261230075788231039, guid: e00fcc53dc149d8429806af85906411c, type: 3}
-  _escapeFormGO: {fileID: 1540706595415574397, guid: 96690eef5bf3938489b2ded717bb68ca, type: 3}
+  lobbiesFormPrefab: {fileID: 2063063449683148150, guid: 463f170d5ca43a34d94ad13b34ff8fd2, type: 3}

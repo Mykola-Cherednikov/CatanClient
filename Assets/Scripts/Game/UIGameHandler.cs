@@ -6,19 +6,19 @@ using UnityEngine;
 
 public class UIGameHandler : MonoBehaviour
 {
-    private GameObject _escapeFormGO;
-    private GameObject _escapeForm;
+    private GameObject escapeFormPrefab;
+    private GameObject escapeFormGO;
 
     private void Awake()
     {
-        _escapeFormGO = Resources.Load<GameObject>("Prefabs/Form/EscapeForm");
+        escapeFormPrefab = Resources.Load<GameObject>("Prefabs/Form/EscapeForm");
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && _escapeForm == null)
+        if (Input.GetKeyDown(KeyCode.Escape) && escapeFormGO == null)
         {
-            _escapeForm = Instantiate(_escapeFormGO, transform);
+            escapeFormGO = Instantiate(escapeFormPrefab, transform);
         }
     }
 

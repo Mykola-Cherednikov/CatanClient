@@ -14,7 +14,7 @@ namespace Assets.Scripts.RestDTO
 
         public string lobbyName;
 
-        public int requestUserId;
+        public int userIdWhoSendRequest;
 
         public UserInLobbyDTO[] users;
     }

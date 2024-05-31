@@ -280,16 +280,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faac534aefc04d246b326458639c943d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interactiveItems:
+  interactiveItems:
   - {fileID: 7455240037895895766}
   - {fileID: 6965118647368902122}
   - {fileID: 6721202413041891649}
   - {fileID: 5764525752918168028}
-  _content: {fileID: 319811865044343191}
-  _lobbyRowGO: {fileID: 3976522660790087281, guid: f954e0f471db8434b8b504753c41174e, type: 3}
-  _loginFormGO: {fileID: 3221307183653264831, guid: 2a75c0518c6822744be89a14a28f1d2e, type: 3}
-  _lobbyFormGO: {fileID: 1261230075788231039, guid: e00fcc53dc149d8429806af85906411c, type: 3}
-  _joinButton: {fileID: 6965118647368902122}
+  lobbiesContent: {fileID: 319811865044343191}
+  lobbyRowPrefab: {fileID: 3976522660790087281, guid: f954e0f471db8434b8b504753c41174e, type: 3}
+  loginFormPrefab: {fileID: 3221307183653264831, guid: 2a75c0518c6822744be89a14a28f1d2e, type: 3}
+  lobbyFormPrefab: {fileID: 1261230075788231039, guid: e00fcc53dc149d8429806af85906411c, type: 3}
+  joinButton: {fileID: 6965118647368902122}
 --- !u!1 &2092361362574362471
 GameObject:
   m_ObjectHideFlags: 0

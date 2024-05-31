@@ -4,37 +4,37 @@ using UnityEngine;
 
 public class RegistrationForm : Form
 {
-    [SerializeField] private TMP_InputField _usernameInputField;
-    [SerializeField] private TMP_InputField _loginInputField;
-    [SerializeField] private TMP_InputField _passwordInputField;
+    [SerializeField] private TMP_InputField usernameInputField;
+    [SerializeField] private TMP_InputField loginInputField;
+    [SerializeField] private TMP_InputField passwordInputField;
 
-    [SerializeField] private GameObject _loginFormGO;
+    [SerializeField] private GameObject loginFormPrefab;
 
     public async void Submit()
     {
         TurnOffInteractables();
 
-        await RestRequests.Register(_usernameInputField.text, _loginInputField.text,
-            _passwordInputField.text, RegistrationSuccess, RegistrationError);
+        await RestRequests.Register(usernameInputField.text, loginInputField.text,
+            passwordInputField.text, RegistrationSuccess, RegistrationError);
 
         TurnOnInteractables();
     }
 
     public void GoToLoginForm()
     {
-        Instantiate(_loginFormGO, transform.parent);
+        Instantiate(loginFormPrefab, transform.parent);
         Destroy(gameObject);
     }
 
-    private void RegistrationSuccess(string resultData)
+    private void RegistrationSuccess(string json)
     {
         CreateInfoForm("Registration success");
         Debug.Log("Registration success");
     }
 
-    private void RegistrationError(string resultData)
+    private void RegistrationError(string json)
     {
-        CreateErrorForm(resultData);
-        Debug.Log(resultData);
+        CreateErrorForm(json);
+        Debug.Log(json);
     }
 }

@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class InfoForm : MonoBehaviour
 {
-    [SerializeField] private TMP_Text _infoText;
+    [SerializeField] private TMP_Text infoText;
 
     public void SetInfoText(string text)
     {
-        _infoText.text = text;
+        infoText.text = text;
     }
 
     public void DestroyForm()

@@ -1,56 +1,54 @@
 using Assets.Scripts.Game;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class MapBuilder : MonoBehaviour
 {
-    [SerializeField] private GameObject _hexGO;
-    [SerializeField] private GameObject _vertexGO;
-    [SerializeField] private GameObject _edgeGO;
-    [SerializeField] private GameObject _numberTokenGO;
+    [SerializeField] private GameObject hexPrefab;
+    [SerializeField] private GameObject vertexPrefab;
+    [SerializeField] private GameObject edgePrefab;
+    [SerializeField] private GameObject numberTokenPrefab;
 
-    private Dictionary<VertexDirection, Vector2> _vertexOffsets;
-    private Dictionary<EdgeDirection, Vector2> _edgeOffsets;
-    private Dictionary<EdgeDirection, List<VertexDirection>> _edgeNeighborVertex;
+    private Dictionary<VertexDirection, Vector2> vertexOffsetsFromHexCenter;
+    private Dictionary<EdgeDirection, Vector2> edgeOffsetsFromHexCenter;
+    private Dictionary<EdgeDirection, List<VertexDirection>> edgeDirectionToNeighborVertexDirections;
 
-    private float hexOffsetX = 4.7f;
-    private float hexOffsetY = 4f;
-    private float vertixOffsetX = 2.35f;
-    private float vertixMiddleOffsetY = 2f;
-    private float vertixOffsetY = 0.7f;
+    private float xIndendBetweenHex = 4.7f;
+    private float yIndendBetweenHex = 4f;
+    private float xVertexOffsetFromHexCentre = 2.35f;
+    private float yTopVertexOffsetFromHexCentre = 2.7f;
+    private float yDownVertexOffsetFromHexCentre = 1.3f;
 
     private void Awake()
     {
-        _hexGO = Resources.Load<GameObject>("Prefabs/Game/Hex");
-        _vertexGO = Resources.Load<GameObject>("Prefabs/Game/Vertex");
-        _edgeGO = Resources.Load<GameObject>("Prefabs/Game/Edge");
-        _numberTokenGO = Resources.Load<GameObject>("Prefabs/Game/NumberToken");
+        hexPrefab = Resources.Load<GameObject>("Prefabs/Game/Hex");
+        vertexPrefab = Resources.Load<GameObject>("Prefabs/Game/Vertex");
+        edgePrefab = Resources.Load<GameObject>("Prefabs/Game/Edge");
+        numberTokenPrefab = Resources.Load<GameObject>("Prefabs/Game/NumberToken");
 
-        _vertexOffsets = new Dictionary<VertexDirection, Vector2>()
+        vertexOffsetsFromHexCenter = new Dictionary<VertexDirection, Vector2>()
         {
-            { VertexDirection.N, new Vector2(0f, vertixMiddleOffsetY + vertixOffsetY) },
-            { VertexDirection.NE, new Vector2(vertixOffsetX, vertixMiddleOffsetY - vertixOffsetY)},
-            { VertexDirection.SE, new Vector2(vertixOffsetX, -vertixMiddleOffsetY + vertixOffsetY)},
-            { VertexDirection.S, new Vector2(0f, -vertixMiddleOffsetY - vertixOffsetY)},
-            { VertexDirection.SW, new Vector2(-vertixOffsetX, -vertixMiddleOffsetY + vertixOffsetY)},
-            { VertexDirection.NW, new Vector2(-vertixOffsetX, vertixMiddleOffsetY - vertixOffsetY)}
+            { VertexDirection.N, new Vector2(0f, yTopVertexOffsetFromHexCentre) },
+            { VertexDirection.NE, new Vector2(xVertexOffsetFromHexCentre, yDownVertexOffsetFromHexCentre)},
+            { VertexDirection.SE, new Vector2(xVertexOffsetFromHexCentre, -yDownVertexOffsetFromHexCentre)},
+            { VertexDirection.S, new Vector2(0f, -yTopVertexOffsetFromHexCentre)},
+            { VertexDirection.SW, new Vector2(-xVertexOffsetFromHexCentre, -yDownVertexOffsetFromHexCentre)},
+            { VertexDirection.NW, new Vector2(-xVertexOffsetFromHexCentre, yDownVertexOffsetFromHexCentre)}
         };
 
-        _edgeOffsets = new Dictionary<EdgeDirection, Vector2>()
+        edgeOffsetsFromHexCenter = new Dictionary<EdgeDirection, Vector2>()
         {
-            { EdgeDirection.TR, new Vector2(vertixOffsetX / 2f, vertixMiddleOffsetY) },
-            { EdgeDirection.R, new Vector2(vertixOffsetX, 0f)},
-            { EdgeDirection.DR, new Vector2(vertixOffsetX / 2f, -vertixMiddleOffsetY)},
-            { EdgeDirection.DL, new Vector2(-vertixOffsetX / 2f, -vertixMiddleOffsetY)},
-            { EdgeDirection.L, new Vector2(-vertixOffsetX, 0f)},
-            { EdgeDirection.TL, new Vector2(-vertixOffsetX / 2f, vertixMiddleOffsetY)}
+            { EdgeDirection.TR, new Vector2(xVertexOffsetFromHexCentre / 2f, yTopVertexOffsetFromHexCentre) },
+            { EdgeDirection.R, new Vector2(xVertexOffsetFromHexCentre, 0f)},
+            { EdgeDirection.DR, new Vector2(xVertexOffsetFromHexCentre / 2f, -yTopVertexOffsetFromHexCentre)},
+            { EdgeDirection.DL, new Vector2(-xVertexOffsetFromHexCentre / 2f, -yTopVertexOffsetFromHexCentre)},
+            { EdgeDirection.L, new Vector2(-xVertexOffsetFromHexCentre, 0f)},
+            { EdgeDirection.TL, new Vector2(-xVertexOffsetFromHexCentre / 2f, yTopVertexOffsetFromHexCentre)}
         };
 
-        _edgeNeighborVertex = new Dictionary<EdgeDirection, List<VertexDirection>>() 
+        edgeDirectionToNeighborVertexDirections = new Dictionary<EdgeDirection, List<VertexDirection>>()
         {
             { EdgeDirection.TR, new(){ VertexDirection.N, VertexDirection.NE} },
             { EdgeDirection.R, new(){ VertexDirection.NE, VertexDirection.SE} },
@@ -61,170 +59,172 @@ public class MapBuilder : MonoBehaviour
         };
     }
 
-    public MapData CreateMap(List<int> numsInRow, List<HexDTO> hexesDTO)
+    public MapInfo CreateMap(List<int> numHexesInMapRow, List<HexDTO> hexesDTO)
     {
-        Dictionary<Vector2, Hex> hexes = new();
-        Dictionary<Vector2, Vertex> vertices = new();
-        Dictionary<Vector2, Edge> edges = new();
+        Dictionary<Vector2, Hex> coordinatesToHexes = new();
+        Dictionary<Vector2, Vertex> coordinatesToVertices = new();
+        Dictionary<Vector2, Edge> coordinatesToEdges = new();
 
-        CreateHexes(hexes, numsInRow);
-        SetHexNeighbor(hexes);
-        CreateVertices(hexes, vertices);
-        CreateEdges(hexes, edges);
-        LinkEdgesAndVertices(hexes);
-        SetHexData(hexes, hexesDTO);
+        CreateHexes(coordinatesToHexes, numHexesInMapRow);
+        SetHexNeighbor(coordinatesToHexes);
+        CreateVertices(coordinatesToHexes, coordinatesToVertices);
+        CreateEdges(coordinatesToHexes, coordinatesToEdges);
+        LinkEdgesAndVertices(coordinatesToHexes);
+        SetHexData(coordinatesToHexes, hexesDTO);
 
-        MapData mapData = new MapData();
-        mapData.hexes = hexes.Values.ToList();
-        mapData.vertices = vertices.Values.ToList();
-        mapData.edges = edges.Values.ToList();
+        MapInfo mapInfo = new MapInfo();
+        mapInfo.hexes = coordinatesToHexes.Values.ToList();
+        mapInfo.vertices = coordinatesToVertices.Values.ToList();
+        mapInfo.edges = coordinatesToEdges.Values.ToList();
 
-        return mapData;
+        return mapInfo;
     }
 
-    private void CreateHexes(Dictionary<Vector2, Hex> hexes, List<int> numsInRow)
+    private void CreateHexes(Dictionary<Vector2, Hex> coordinatesToHexes, List<int> numHexesInMapRow)
     {
-        int i = 0;
-        for (float y = ((numsInRow.Count - 1) / 2f); y >= -((numsInRow.Count - 1) / 2f); y--)
+        int rowNum = 0;
+        float yCoordinateFromCentreMap = (numHexesInMapRow.Count - 1) / 2f;
+        for (float yCoordinate = yCoordinateFromCentreMap; yCoordinate >= -yCoordinateFromCentreMap; yCoordinate--)
         {
-            for (float x = -(numsInRow[i] - 1) / 2f; x <= (numsInRow[i] - 1) / 2f; x++)
+            float xCoordinateFromCentreMap = (numHexesInMapRow[rowNum] - 1) / 2f;
+            for (float xCoordinate = -xCoordinateFromCentreMap; xCoordinate <= xCoordinateFromCentreMap; xCoordinate++)
             {
-                GameObject go = Instantiate(_hexGO, transform);
-                go.transform.position = transform.position + new Vector3(x * hexOffsetX, y * hexOffsetY);
+                GameObject go = Instantiate(hexPrefab, transform);
+                go.transform.position = transform.position + new Vector3(xCoordinate * xIndendBetweenHex, yCoordinate * yIndendBetweenHex);
                 Hex hex = go.GetComponent<Hex>();
-                hex.id = hexes.Count;
-                hex.name = "Hex"+hex.id;
-                hexes.Add(new Vector2(go.transform.position.x, go.transform.position.y), hex);
+                hex.id = coordinatesToHexes.Count;
+                hex.name = "Hex" + hex.id;
+                coordinatesToHexes.Add(new Vector2(go.transform.position.x, go.transform.position.y), hex);
             }
-            i++;
+            rowNum++;
         }
     }
 
-    private void SetHexNeighbor(Dictionary<Vector2, Hex> hexes)
+    private void SetHexNeighbor(Dictionary<Vector2, Hex> coordinatesToHexes)
     {
-        foreach (Hex hex in hexes.Values)
+        foreach (Hex hex in coordinatesToHexes.Values)
         {
-            if (hexes.TryGetValue(new Vector2(hex.transform.position.x + (hexOffsetX / 2f),
-                hex.transform.position.y + hexOffsetY), out Hex hexTR))
+            if (coordinatesToHexes.TryGetValue(new Vector2(hex.transform.position.x + (xIndendBetweenHex / 2f),
+                hex.transform.position.y + yIndendBetweenHex), out Hex hexTR))
             {
-                hex.neighborHexs[EdgeDirection.TR] = hexTR;
+                hex.edgeDirectionToNeighborHexes[EdgeDirection.TR] = hexTR;
             }
 
-            if (hexes.TryGetValue(new Vector2(hex.transform.position.x + hexOffsetX,
+            if (coordinatesToHexes.TryGetValue(new Vector2(hex.transform.position.x + xIndendBetweenHex,
                 hex.transform.position.y), out Hex hexR))
             {
-                hex.neighborHexs[EdgeDirection.R] = hexR;
+                hex.edgeDirectionToNeighborHexes[EdgeDirection.R] = hexR;
             }
 
-            if (hexes.TryGetValue(new Vector2(hex.transform.position.x + (hexOffsetX / 2f),
-                hex.transform.position.y - hexOffsetY), out Hex hexDR))
+            if (coordinatesToHexes.TryGetValue(new Vector2(hex.transform.position.x + (xIndendBetweenHex / 2f),
+                hex.transform.position.y - yIndendBetweenHex), out Hex hexDR))
             {
-                hex.neighborHexs[EdgeDirection.DR] = hexDR;
+                hex.edgeDirectionToNeighborHexes[EdgeDirection.DR] = hexDR;
             }
 
-            if (hexes.TryGetValue(new Vector2(hex.transform.position.x - (hexOffsetX / 2f),
-                hex.transform.position.y - hexOffsetY), out Hex hexDL))
+            if (coordinatesToHexes.TryGetValue(new Vector2(hex.transform.position.x - (xIndendBetweenHex / 2f),
+                hex.transform.position.y - yIndendBetweenHex), out Hex hexDL))
             {
-                hex.neighborHexs[EdgeDirection.DL] = hexDL;
+                hex.edgeDirectionToNeighborHexes[EdgeDirection.DL] = hexDL;
             }
 
-            if (hexes.TryGetValue(new Vector2(hex.transform.position.x - hexOffsetX,
+            if (coordinatesToHexes.TryGetValue(new Vector2(hex.transform.position.x - xIndendBetweenHex,
                 hex.transform.position.y), out Hex hexL))
             {
-                hex.neighborHexs[EdgeDirection.L] = hexL;
+                hex.edgeDirectionToNeighborHexes[EdgeDirection.L] = hexL;
             }
 
-            if (hexes.TryGetValue(new Vector2(hex.transform.position.x - (hexOffsetX / 2f),
-                hex.transform.position.y + hexOffsetY), out Hex hexTL))
+            if (coordinatesToHexes.TryGetValue(new Vector2(hex.transform.position.x - (xIndendBetweenHex / 2f),
+                hex.transform.position.y + yIndendBetweenHex), out Hex hexTL))
             {
-                hex.neighborHexs[EdgeDirection.TL] = hexTL;
+                hex.edgeDirectionToNeighborHexes[EdgeDirection.TL] = hexTL;
             }
         }
     }
 
-    private void CreateVertices(Dictionary<Vector2, Hex> hexes, Dictionary<Vector2, Vertex> vertices)
+    private void CreateVertices(Dictionary<Vector2, Hex> coordinatesToHexes, Dictionary<Vector2, Vertex> coordinatesToVertices)
     {
-        foreach (Hex hex in hexes.Values)
+        foreach (Hex hex in coordinatesToHexes.Values)
         {
-            foreach (var vertexOffset in _vertexOffsets)
+            foreach (var vertexOffset in vertexOffsetsFromHexCenter)
             {
-                Vector3 position = hex.transform.position + new Vector3(vertexOffset.Value.x, vertexOffset.Value.y);
-                if (!vertices.TryGetValue(new Vector2(position.x, position.y), out Vertex ver))
+                Vector3 vertexPosition = hex.transform.position + new Vector3(vertexOffset.Value.x, vertexOffset.Value.y);
+                if (!coordinatesToVertices.TryGetValue(new Vector2(vertexPosition.x, vertexPosition.y), out Vertex ver))
                 {
-                    Vertex vertex = Instantiate(_vertexGO, transform).GetComponent<Vertex>();
-                    vertex.transform.position = position;
-                    hex.vertexs[vertexOffset.Key] = vertex;
-                    vertex.id = vertices.Count;
+                    Vertex vertex = Instantiate(vertexPrefab, transform).GetComponent<Vertex>();
+                    vertex.transform.position = vertexPosition;
+                    hex.vertexDirectionToContainedVertiñes[vertexOffset.Key] = vertex;
+                    vertex.id = coordinatesToVertices.Count;
                     vertex.name = "Vertex" + vertex.id;
-                    vertex.hexes.Add(hex);
-                    vertices.Add(new Vector2(position.x, position.y), vertex);
+                    vertex.neighborHexes.Add(hex);
+                    coordinatesToVertices.Add(new Vector2(vertexPosition.x, vertexPosition.y), vertex);
                 }
                 else
                 {
-                    hex.vertexs[vertexOffset.Key] = ver;
-                    ver.hexes.Add(hex);
+                    hex.vertexDirectionToContainedVertiñes[vertexOffset.Key] = ver;
+                    ver.neighborHexes.Add(hex);
                 }
             }
         }
     }
 
-    private void CreateEdges(Dictionary<Vector2, Hex> hexes, Dictionary<Vector2, Edge> edges)
+    private void CreateEdges(Dictionary<Vector2, Hex> coordinatesToHexes, Dictionary<Vector2, Edge> coordinatesToEdges)
     {
-        foreach (Hex hex in hexes.Values)
+        foreach (Hex hex in coordinatesToHexes.Values)
         {
-            foreach (var edgeOffset in _edgeOffsets)
+            foreach (var edgeOffset in edgeOffsetsFromHexCenter)
             {
-                Vector3 position = hex.transform.position + new Vector3(edgeOffset.Value.x, edgeOffset.Value.y);
+                Vector3 edgePosition = hex.transform.position + new Vector3(edgeOffset.Value.x, edgeOffset.Value.y);
 
-                if (!edges.TryGetValue(new Vector2(position.x, position.y), out Edge e))
+                if (!coordinatesToEdges.TryGetValue(new Vector2(edgePosition.x, edgePosition.y), out Edge e))
                 {
-                    Edge edge = Instantiate(_edgeGO, transform).GetComponent<Edge>();
-                    edge.transform.position = position;
-                    hex.edges[edgeOffset.Key] = edge;
-                    edge.id = edges.Count;
+                    Edge edge = Instantiate(edgePrefab, transform).GetComponent<Edge>();
+                    edge.transform.position = edgePosition;
+                    hex.edgeDirectionToContainedEdges[edgeOffset.Key] = edge;
+                    edge.id = coordinatesToEdges.Count;
                     edge.name = "Edge" + edge.id;
-                    edge.hexes.Add(hex);
-                    edges.Add(new Vector2(position.x, position.y), edge);
+                    edge.neighborHexes.Add(hex);
+                    coordinatesToEdges.Add(new Vector2(edgePosition.x, edgePosition.y), edge);
                 }
                 else
                 {
-                    hex.edges[edgeOffset.Key] = e;
-                    e.hexes.Add(hex);
+                    hex.edgeDirectionToContainedEdges[edgeOffset.Key] = e;
+                    e.neighborHexes.Add(hex);
                 }
             }
         }
     }
 
-    private void LinkEdgesAndVertices(Dictionary<Vector2, Hex> hexes)
+    private void LinkEdgesAndVertices(Dictionary<Vector2, Hex> coordinatesToHexes)
     {
-        foreach (Hex hex in hexes.Values)
+        foreach (Hex hex in coordinatesToHexes.Values)
         {
-            foreach(var edge in hex.edges)
+            foreach (var directionToEdge in hex.edgeDirectionToContainedEdges)
             {
-                foreach(VertexDirection vertexDirection in _edgeNeighborVertex[edge.Key])
+                foreach (VertexDirection vertexDirection in edgeDirectionToNeighborVertexDirections[directionToEdge.Key])
                 {
-                    Vertex vertex = hex.vertexs[vertexDirection];
-                    if (!edge.Value.vertices.Contains(vertex))
+                    Vertex vertex = hex.vertexDirectionToContainedVertiñes[vertexDirection];
+                    if (!directionToEdge.Value.neighborVertices.Contains(vertex))
                     {
-                        edge.Value.vertices.Add(vertex);
-                        vertex.edges.Add(edge.Value);
+                        directionToEdge.Value.neighborVertices.Add(vertex);
+                        vertex.neighborEdges.Add(directionToEdge.Value);
                     }
                 }
             }
         }
     }
 
-    private void SetHexData(Dictionary<Vector2, Hex> hexes, List<HexDTO> hexesDTO)
+    private void SetHexData(Dictionary<Vector2, Hex> coordinatesToHexes, List<HexDTO> hexesDTO)
     {
-        var listHex = hexes.Values.ToList();
+        List<Hex> hexes = coordinatesToHexes.Values.ToList();
         for (int i = 0; i < hexesDTO.Count; i++)
         {
-            listHex[i].type = (HexType)Enum.Parse(typeof(HexType), hexesDTO[i].hexType);
-            listHex[i].gameObject.GetComponent<SpriteRenderer>().sprite = listHex[i].sprites[listHex[i].type];
-            listHex[i].numberToken = hexesDTO[i].numberToken;
+            hexes[i].type = (HexType)Enum.Parse(typeof(HexType), hexesDTO[i].hexType);
+            hexes[i].gameObject.GetComponent<SpriteRenderer>().sprite = hexes[i].sprites[hexes[i].type];
+            hexes[i].numberToken = hexesDTO[i].numberToken;
             if (i != hexesDTO.Count / 2)
             {
-                NumberToken numberToken = Instantiate(_numberTokenGO, listHex[i].transform).GetComponent<NumberToken>();
+                NumberToken numberToken = Instantiate(numberTokenPrefab, hexes[i].transform).GetComponent<NumberToken>();
                 numberToken.numberText.text = hexesDTO[i].numberToken.ToString();
             }
         }

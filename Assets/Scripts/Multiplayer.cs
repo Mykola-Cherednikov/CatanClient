@@ -26,13 +26,13 @@ public class Multiplayer : MonoBehaviour
 {
     public static Multiplayer Instance;
 
-    private Socket _client;
+    private Socket socketClient;
 
-    private bool _connected;
+    private bool isConnected;
 
-    private Dictionary<EventType, UnityEvent<object>> _eventsToUnityEvent;
+    private Dictionary<EventType, UnityEvent<object>> eventTypesToUnityEvent;
 
-    private Dictionary<EventType, Type> _eventsToTypes;
+    private Dictionary<EventType, Type> eventTypesToDTOTypes;
 
     #region Events
     public UnityEvent<object> RESPONSE_CONNECT_TO_LOBBY_EVENT;
@@ -50,15 +50,15 @@ public class Multiplayer : MonoBehaviour
 
     private void Awake()
     {
-        _eventsToTypes = new Dictionary<EventType, Type>
+        eventTypesToDTOTypes = new Dictionary<EventType, Type>
         {
             { EventType.RESPONSE_CONNECT_TO_LOBBY, typeof(SocketResponseConnectToLobbyDTO) },
-            { EventType.BROADCAST_USER_CONNECTION_TO_LOBBY, typeof(SocketBroadcastUserConnectionToLobbyDTO) },
-            { EventType.BROADCAST_USER_DISCONNECT_FROM_LOBBY, typeof(SocketBroadcastUserDisconnectFromLobbyDTO) },
-            { EventType.BROADCAST_NEW_HOST_IN_LOBBY, typeof(SocketBroadcastNewHostDTO) },
+            { EventType.BROADCAST_USER_CONNECTION_TO_LOBBY, typeof(SocketBroadcastUserConnectedToLobbyDTO) },
+            { EventType.BROADCAST_USER_DISCONNECT_FROM_LOBBY, typeof(SocketBroadcastUserDisconnectedFromLobbyDTO) },
+            { EventType.BROADCAST_NEW_HOST_IN_LOBBY, typeof(SocketBroadcastUserNewHostDTO) },
             { EventType.BROADCAST_START_GAME, typeof(SocketBroadcastStartGameDTO) }
         };
-        _eventsToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
+        eventTypesToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
         {
             { EventType.RESPONSE_CONNECT_TO_LOBBY, RESPONSE_CONNECT_TO_LOBBY_EVENT },
             { EventType.BROADCAST_USER_CONNECTION_TO_LOBBY, BROADCAST_USER_CONNECTION_TO_LOBBY_EVENT },
@@ -80,41 +80,41 @@ public class Multiplayer : MonoBehaviour
         Debug.Log("Connect To Lobby: Trying to connect");
         try
         {
-            _client = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint ep = new(IPAddress.Parse(StaticVariables.SERVER_ADDRESS), StaticVariables.SERVER_PORT);
+            socketClient = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint serverEndPoint = new(IPAddress.Parse(StaticVariables.SERVER_ADDRESS), StaticVariables.SERVER_PORT);
             Debug.Log("Connect To Lobby: Client socket creation successful");
-            await _client.ConnectAsync(ep);
+            await socketClient.ConnectAsync(serverEndPoint);
             Debug.Log("Connect To Lobby: Client socket connection successful");
-            await SocketConnectMessage();
+            await SocketSendConnectMessage();
             Debug.Log("Connect To Lobby: Client socket send connection message to server");
-            await Task.Run(GetConnectMessageFromServer);
+            await Task.Run(ReceiveConnectMessageFromServer);
             Debug.Log("Connect To Lobby: Client socket receive connection message from server");
             ListenServer();
-            _connected = true;
+            isConnected = true;
             return true;
         }
         catch (Exception e)
         {
             Debug.LogError("Connect To Lobby: Connection error " + e);
-            ClearSocket();
+            CloseSocket();
             return false;
         }
     }
 
     private void ConnectFromServer(object data)
     {
-        SocketResponseConnectToLobbyDTO s = (SocketResponseConnectToLobbyDTO)data;
-        Debug.Log(s.message);
+        SocketResponseConnectToLobbyDTO dto = (SocketResponseConnectToLobbyDTO)data;
+        Debug.Log(dto.message);
     }
 
-    private void GetConnectMessageFromServer()
+    private void ReceiveConnectMessageFromServer()
     {
-        _client.ReceiveTimeout = StaticVariables.Timeout * 1000;
-        byte[] buffer = new byte[4096];
-        int numOfBytes = _client.Receive(buffer, SocketFlags.None);
-        string message = Encoding.UTF8.GetString(buffer[..numOfBytes]);
+        socketClient.ReceiveTimeout = StaticVariables.Timeout * 1000;
+        byte[] receiveBuffer = new byte[4096];
+        int receivedNumOfBytes = socketClient.Receive(receiveBuffer, SocketFlags.None);
+        string message = Encoding.UTF8.GetString(receiveBuffer[..receivedNumOfBytes]);
         HandleMessage(message);
-        _client.ReceiveTimeout = 0;
+        socketClient.ReceiveTimeout = 0;
     }
     #endregion
 
@@ -123,11 +123,11 @@ public class Multiplayer : MonoBehaviour
         try
         {
             Debug.Log("Listen Server: Start listen server");
-            byte[] buffer = new byte[4096];
-            int numOfBytes;
-            while ((numOfBytes = await _client.ReceiveAsync(buffer, SocketFlags.None)) != 0)
+            byte[] receiveBuffer = new byte[4096];
+            int receivedNumOfBytes;
+            while ((receivedNumOfBytes = await socketClient.ReceiveAsync(receiveBuffer, SocketFlags.None)) != 0)
             {
-                string message = Encoding.UTF8.GetString(buffer[..numOfBytes]);
+                string message = Encoding.UTF8.GetString(receiveBuffer[..receivedNumOfBytes]);
                 HandleMessage(message);
             }
         }
@@ -135,7 +135,7 @@ public class Multiplayer : MonoBehaviour
         {
             CONNECTION_ERROR_EVENT?.Invoke("");
             Debug.LogError("Listen Server: Stop listen server");
-            ClearSocket();
+            CloseSocket();
         }
     }
 
@@ -143,16 +143,17 @@ public class Multiplayer : MonoBehaviour
     {
         try
         {
-            string[] stringQueries = message.Split("\r\n");
-            foreach (string query in stringQueries)
+            string[] jsonQueries = message.Split("\r\n");
+            foreach (string jsonQuery in jsonQueries)
             {
-                if (string.IsNullOrEmpty(query)) break;
+                if (string.IsNullOrEmpty(jsonQuery)) break;
 
-                SocketDTOClass socketDTO = JsonUtility.FromJson<SocketDTOClass>(query);
-                Debug.Log("Handle Message: Receive data from server with event: " + socketDTO.eventType);
-                Debug.Log($"{query}");
-                EventType eventType = (EventType)Enum.Parse(typeof(EventType), socketDTO.eventType);
-                _eventsToUnityEvent[eventType]?.Invoke(JsonUtility.FromJson(query, _eventsToTypes[eventType]));
+                SocketDTOClass dto = JsonUtility.FromJson<SocketDTOClass>(jsonQuery);
+                Debug.Log("Handle Message: Receive data from server with event: " + dto.eventType);
+                Debug.Log($"{jsonQuery}");
+                EventType eventType = (EventType)Enum.Parse(typeof(EventType), dto.eventType);
+                object objectFromJson = JsonUtility.FromJson(jsonQuery, eventTypesToDTOTypes[eventType]);
+                eventTypesToUnityEvent[eventType]?.Invoke(objectFromJson);
             }
         }
         catch (Exception e)
@@ -167,7 +168,7 @@ public class Multiplayer : MonoBehaviour
 
         try
         {
-            ClearSocket();
+            CloseSocket();
             Debug.Log("Disconnect From Lobby: Disconnect successful");
         }
         catch (Exception e)
@@ -177,39 +178,39 @@ public class Multiplayer : MonoBehaviour
     }
 
     #region DO NOT OPEN
-    private void ClearSocket()
+    private void CloseSocket()
     {
-        if (_connected)
+        if (isConnected)
         {
-            _client.Close();
-            _client.Dispose();
-            _client = null;
-            _connected = false;
+            socketClient.Close();
+            socketClient.Dispose();
+            socketClient = null;
+            isConnected = false;
         }
     }
     #endregion
 
     #region Socket Requests
-    private async Task SocketConnectMessage()
+    private async Task SocketSendConnectMessage()
     {
-        SocketRequestConnectToLobbyDTO socketDTOClass = new SocketRequestConnectToLobbyDTO();
-        socketDTOClass.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_CONNECT_TO_LOBBY);
-        await _client.SendToServer(socketDTOClass);
+        SocketRequestConnectToLobbyDTO dto = new SocketRequestConnectToLobbyDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_CONNECT_TO_LOBBY);
+        await socketClient.SendToServer(dto);
     }
 
-    public async Task SocketStartGameMessage()
+    public async Task SocketSendStartGameMessage()
     {
-        SocketStartGameRequestDTO socketDTOClass = new SocketStartGameRequestDTO();
-        socketDTOClass.map = new List<int> { 4, 5, 6, 7, 6, 5, 4 };
-        socketDTOClass.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_START_GAME);
-        await _client.SendToServer(socketDTOClass);
+        SocketStartGameRequestDTO dto = new SocketStartGameRequestDTO();
+        dto.numHexesInMapRow = new List<int> { 4, 5, 6, 7, 6, 5, 4 };
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_START_GAME);
+        await socketClient.SendToServer(dto);
     }
 
-    public async Task SocketReadyAndLoadMessage()
+    public async Task SocketSendReadyAndLoadMessage()
     {
-        SocketDTOClass socketDTOClass = new SocketDTOClass();
-        socketDTOClass.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_READY_AND_LOAD);
-        await _client.SendToServer(socketDTOClass);
+        SocketDTOClass dto = new SocketDTOClass();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_READY_AND_LOAD);
+        await socketClient.SendToServer(dto);
     }
     #endregion
 }

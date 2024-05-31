@@ -102,9 +102,9 @@ MonoBehaviour:
   id: 0
   type: 5
   numberToken: 0
-  _desertSprite: {fileID: 603645287242772497, guid: 4673c23b50acf5f4eb6394e590f8be9c, type: 3}
-  _pastureSprite: {fileID: -4677898928978532923, guid: 715fee12785701443ab0d69cd1411bb2, type: 3}
-  _fieldSprite: {fileID: -5084382202178482567, guid: ba25e305a0f7ead4c9da94cef36cabc3, type: 3}
-  _forestSprite: {fileID: -6031794074344963764, guid: 9b9570fa20624c745816ae8d7ee272cc, type: 3}
-  _hillSprite: {fileID: 860362616829812720, guid: 64d3e3ad997ce144393faf3b6276309c, type: 3}
-  _mountainSprite: {fileID: -6680556436121249758, guid: c2a9d53c4684fcb42940b11281c01195, type: 3}
+  desertSprite: {fileID: 603645287242772497, guid: 4673c23b50acf5f4eb6394e590f8be9c, type: 3}
+  pastureSprite: {fileID: -4677898928978532923, guid: 715fee12785701443ab0d69cd1411bb2, type: 3}
+  fieldSprite: {fileID: -5084382202178482567, guid: ba25e305a0f7ead4c9da94cef36cabc3, type: 3}
+  forestSprite: {fileID: -6031794074344963764, guid: 9b9570fa20624c745816ae8d7ee272cc, type: 3}
+  hillSprite: {fileID: 860362616829812720, guid: 64d3e3ad997ce144393faf3b6276309c, type: 3}
+  mountainSprite: {fileID: -6680556436121249758, guid: c2a9d53c4684fcb42940b11281c01195, type: 3}

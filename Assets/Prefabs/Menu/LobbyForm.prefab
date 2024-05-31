@@ -202,12 +202,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 893dd271743117e479ae9296cfd24dec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interactiveItems: []
-  _content: {fileID: 5388965104255247664}
-  _userRowGO: {fileID: 219382965124225631, guid: a1e26b408a74e404db6494688064bd2e, type: 3}
-  _lobbiesFormGO: {fileID: 2063063449683148150, guid: 463f170d5ca43a34d94ad13b34ff8fd2, type: 3}
-  _gameGO: {fileID: 7808361219895743966, guid: a4784a148fa610443a7ad7d095a04aeb, type: 3}
-  _lobbyNameText: {fileID: 1792599343402723797}
+  interactiveItems:
+  - {fileID: 5681131314192038325}
+  - {fileID: 2794087088483667232}
+  usersContent: {fileID: 5388965104255247664}
+  userRowPrefab: {fileID: 219382965124225631, guid: a1e26b408a74e404db6494688064bd2e, type: 3}
+  lobbiesFormPrefab: {fileID: 2063063449683148150, guid: 463f170d5ca43a34d94ad13b34ff8fd2, type: 3}
+  gamePrefab: {fileID: 7808361219895743966, guid: a4784a148fa610443a7ad7d095a04aeb, type: 3}
+  lobbyNameText: {fileID: 1792599343402723797}
 --- !u!1 &1534133521944559874
 GameObject:
   m_ObjectHideFlags: 0

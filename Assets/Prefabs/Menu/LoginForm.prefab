@@ -854,16 +854,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e7a0d61471aef148b0478426fa98327, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interactiveItems:
+  interactiveItems:
   - {fileID: 5303844567969038087}
   - {fileID: 1166732125159081461}
   - {fileID: 6669940823371052657}
   - {fileID: 2351363290883582090}
-  _loginInputField: {fileID: 5303844567969038087}
-  _passwordInputField: {fileID: 1166732125159081461}
-  _rememberMeToggle: {fileID: 2798238621321000420}
-  _registrationFormGO: {fileID: 1665954922424246293, guid: 0fff08efe930021498befabd3411e9aa, type: 3}
-  _lobbiesFormGO: {fileID: 2063063449683148150, guid: 463f170d5ca43a34d94ad13b34ff8fd2, type: 3}
+  - {fileID: 2798238621321000420}
+  loginInputField: {fileID: 5303844567969038087}
+  passwordInputField: {fileID: 1166732125159081461}
+  rememberMeToggle: {fileID: 2798238621321000420}
+  registrationFormPrefab: {fileID: 1665954922424246293, guid: 0fff08efe930021498befabd3411e9aa, type: 3}
+  lobbiesFormPrefab: {fileID: 2063063449683148150, guid: 463f170d5ca43a34d94ad13b34ff8fd2, type: 3}
 --- !u!1 &3961438399669021176
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,16 +7,16 @@ using UnityEngine.UI;
 
 public class LobbyRow : MonoBehaviour
 {
-    [SerializeField] private TMP_Text _lobbyNameText;
+    [SerializeField] private TMP_Text lobbyNameText;
 
-    [SerializeField] private TMP_Text _lobbyUsersCountText;
+    [SerializeField] private TMP_Text lobbyUsersCountText;
 
-    [SerializeField] private Button _lobbyRowButton;
+    [SerializeField] private Button lobbyRowButton;
 
     public void SetSmallLobbyInfo(Action<Image, int> action, int id, string lobbyName, int usersCount)
     {
-        _lobbyRowButton.onClick.AddListener(() => action(GetComponent<Image>(), id));
-        _lobbyNameText.text = lobbyName;
-        _lobbyUsersCountText.text = $"{usersCount}/4";
+        lobbyRowButton.onClick.AddListener(() => action(GetComponent<Image>(), id));
+        lobbyNameText.text = lobbyName;
+        lobbyUsersCountText.text = $"{usersCount}/4";
     }
 }

@@ -6,30 +6,30 @@ using UnityEngine.UI;
 
 public class LoginForm : Form
 {
-    [SerializeField] private TMP_InputField _loginInputField;
-    [SerializeField] private TMP_InputField _passwordInputField;
-    [SerializeField] private Toggle _rememberMeToggle;
+    [SerializeField] private TMP_InputField loginInputField;
+    [SerializeField] private TMP_InputField passwordInputField;
+    [SerializeField] private Toggle rememberMeToggle;
 
-    [SerializeField] private GameObject _registrationFormGO;
-    [SerializeField] private GameObject _lobbiesFormGO;
+    [SerializeField] private GameObject registrationFormPrefab;
+    [SerializeField] private GameObject lobbiesFormPrefab;
 
     private void Start()
     {
-        string login = PlayerPrefs.GetString("Login");
-        if (!string.IsNullOrEmpty(login))
+        string savedLogin = PlayerPrefs.GetString("Login");
+        if (!string.IsNullOrEmpty(savedLogin))
         {
-            _loginInputField.text = login;
+            loginInputField.text = savedLogin;
         }
-        string password = PlayerPrefs.GetString("Password");
-        if (!string.IsNullOrEmpty(password))
+        string savedPassword = PlayerPrefs.GetString("Password");
+        if (!string.IsNullOrEmpty(savedPassword))
         {
-            _passwordInputField.text = password;
+            passwordInputField.text = savedPassword;
         }
     }
 
     public void GoToRegisterForm()
     {
-        Instantiate(_registrationFormGO, transform.parent);
+        Instantiate(registrationFormPrefab, transform.parent);
         Destroy(gameObject);
     }
 
@@ -38,20 +38,22 @@ public class LoginForm : Form
     {
         TurnOffInteractables();
 
-        await RestRequests.Login(_loginInputField.text, _passwordInputField.text, LoginSuccess, LoginError);
+        string login = loginInputField.text;
+        string password = passwordInputField.text;
+        await RestRequests.Login(login, password, LoginSuccess, LoginError);
 
         TurnOnInteractables();
     }
 
     private void LoginSuccess(string resultData)
     {
-        LoginResponseDTO loginResponseDTO = JsonUtility.FromJson<LoginResponseDTO>(resultData);
-        StaticVariables.TOKEN = loginResponseDTO.token;
-        Debug.Log("Login success: " + loginResponseDTO.token);
-        if (_rememberMeToggle.isOn)
+        LoginResponseDTO dto = JsonUtility.FromJson<LoginResponseDTO>(resultData);
+        StaticVariables.TOKEN = dto.token;
+        Debug.Log("Login success: " + dto.token);
+        if (rememberMeToggle.isOn)
         {
-            PlayerPrefs.SetString("Login", _loginInputField.text);
-            PlayerPrefs.SetString("Password", _passwordInputField.text);
+            PlayerPrefs.SetString("Login", loginInputField.text);
+            PlayerPrefs.SetString("Password", passwordInputField.text);
             PlayerPrefs.Save();
         }
         else
@@ -60,7 +62,7 @@ public class LoginForm : Form
             PlayerPrefs.DeleteKey("Password");
             PlayerPrefs.Save();
         }
-        Instantiate(_lobbiesFormGO, transform.parent);
+        Instantiate(lobbiesFormPrefab, transform.parent);
         Destroy(gameObject);
     }
 

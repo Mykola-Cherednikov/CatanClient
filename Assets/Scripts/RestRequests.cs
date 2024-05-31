@@ -12,102 +12,118 @@ namespace Assets.Scripts
 {
     public class RestRequests
     {
-        public static async Task Register(string userName, string login, string password, Action<string> success, Action<string> error)
+        public static async Task Register(string username, string login, string password, Action<string> onSuccess, Action<string> onError)
         {
-            RegistrationRequestDTO registrationRequestDTO = new RegistrationRequestDTO();
-            registrationRequestDTO.username = userName;
-            registrationRequestDTO.login = login;
-            registrationRequestDTO.password = password;
+            RegistrationRequestDTO requestDTO = new RegistrationRequestDTO();
+            requestDTO.username = username;
+            requestDTO.login = login;
+            requestDTO.password = password;
 
-            var result = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + "/auth/register", registrationRequestDTO, HttpMethod.Post);
+            var restResponse = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + "/auth/register", 
+                requestDTO, HttpMethod.Post);
 
-            if (result.resultStatusCode == HttpStatusCode.OK)
+            if (restResponse.resultStatusCode == HttpStatusCode.OK)
             {
-                success.Invoke(result.resultData);
+                onSuccess.Invoke(restResponse.jsonResponseBody);
             }
             else
             {
-                error.Invoke(result.resultData);
+                onError.Invoke(restResponse.jsonResponseBody);
             }
         }
 
-        public static async Task Login(string login, string password, Action<string> success, Action<string> error)
+        public static async Task Login(string login, string password, Action<string> onSuccess, Action<string> onError)
         {
-            LoginRequestDTO loginRequestDTO = new LoginRequestDTO();
-            loginRequestDTO.login = login;
-            loginRequestDTO.password = password;
-            var result = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + "/auth/login", loginRequestDTO, HttpMethod.Post);
+            LoginRequestDTO requestDTO = new LoginRequestDTO();
+            requestDTO.login = login;
+            requestDTO.password = password;
 
-            if (result.resultStatusCode == HttpStatusCode.OK)
+            var restResponse = await SimixmanUtils.SendRequest(
+                StaticVariables.REST_URI_ADDRESS + "/auth/login", 
+                requestDTO, HttpMethod.Post);
+
+            if (restResponse.resultStatusCode == HttpStatusCode.OK)
             {
-                success.Invoke(result.resultData);
+                onSuccess.Invoke(restResponse.jsonResponseBody);
             }
             else
             {
-                error.Invoke(result.resultData);
+                onError.Invoke(restResponse.jsonResponseBody);
             }
         }
 
-        public static async Task GetLobbies(Action<string> success, Action<string> error)
+        public static async Task GetLobbies(Action<string> onSuccess, Action<string> onError)
         {
-            var result = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + "/lobbies/all", new RestDTOClass(), HttpMethod.Get, false, true);
-            HttpStatusCode resultStatusCode = result.resultStatusCode;
+            var restResponse = await SimixmanUtils.SendRequest(
+                StaticVariables.REST_URI_ADDRESS + "/lobbies/all", 
+                new RestDTOClass(), HttpMethod.Get, false, true);
+
+            HttpStatusCode resultStatusCode = restResponse.resultStatusCode;
 
             if (resultStatusCode == HttpStatusCode.OK)
             {
-                success.Invoke(result.resultData);
+                onSuccess.Invoke(restResponse.jsonResponseBody);
             }
             else
             {
-                error.Invoke(result.resultData);
+                onError.Invoke(restResponse.jsonResponseBody);
             }
         }
 
-        public static async Task JoinLobby(int lobbyId, Action<string> success, Action<string> error)
+        public static async Task JoinLobby(int lobbyId, Action<string> onSuccess, Action<string> onError)
         {
-            var result = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + $"/lobbies/lobby/join/{lobbyId}", new RestDTOClass(), HttpMethod.Post, false, true);
-            HttpStatusCode resultStatusCode = result.resultStatusCode;
+            var restResponse = await SimixmanUtils.SendRequest(
+                StaticVariables.REST_URI_ADDRESS + $"/lobbies/lobby/join/{lobbyId}", 
+                new RestDTOClass(), HttpMethod.Post, false, true);
+
+            HttpStatusCode resultStatusCode = restResponse.resultStatusCode;
 
             if (resultStatusCode == HttpStatusCode.OK)
             {
-                success.Invoke(result.resultData);
+                onSuccess.Invoke(restResponse.jsonResponseBody);
             }
             else
             {
-                error.Invoke(result.resultData);
+                onError.Invoke(restResponse.jsonResponseBody);
             }
         }
 
-        public static async Task GetLobbyData(Action<string> success, Action<string> error)
+        public static async Task GetLobbyData(Action<string> onSuccess, Action<string> onError)
         {
-            var result = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + $"/lobbies/lobby/details", new RestDTOClass(), HttpMethod.Get, false, true);
-            HttpStatusCode resultStatusCode = result.resultStatusCode;
+            var restResponse = await SimixmanUtils.SendRequest(
+                StaticVariables.REST_URI_ADDRESS + $"/lobbies/lobby/details", 
+                new RestDTOClass(), HttpMethod.Get, false, true);
+
+            HttpStatusCode resultStatusCode = restResponse.resultStatusCode;
 
             if (resultStatusCode == HttpStatusCode.OK)
             {
-                success.Invoke(result.resultData);
+                onSuccess.Invoke(restResponse.jsonResponseBody);
             }
             else
             {
-                error.Invoke(result.resultData);
+                onError.Invoke(restResponse.jsonResponseBody);
             }
         }
 
-        public static async Task CreateLobby(string lobbyName, Action<string> success, Action<string> error)
+        public static async Task CreateLobby(string lobbyName, Action<string> onSuccess, Action<string> onError)
         {
-            LobbyCreateRequestDTO lobbyCreateDTO = new LobbyCreateRequestDTO();
-            lobbyCreateDTO.lobbyName = lobbyName;
+            LobbyCreateRequestDTO requestDTO = new LobbyCreateRequestDTO();
+            requestDTO.lobbyName = lobbyName;
 
-            var result = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + $"/lobbies/create", lobbyCreateDTO, HttpMethod.Post, true, true);
+            var result = await SimixmanUtils.SendRequest(
+                StaticVariables.REST_URI_ADDRESS + $"/lobbies/create", 
+                requestDTO, HttpMethod.Post, true, true);
+
             HttpStatusCode resultStatusCode = result.resultStatusCode;
 
             if (resultStatusCode == HttpStatusCode.Created)
             {
-                success.Invoke(result.resultData);
+                onSuccess.Invoke(result.jsonResponseBody);
             }
             else
             {
-                error.Invoke(result.resultData);
+                onError.Invoke(result.jsonResponseBody);
             }
         }
     }

@@ -10,21 +10,21 @@ using Random = UnityEngine.Random;
 
 public class LobbyForm : Form
 {
-    [SerializeField] private GameObject _content;
+    [SerializeField] private GameObject usersContent;
 
-    [SerializeField] private GameObject _userRowGO;
+    [SerializeField] private GameObject userRowPrefab;
 
-    [SerializeField] private GameObject _lobbiesFormGO;
-    [SerializeField] private GameObject _gameGO;
-    [SerializeField] private TMP_Text _lobbyNameText;
+    [SerializeField] private GameObject lobbiesFormPrefab;
+    [SerializeField] private GameObject gamePrefab;
+    [SerializeField] private TMP_Text lobbyNameText;
 
-    private List<UserInLobbyRow> userList;
+    private List<UserInLobbyRow> users;
     [NonSerialized] private int userId;
     [NonSerialized] private int hostId;
 
     private async void Start()
     {
-        userList = new();
+        users = new();
         Multiplayer.Instance.CONNECTION_ERROR_EVENT.AddListener(OnConnectionError);
         await RestRequests.GetLobbyData(GetLobbyDataSuccess, GetLobbyDataError);
         Multiplayer.Instance.BROADCAST_USER_CONNECTION_TO_LOBBY_EVENT.AddListener(OnUserConnectToLobby);
@@ -33,103 +33,103 @@ public class LobbyForm : Form
         Multiplayer.Instance.BROADCAST_NEW_HOST_IN_LOBBY_EVENT.AddListener(OnNewHost);
     }
 
-    private void GetLobbyDataSuccess(string resultData)
+    private void GetLobbyDataSuccess(string json)
     {
-        LobbyDataResponseDTO lobbyDataResponseDTO = JsonUtility.FromJson<LobbyDataResponseDTO>(resultData);
-        _lobbyNameText.text = lobbyDataResponseDTO.lobbyName;
-        userId = lobbyDataResponseDTO.requestUserId;
+        LobbyDataResponseDTO lobbyDataResponseDTO = JsonUtility.FromJson<LobbyDataResponseDTO>(json);
+        lobbyNameText.text = lobbyDataResponseDTO.lobbyName;
+        userId = lobbyDataResponseDTO.userIdWhoSendRequest;
         hostId = lobbyDataResponseDTO.users.FirstOrDefault(u => u.host).id;
         foreach (var user in lobbyDataResponseDTO.users)
         {
-            var lobbyRow = Instantiate(_userRowGO, _content.transform).GetComponent<UserInLobbyRow>();
+            var userRow = Instantiate(userRowPrefab, usersContent.transform).GetComponent<UserInLobbyRow>();
 
-            lobbyRow.SetUserInLobbyInfo(user.id, user.name, new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
+            userRow.SetUserInLobbyInfo(user.id, user.name, new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
 
-            SetRowColor(lobbyRow, user.id);
+            SetRowColor(userRow, user.id);
 
-            userList.Add(lobbyRow);
+            users.Add(userRow);
         }
     }
 
-    private void GetLobbyDataError(string resultData)
+    private void GetLobbyDataError(string json)
     {
-        Instantiate(_lobbiesFormGO, transform.parent);
+        Instantiate(lobbiesFormPrefab, transform.parent);
         Destroy(gameObject);
     }
 
     public void DisconnectFromLobby()
     {
         Multiplayer.Instance.Disconnect();
-        Instantiate(_lobbiesFormGO, transform.parent);
+        Instantiate(lobbiesFormPrefab, transform.parent);
         Destroy(gameObject);
     }
 
-    public void OnConnectionError(object data)
+    public void OnConnectionError(object dtoObject)
     {
-        Instantiate(_lobbiesFormGO, transform.parent);
+        Instantiate(lobbiesFormPrefab, transform.parent);
         Destroy(gameObject);
     }
 
     public async void StartGame()
     {
         TurnOffInteractables();
-        await Multiplayer.Instance.SocketStartGameMessage();
+        await Multiplayer.Instance.SocketSendStartGameMessage();
     }
 
-    private void OnStartGame(object data)
+    private void OnStartGame(object dtoObject)
     {
-        SocketBroadcastStartGameDTO dto = (SocketBroadcastStartGameDTO)data;
-        Game g = Instantiate(_gameGO, transform.parent.parent).GetComponent<Game>();
-        g.SetStartGameData(dto.map, dto.hexes, transform.parent.gameObject);
+        SocketBroadcastStartGameDTO dto = (SocketBroadcastStartGameDTO)dtoObject;
+        Game g = Instantiate(gamePrefab, transform.parent.parent).GetComponent<Game>();
+        g.SetStartGameData(dto.numHexesInMapRow, dto.hexes, transform.parent.gameObject);
         UIGameHandler uiGameHandler = g.GetComponent<UIGameHandler>();
         Destroy(gameObject);
     }
 
-    private void OnUserConnectToLobby(object data)
+    private void OnUserConnectToLobby(object dtoObject)
     {
-        SocketBroadcastUserConnectionToLobbyDTO dto = (SocketBroadcastUserConnectionToLobbyDTO)data;
-        if (userList.FirstOrDefault(u => u.id == dto.user.id) != null)
+        SocketBroadcastUserConnectedToLobbyDTO dto = (SocketBroadcastUserConnectedToLobbyDTO)dtoObject;
+        if (users.FirstOrDefault(u => u.id == dto.connectedUser.id) != null)
         {
             return;
         }
-        var lobbyRow = Instantiate(_userRowGO, _content.transform).GetComponent<UserInLobbyRow>();
-        lobbyRow.SetUserInLobbyInfo(dto.user.id, dto.user.name, new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
-        userList.Add(lobbyRow);
+        var lobbyRow = Instantiate(userRowPrefab, usersContent.transform).GetComponent<UserInLobbyRow>();
+        lobbyRow.SetUserInLobbyInfo(dto.connectedUser.id, dto.connectedUser.name, new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
+        users.Add(lobbyRow);
     }
 
-    private void OnUserDisconnectFromLobby(object data)
+    private void OnUserDisconnectFromLobby(object dtoObject)
     {
-        SocketBroadcastUserDisconnectFromLobbyDTO dto = (SocketBroadcastUserDisconnectFromLobbyDTO)data;
-        var lobbyRow = userList.FirstOrDefault(u => u.id == dto.user.id);
-        userList.Remove(lobbyRow);
+        SocketBroadcastUserDisconnectedFromLobbyDTO dto = (SocketBroadcastUserDisconnectedFromLobbyDTO)dtoObject;
+        var lobbyRow = users.FirstOrDefault(u => u.id == dto.disconnectedUser.id);
+        users.Remove(lobbyRow);
         Destroy(lobbyRow.gameObject);
     }
 
-    private void OnNewHost(object data)
+    private void OnNewHost(object dtoObject)
     {
-        SocketBroadcastNewHostDTO dto = (SocketBroadcastNewHostDTO)data;
-        hostId = dto.user.id;
-        UserInLobbyRow userInLobbyRow = userList.FirstOrDefault(u => u.id == dto.user.id);
-        SetRowColor(userInLobbyRow, dto.user.id);
+        SocketBroadcastUserNewHostDTO dto = (SocketBroadcastUserNewHostDTO)dtoObject;
+        hostId = dto.userHost.id;
+        UserInLobbyRow userInLobbyRow = users.FirstOrDefault(u => u.id == dto.userHost.id);
+        SetRowColor(userInLobbyRow, dto.userHost.id);
     }
 
-    private void SetRowColor(UserInLobbyRow row, int newId)
+    private void SetRowColor(UserInLobbyRow userRow, int newId)
     {
         if (userId == newId && hostId == newId)
         {
-            row.GetComponent<Image>().color = Color.red;
+            userRow.GetComponent<Image>().color = Color.red;
         }
         else if (hostId == newId)
         {
-            row.GetComponent<Image>().color = Color.cyan;
+            userRow.GetComponent<Image>().color = Color.cyan;
         }
         else if (userId == newId)
         {
-            row.GetComponent<Image>().color = Color.yellow;
+            userRow.GetComponent<Image>().color = Color.yellow;
         }
         else
         {
-            row.GetComponent<Image>().color = Color.white;
+            userRow.GetComponent<Image>().color = Color.white;
         }
     }
 }

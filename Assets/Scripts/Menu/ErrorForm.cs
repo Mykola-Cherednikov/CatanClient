@@ -5,11 +5,11 @@ using UnityEngine;
 
 public class ErrorForm : MonoBehaviour
 {
-    [SerializeField] private TMP_Text _errorText;
+    [SerializeField] private TMP_Text errorText;
 
     public void SetErrorText(string text)
     {
-        _errorText.text = text;
+        errorText.text = text;
     }
 
     public void DestroyForm()

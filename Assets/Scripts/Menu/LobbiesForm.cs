@@ -6,19 +6,19 @@ using UnityEngine.UI;
 
 public class LobbiesForm : Form
 {
-    [SerializeField] private GameObject _content;
+    [SerializeField] private GameObject lobbiesContent;
 
-    [SerializeField] private GameObject _lobbyRowGO;
+    [SerializeField] private GameObject lobbyRowPrefab;
 
-    [SerializeField] private GameObject _loginFormGO;
+    [SerializeField] private GameObject loginFormPrefab;
 
-    [SerializeField] private GameObject _lobbyFormGO;
+    [SerializeField] private GameObject lobbyFormPrefab;
 
-    [SerializeField] private Button _joinButton;
+    [SerializeField] private Button joinButton;
 
 
-    private Image _currentLobbyImage;
-    private int _currentLobbyID;
+    private Image currentLobbyImage;
+    private int currentLobbyId;
 
     private void Start()
     {
@@ -28,20 +28,20 @@ public class LobbiesForm : Form
     public void LogOut()
     {
         StaticVariables.TOKEN = null;
-        Instantiate(_loginFormGO, transform.parent);
+        Instantiate(loginFormPrefab, transform.parent);
         Destroy(gameObject);
     }
 
-    public void SetCurrentLobby(Image currentLobbyImage, int id)
+    public void SetCurrentLobby(Image lobbyImage, int lobbyId)
     {
-        if (_currentLobbyImage != null)
+        if (currentLobbyImage != null)
         {
-            _currentLobbyImage.color = new Color(135f / 255f, 90f / 255f, 50f / 255f);
+            currentLobbyImage.color = new Color(135f / 255f, 90f / 255f, 50f / 255f);
         }
-        _currentLobbyImage = currentLobbyImage;
-        _currentLobbyImage.color = new Color(90f / 255f, 60f / 255f, 40f / 255f);
-        _currentLobbyID = id;
-        _joinButton.interactable = true;
+        currentLobbyImage = lobbyImage;
+        currentLobbyImage.color = new Color(90f / 255f, 60f / 255f, 40f / 255f);
+        currentLobbyId = lobbyId;
+        joinButton.interactable = true;
     }
 
 
@@ -49,30 +49,30 @@ public class LobbiesForm : Form
     public async void Join()
     {
         TurnOffInteractables();
-        await RestRequests.JoinLobby(_currentLobbyID, JoinLobbySuccess, JoinLobbyError);
+        await RestRequests.JoinLobby(currentLobbyId, JoinLobbySuccess, JoinLobbyError);
     }
 
-    private async void JoinLobbySuccess(string resultData)
+    private async void JoinLobbySuccess(string json)
     {
         if (await Multiplayer.Instance.ConnectToLobby())
         {
-            Instantiate(_lobbyFormGO, transform.parent).GetComponent<LobbyForm>();
+            Instantiate(lobbyFormPrefab, transform.parent).GetComponent<LobbyForm>();
             Destroy(gameObject);
         }
         else
         {
             Debug.Log("Connection to lobby failed");
             TurnOnInteractables();
-            _joinButton.interactable = false;
+            joinButton.interactable = false;
         }
     }
 
-    private void JoinLobbyError(string resultData)
+    private void JoinLobbyError(string json)
     {
-        CreateErrorForm(resultData);
-        Debug.Log(resultData);
+        CreateErrorForm(json);
+        Debug.Log(json);
         TurnOnInteractables();
-        _joinButton.interactable = false;
+        joinButton.interactable = false;
     }
     #endregion
 
@@ -80,43 +80,42 @@ public class LobbiesForm : Form
     public async void RefreshLobbies()
     {
         TurnOffInteractables();
-        foreach (Transform t in _content.transform)
+        foreach (Transform t in lobbiesContent.transform)
         {
-            _interactiveItems.Remove(t.gameObject.GetComponent<Button>());
+            interactiveItems.Remove(t.gameObject.GetComponent<Button>());
 
             Destroy(t.gameObject);
         }
 
-        _currentLobbyID = -1;
+        currentLobbyId = -1;
 
         await RestRequests.GetLobbies(GetLobbiesSuccess, GetLobbiesError);
-        
     }
 
-    private void GetLobbiesSuccess(string resultData)
+    private void GetLobbiesSuccess(string json)
     {
-        Debug.Log(resultData);
+        Debug.Log(json);
 
-        var lobbies = JsonUtility.FromJson<SmallLobbiesResponseDTO>(SimixmanUtils.FixArrayJson(resultData));
+        var lobbies = JsonUtility.FromJson<SmallLobbiesResponseDTO>(SimixmanUtils.FixArrayJson(json));
 
-        foreach (var l in lobbies.Items)
+        foreach (var lobby in lobbies.Items)
         {
-            var lobbyRow = Instantiate(_lobbyRowGO, _content.transform).GetComponent<LobbyRow>();
+            var lobbyRow = Instantiate(lobbyRowPrefab, lobbiesContent.transform).GetComponent<LobbyRow>();
 
-            lobbyRow.SetSmallLobbyInfo(SetCurrentLobby, l.lobbyId, l.lobbyName, l.usersCount);
+            lobbyRow.SetSmallLobbyInfo(SetCurrentLobby, lobby.lobbyId, lobby.lobbyName, lobby.usersCount);
 
-            _interactiveItems.Add(lobbyRow.GetComponent<Button>());
+            interactiveItems.Add(lobbyRow.GetComponent<Button>());
         }
         TurnOnInteractables();
-        _joinButton.interactable = false;
+        joinButton.interactable = false;
     }
 
-    private void GetLobbiesError(string resultData)
+    private void GetLobbiesError(string json)
     {
-        CreateErrorForm(resultData);
-        Debug.Log(resultData);
+        CreateErrorForm(json);
+        Debug.Log(json);
         TurnOnInteractables();
-        _joinButton.interactable = false;
+        joinButton.interactable = false;
     }
     #endregion
 
@@ -127,19 +126,19 @@ public class LobbiesForm : Form
         await RestRequests.CreateLobby(Guid.NewGuid().ToString(), CreateLobbySuccessful, CreateLobbyError);
     }
 
-    private void CreateLobbySuccessful(string resultData)
+    private void CreateLobbySuccessful(string json)
     {
-        LobbyCreateResponseDTO dto = JsonUtility.FromJson<LobbyCreateResponseDTO>(resultData);
-        _currentLobbyID = dto.lobbyId;
+        LobbyCreateResponseDTO dto = JsonUtility.FromJson<LobbyCreateResponseDTO>(json);
+        currentLobbyId = dto.lobbyId;
         Join();
     }
 
-    private void CreateLobbyError(string resultData)
+    private void CreateLobbyError(string json)
     {
-        CreateErrorForm(resultData);
-        Debug.Log(resultData);
+        CreateErrorForm(json);
+        Debug.Log(json);
         TurnOnInteractables();
-        _joinButton.interactable = false;
+        joinButton.interactable = false;
     }
     #endregion
 }

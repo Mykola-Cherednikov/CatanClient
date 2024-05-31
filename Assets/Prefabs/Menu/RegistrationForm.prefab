@@ -294,16 +294,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88f4ea25459a8a54891d350f2a3385cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _interactiveItems:
+  interactiveItems:
   - {fileID: 7734939438856664244}
   - {fileID: 2263025531261241362}
   - {fileID: 9017515047892402659}
   - {fileID: 3226176422966980974}
   - {fileID: 92297928482493417}
-  _usernameInputField: {fileID: 7734939438856664244}
-  _loginInputField: {fileID: 2263025531261241362}
-  _passwordInputField: {fileID: 9017515047892402659}
-  _loginFormGO: {fileID: 3221307183653264831, guid: 2a75c0518c6822744be89a14a28f1d2e, type: 3}
+  usernameInputField: {fileID: 7734939438856664244}
+  loginInputField: {fileID: 2263025531261241362}
+  passwordInputField: {fileID: 9017515047892402659}
+  loginFormPrefab: {fileID: 3221307183653264831, guid: 2a75c0518c6822744be89a14a28f1d2e, type: 3}
 --- !u!1 &2001885307936996388
 GameObject:
   m_ObjectHideFlags: 0

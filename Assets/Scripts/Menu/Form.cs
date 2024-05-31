@@ -6,9 +6,9 @@ using UnityEngine.UI;
 
 public class Form : MonoBehaviour
 {
-    protected GameObject _infoFormGO;
-    protected GameObject _errorFormGO;
-    [SerializeField] protected List<Selectable> _interactiveItems;
+    protected GameObject infoFormPrefab;
+    protected GameObject errorFormPrefab;
+    [SerializeField] protected List<Selectable> interactiveItems;
     
     protected virtual void Awake()
     {
@@ -17,25 +17,25 @@ public class Form : MonoBehaviour
 
     protected void SetDefaultInfoAndErrorForm()
     {
-        _infoFormGO = Resources.Load<GameObject>("Prefabs/Form/InfoForm");
-        _errorFormGO = Resources.Load<GameObject>("Prefabs/Form/ErrorForm");
+        infoFormPrefab = Resources.Load<GameObject>("Prefabs/Form/InfoForm");
+        errorFormPrefab = Resources.Load<GameObject>("Prefabs/Form/ErrorForm");
     }
 
     protected void CreateErrorForm(string error)
     {
-        var errorForm = Instantiate(_errorFormGO, transform.parent).GetComponent<ErrorForm>();
+        var errorForm = Instantiate(errorFormPrefab, transform.parent).GetComponent<ErrorForm>();
         errorForm.SetErrorText(error);
     }
 
     protected void CreateInfoForm(string info)
     {
-        var infoForm = Instantiate(_infoFormGO, transform.parent).GetComponent<InfoForm>();
+        var infoForm = Instantiate(infoFormPrefab, transform.parent).GetComponent<InfoForm>();
         infoForm.SetInfoText(info);
     }
 
     protected void TurnOnInteractables()
     {
-        foreach(var interactable in _interactiveItems)
+        foreach(var interactable in interactiveItems)
         {
             interactable.interactable = true;
         }
@@ -43,7 +43,7 @@ public class Form : MonoBehaviour
 
     protected void TurnOffInteractables()
     {
-        foreach (var interactable in _interactiveItems)
+        foreach (var interactable in interactiveItems)
         {
             interactable.interactable = false;
         }

@@ -40,24 +40,24 @@ public class Hex : MonoBehaviour
 
     public int numberToken;
 
-    [SerializeField] private Sprite _desertSprite;
-    [SerializeField] private Sprite _pastureSprite;
-    [SerializeField] private Sprite _fieldSprite;
-    [SerializeField] private Sprite _forestSprite;
-    [SerializeField] private Sprite _hillSprite;
-    [SerializeField] private Sprite _mountainSprite;
+    [SerializeField] private Sprite desertSprite;
+    [SerializeField] private Sprite pastureSprite;
+    [SerializeField] private Sprite fieldSprite;
+    [SerializeField] private Sprite forestSprite;
+    [SerializeField] private Sprite hillSprite;
+    [SerializeField] private Sprite mountainSprite;
 
-    public Dictionary<EdgeDirection, Hex> neighborHexs;
+    public Dictionary<EdgeDirection, Hex> edgeDirectionToNeighborHexes;
 
-    public Dictionary<VertexDirection, Vertex> vertexs;
+    public Dictionary<VertexDirection, Vertex> vertexDirectionToContainedVertiñes;
 
-    public Dictionary<EdgeDirection, Edge> edges;
+    public Dictionary<EdgeDirection, Edge> edgeDirectionToContainedEdges;
 
     public Dictionary<HexType, Sprite> sprites;
 
     public void Awake()
     {
-        neighborHexs = new Dictionary<EdgeDirection, Hex>
+        edgeDirectionToNeighborHexes = new Dictionary<EdgeDirection, Hex>
             {
                 { EdgeDirection.TR, null! },
                 { EdgeDirection.R, null! },
@@ -67,7 +67,7 @@ public class Hex : MonoBehaviour
                 { EdgeDirection.TL, null! }
             };
 
-        vertexs = new Dictionary<VertexDirection, Vertex>()
+        vertexDirectionToContainedVertiñes = new Dictionary<VertexDirection, Vertex>()
             {
                 { VertexDirection.N, null! },
                 { VertexDirection.NE, null! },
@@ -77,7 +77,7 @@ public class Hex : MonoBehaviour
                 { VertexDirection.NW, null! }
             };
 
-        edges = new Dictionary<EdgeDirection, Edge>()
+        edgeDirectionToContainedEdges = new Dictionary<EdgeDirection, Edge>()
             {
                 { EdgeDirection.TR, null! },
                 { EdgeDirection.R, null! },
@@ -89,12 +89,12 @@ public class Hex : MonoBehaviour
 
         sprites = new Dictionary<HexType, Sprite>()
         {
-            { HexType.PASTURE, _pastureSprite },
-            { HexType.DESERT, _desertSprite },
-            { HexType.HILL, _hillSprite },
-            { HexType.MOUNTAIN, _mountainSprite },
-            { HexType.FIELD, _fieldSprite },
-            { HexType.FOREST, _forestSprite },
+            { HexType.PASTURE, pastureSprite },
+            { HexType.DESERT, desertSprite },
+            { HexType.HILL, hillSprite },
+            { HexType.MOUNTAIN, mountainSprite },
+            { HexType.FIELD, fieldSprite },
+            { HexType.FOREST, forestSprite },
         };
     }
 }

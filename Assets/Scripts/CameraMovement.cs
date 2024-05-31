@@ -5,17 +5,17 @@ using UnityEngine.InputSystem;
 
 public class CameraMovement : MonoBehaviour
 {
-    CamActionMap _input;
+    CamActionMap inputMap;
 
     private void Awake()
     {
-        _input = new CamActionMap();
-        _input.Enable();
+        inputMap = new CamActionMap();
+        inputMap.Enable();
     }
 
     private void Update()
     {
-        Vector2 vector = _input.Camera.Move.ReadValue<Vector2>();
+        Vector2 vector = inputMap.Camera.Move.ReadValue<Vector2>();
         Move(vector);
     }
 

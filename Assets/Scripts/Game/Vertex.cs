@@ -6,13 +6,13 @@ public class Vertex : MonoBehaviour
 {
     public int id;
 
-    public List<Hex> hexes;
+    public List<Hex> neighborHexes;
 
-    public List<Edge> edges;
+    public List<Edge> neighborEdges;
 
     private void Awake()
     {
-        hexes = new();
-        edges = new();
+        neighborHexes = new();
+        neighborEdges = new();
     }
 }

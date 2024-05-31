@@ -24,37 +24,37 @@ public class SocketResponseConnectToLobbyDTO : SocketDTOClass
 }
 
 [Serializable]
-public class SocketBroadcastUserConnectionToLobbyDTO : SocketDTOClass
+public class SocketBroadcastUserConnectedToLobbyDTO : SocketDTOClass
 {
     public string message;
 
-    public UserInLobbyDTO user;
+    public UserInLobbyDTO connectedUser;
 }
 
 [Serializable]
-public class SocketBroadcastUserDisconnectFromLobbyDTO : SocketDTOClass
+public class SocketBroadcastUserDisconnectedFromLobbyDTO : SocketDTOClass
 {
     public string message;
 
-    public UserInLobbyDTO user;
+    public UserInLobbyDTO disconnectedUser;
 }
 
 [Serializable]
 public class SocketStartGameRequestDTO : SocketDTOClass
 {
-    public List<int> map;
+    public List<int> numHexesInMapRow;
 }
 
 [Serializable]
 public class SocketBroadcastStartGameDTO : SocketDTOClass
 {
-    public List<int> map = new();
+    public List<int> numHexesInMapRow;
 
-    public List<HexDTO> hexes = new();
+    public List<HexDTO> hexes;
 }
 
 [Serializable]
-public class SocketBroadcastNewHostDTO : SocketDTOClass
+public class SocketBroadcastUserNewHostDTO : SocketDTOClass
 {
-    public UserInLobbyDTO user;
+    public UserInLobbyDTO userHost;
 }

@@ -227,9 +227,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 893b87e4b07b04d4bb1e805c01a133d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _lobbyNameText: {fileID: 7320840345192904651}
-  _lobbyUsersCountText: {fileID: 6422632300662534716}
-  _lobbyRowButton: {fileID: 6369267136044201574}
+  lobbyNameText: {fileID: 7320840345192904651}
+  lobbyUsersCountText: {fileID: 6422632300662534716}
+  lobbyRowButton: {fileID: 6369267136044201574}
 --- !u!114 &6369267136044201574
 MonoBehaviour:
   m_ObjectHideFlags: 0

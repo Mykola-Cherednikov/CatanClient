@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Assets.Scripts.Game
 {
-    public class MapData
+    public class MapInfo
     {
         public List<Hex> hexes;
 
