@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +7,7 @@ public class Form : MonoBehaviour
     protected GameObject infoFormPrefab;
     protected GameObject errorFormPrefab;
     [SerializeField] protected List<Selectable> interactiveItems;
-    
+
     protected virtual void Awake()
     {
         SetDefaultInfoAndErrorForm();
@@ -35,7 +33,7 @@ public class Form : MonoBehaviour
 
     protected void TurnOnInteractables()
     {
-        foreach(var interactable in interactiveItems)
+        foreach (var interactable in interactiveItems)
         {
             interactable.interactable = true;
         }

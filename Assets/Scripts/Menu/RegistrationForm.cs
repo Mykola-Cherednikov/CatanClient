@@ -1,4 +1,3 @@
-using Assets.Scripts;
 using TMPro;
 using UnityEngine;
 
@@ -10,12 +9,12 @@ public class RegistrationForm : Form
 
     [SerializeField] private GameObject loginFormPrefab;
 
-    public async void Submit()
+    public async void Register()
     {
         TurnOffInteractables();
 
         await RestRequests.Register(usernameInputField.text, loginInputField.text,
-            passwordInputField.text, RegistrationSuccess, RegistrationError);
+            passwordInputField.text, OnRegistrationSuccess, OnRegistrationError);
 
         TurnOnInteractables();
     }
@@ -26,13 +25,13 @@ public class RegistrationForm : Form
         Destroy(gameObject);
     }
 
-    private void RegistrationSuccess(string json)
+    private void OnRegistrationSuccess(string json)
     {
         CreateInfoForm("Registration success");
         Debug.Log("Registration success");
     }
 
-    private void RegistrationError(string json)
+    private void OnRegistrationError(string json)
     {
         CreateErrorForm(json);
         Debug.Log(json);

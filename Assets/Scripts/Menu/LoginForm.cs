@@ -1,5 +1,3 @@
-using Assets.Scripts;
-using Assets.Scripts.DTO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,18 +32,18 @@ public class LoginForm : Form
     }
 
     #region Login
-    public async void Submit()
+    public async void Login()
     {
         TurnOffInteractables();
 
         string login = loginInputField.text;
         string password = passwordInputField.text;
-        await RestRequests.Login(login, password, LoginSuccess, LoginError);
+        await RestRequests.Login(login, password, OnLoginSuccess, OnLoginError);
 
         TurnOnInteractables();
     }
 
-    private void LoginSuccess(string resultData)
+    private void OnLoginSuccess(string resultData)
     {
         LoginResponseDTO dto = JsonUtility.FromJson<LoginResponseDTO>(resultData);
         StaticVariables.TOKEN = dto.token;
@@ -66,7 +64,7 @@ public class LoginForm : Form
         Destroy(gameObject);
     }
 
-    private void LoginError(string resultData)
+    private void OnLoginError(string resultData)
     {
         CreateErrorForm(resultData);
         Debug.Log(resultData);

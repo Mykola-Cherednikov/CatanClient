@@ -1,5 +1,3 @@
-using Assets.Scripts;
-using Assets.Scripts.RestDTO;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,12 +30,13 @@ public class LobbiesForm : Form
         Destroy(gameObject);
     }
 
-    public void SetCurrentLobby(Image lobbyImage, int lobbyId)
+    public void MarkCurrentLobbyAfterChoseAndDemarkOld(Image lobbyImage, int lobbyId)
     {
         if (currentLobbyImage != null)
         {
             currentLobbyImage.color = new Color(135f / 255f, 90f / 255f, 50f / 255f);
         }
+
         currentLobbyImage = lobbyImage;
         currentLobbyImage.color = new Color(90f / 255f, 60f / 255f, 40f / 255f);
         currentLobbyId = lobbyId;
@@ -49,10 +48,10 @@ public class LobbiesForm : Form
     public async void Join()
     {
         TurnOffInteractables();
-        await RestRequests.JoinLobby(currentLobbyId, JoinLobbySuccess, JoinLobbyError);
+        await RestRequests.JoinLobby(currentLobbyId, OnJoinLobbySuccess, OnJoinLobbyError);
     }
 
-    private async void JoinLobbySuccess(string json)
+    private async void OnJoinLobbySuccess(string json)
     {
         if (await Multiplayer.Instance.ConnectToLobby())
         {
@@ -67,7 +66,7 @@ public class LobbiesForm : Form
         }
     }
 
-    private void JoinLobbyError(string json)
+    private void OnJoinLobbyError(string json)
     {
         CreateErrorForm(json);
         Debug.Log(json);
@@ -89,10 +88,10 @@ public class LobbiesForm : Form
 
         currentLobbyId = -1;
 
-        await RestRequests.GetLobbies(GetLobbiesSuccess, GetLobbiesError);
+        await RestRequests.GetLobbies(OnGetLobbiesSuccess, OnGetLobbiesError);
     }
 
-    private void GetLobbiesSuccess(string json)
+    private void OnGetLobbiesSuccess(string json)
     {
         Debug.Log(json);
 
@@ -102,7 +101,7 @@ public class LobbiesForm : Form
         {
             var lobbyRow = Instantiate(lobbyRowPrefab, lobbiesContent.transform).GetComponent<LobbyRow>();
 
-            lobbyRow.SetSmallLobbyInfo(SetCurrentLobby, lobby.lobbyId, lobby.lobbyName, lobby.usersCount);
+            lobbyRow.SetSmallLobbyInfo(MarkCurrentLobbyAfterChoseAndDemarkOld, lobby.lobbyId, lobby.lobbyName, lobby.usersCount);
 
             interactiveItems.Add(lobbyRow.GetComponent<Button>());
         }
@@ -110,7 +109,7 @@ public class LobbiesForm : Form
         joinButton.interactable = false;
     }
 
-    private void GetLobbiesError(string json)
+    private void OnGetLobbiesError(string json)
     {
         CreateErrorForm(json);
         Debug.Log(json);
@@ -123,17 +122,17 @@ public class LobbiesForm : Form
     public async void CreateLobby()
     {
         TurnOffInteractables();
-        await RestRequests.CreateLobby(Guid.NewGuid().ToString(), CreateLobbySuccessful, CreateLobbyError);
+        await RestRequests.CreateLobby(Guid.NewGuid().ToString(), OnCreateLobbySuccess, OnCreateLobbyError);
     }
 
-    private void CreateLobbySuccessful(string json)
+    private void OnCreateLobbySuccess(string json)
     {
         LobbyCreateResponseDTO dto = JsonUtility.FromJson<LobbyCreateResponseDTO>(json);
         currentLobbyId = dto.lobbyId;
         Join();
     }
 
-    private void CreateLobbyError(string json)
+    private void OnCreateLobbyError(string json)
     {
         CreateErrorForm(json);
         Debug.Log(json);

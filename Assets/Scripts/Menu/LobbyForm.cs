@@ -1,5 +1,3 @@
-using Assets.Scripts;
-using Assets.Scripts.RestDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,8 +23,8 @@ public class LobbyForm : Form
     private async void Start()
     {
         users = new();
-        Multiplayer.Instance.CONNECTION_ERROR_EVENT.AddListener(OnConnectionError);
         await RestRequests.GetLobbyData(GetLobbyDataSuccess, GetLobbyDataError);
+        Multiplayer.Instance.CONNECTION_ERROR_EVENT.AddListener(OnConnectionErrorOrSocketClose);
         Multiplayer.Instance.BROADCAST_USER_CONNECTION_TO_LOBBY_EVENT.AddListener(OnUserConnectToLobby);
         Multiplayer.Instance.BROADCAST_USER_DISCONNECT_FROM_LOBBY_EVENT.AddListener(OnUserDisconnectFromLobby);
         Multiplayer.Instance.BROADCAST_START_GAME_EVENT.AddListener(OnStartGame);
@@ -53,18 +51,20 @@ public class LobbyForm : Form
 
     private void GetLobbyDataError(string json)
     {
-        Instantiate(lobbiesFormPrefab, transform.parent);
-        Destroy(gameObject);
+        GoToLobbiesForm();
     }
 
     public void DisconnectFromLobby()
     {
         Multiplayer.Instance.Disconnect();
-        Instantiate(lobbiesFormPrefab, transform.parent);
-        Destroy(gameObject);
     }
 
-    public void OnConnectionError(object dtoObject)
+    public void OnConnectionErrorOrSocketClose(object dtoObject)
+    {
+        GoToLobbiesForm();
+    }
+
+    private void GoToLobbiesForm()
     {
         Instantiate(lobbiesFormPrefab, transform.parent);
         Destroy(gameObject);
@@ -73,21 +73,20 @@ public class LobbyForm : Form
     public async void StartGame()
     {
         TurnOffInteractables();
-        await Multiplayer.Instance.SocketSendStartGameMessage();
+        await Multiplayer.Instance.SocketSendStartGameRequest();
     }
 
     private void OnStartGame(object dtoObject)
     {
         SocketBroadcastStartGameDTO dto = (SocketBroadcastStartGameDTO)dtoObject;
-        Game g = Instantiate(gamePrefab, transform.parent.parent).GetComponent<Game>();
-        g.SetStartGameData(dto.numHexesInMapRow, dto.hexes, transform.parent.gameObject);
-        UIGameHandler uiGameHandler = g.GetComponent<UIGameHandler>();
+        GameManager g = Instantiate(gamePrefab, transform.parent.parent).GetComponent<GameManager>();
+        g.StartGame(dto, transform.parent.gameObject);
         Destroy(gameObject);
     }
 
     private void OnUserConnectToLobby(object dtoObject)
     {
-        SocketBroadcastUserConnectedToLobbyDTO dto = (SocketBroadcastUserConnectedToLobbyDTO)dtoObject;
+        SocketBroadcastUserConnectedDTO dto = (SocketBroadcastUserConnectedDTO)dtoObject;
         if (users.FirstOrDefault(u => u.id == dto.connectedUser.id) != null)
         {
             return;
@@ -99,7 +98,7 @@ public class LobbyForm : Form
 
     private void OnUserDisconnectFromLobby(object dtoObject)
     {
-        SocketBroadcastUserDisconnectedFromLobbyDTO dto = (SocketBroadcastUserDisconnectedFromLobbyDTO)dtoObject;
+        SocketBroadcastUserDisconnectedDTO dto = (SocketBroadcastUserDisconnectedDTO)dtoObject;
         var lobbyRow = users.FirstOrDefault(u => u.id == dto.disconnectedUser.id);
         users.Remove(lobbyRow);
         Destroy(lobbyRow.gameObject);
@@ -115,21 +114,24 @@ public class LobbyForm : Form
 
     private void SetRowColor(UserInLobbyRow userRow, int newId)
     {
-        if (userId == newId && hostId == newId)
+        if (userRow != null)
         {
-            userRow.GetComponent<Image>().color = Color.red;
-        }
-        else if (hostId == newId)
-        {
-            userRow.GetComponent<Image>().color = Color.cyan;
-        }
-        else if (userId == newId)
-        {
-            userRow.GetComponent<Image>().color = Color.yellow;
-        }
-        else
-        {
-            userRow.GetComponent<Image>().color = Color.white;
+            if (userId == newId && hostId == newId)
+            {
+                userRow.GetComponent<Image>().color = Color.red;
+            }
+            else if (hostId == newId)
+            {
+                userRow.GetComponent<Image>().color = Color.cyan;
+            }
+            else if (userId == newId)
+            {
+                userRow.GetComponent<Image>().color = Color.yellow;
+            }
+            else
+            {
+                userRow.GetComponent<Image>().color = Color.white;
+            }
         }
     }
 }

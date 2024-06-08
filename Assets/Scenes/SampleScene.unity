@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 94611923}
   - component: {fileID: 94611922}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: CanvasOverlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -281,6 +281,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   BROADCAST_START_GAME_EVENT:
+    m_PersistentCalls:
+      m_Calls: []
+  BROADCAST_USER_TURN_EVENT:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &519420028
@@ -433,6 +436,52 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdc2f2e5102975f4bb6cb88ee85935f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &843894444
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 843894446}
+  - component: {fileID: 843894445}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &843894445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843894444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb7fb44c3573002439ade67b955da321, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gamePrefab: {fileID: 7808361219895743966, guid: a4784a148fa610443a7ad7d095a04aeb, type: 3}
+  canvas: {fileID: 94611921}
+--- !u!4 &843894446
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 843894444}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.40035844, y: 1.6919608, z: 6.412046}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1316641013
 GameObject:
   m_ObjectHideFlags: 0
@@ -549,6 +598,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2928076356605392128, guid: 2a75c0518c6822744be89a14a28f1d2e, type: 3}
+      propertyPath: m_fontColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2928076356605392128, guid: 2a75c0518c6822744be89a14a28f1d2e, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
+      objectReference: {fileID: 0}
     - target: {fileID: 3221307183653264831, guid: 2a75c0518c6822744be89a14a28f1d2e, type: 3}
       propertyPath: m_Name
       value: LoginForm
@@ -575,3 +632,4 @@ SceneRoots:
   - {fileID: 1316641016}
   - {fileID: 94611925}
   - {fileID: 297449170}
+  - {fileID: 843894446}
