@@ -19,9 +19,10 @@ public class GameNotificationText : MonoBehaviour
         }
     }
 
-    public void SetText(string text)
+    public void SetText(string text, int fontSize)
     {
         gameInfoText.text = text;
+        gameInfoText.fontSize = fontSize;
     }
 }
 

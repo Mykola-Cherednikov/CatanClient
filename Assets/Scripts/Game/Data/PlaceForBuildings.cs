@@ -6,13 +6,13 @@ public class PlaceForBuildings : MonoBehaviour
 
     public User user;
 
-    protected SpriteRenderer sprite;
+    public SpriteRenderer spriteRenderer;
 
-    protected Collider2D collider2d;
+    public Collider2D collider2d;
 
     protected virtual void Awake()
     {
-        sprite = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         collider2d = GetComponent<Collider2D>();
         user = null;
         HideSpriteAndCollider();
@@ -20,13 +20,13 @@ public class PlaceForBuildings : MonoBehaviour
 
     public void ShowSpriteAndCollider()
     {
-        sprite.enabled = true;
+        spriteRenderer.enabled = true;
         collider2d.enabled = true;
     }
 
     public void HideSpriteAndCollider()
     {
-        sprite.enabled = false;
+        spriteRenderer.enabled = false;
         collider2d.enabled = false;
     }
 }

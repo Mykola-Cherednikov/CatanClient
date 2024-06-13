@@ -16,19 +16,41 @@ public class Vertex : PlaceForBuildings
 
     public VertexBuildingType type;
 
+    [SerializeField] private Sprite noneSprite;
+    [SerializeField] private Sprite citySprite;
+    [SerializeField] private Sprite settlementSprite;
+
     protected override void Awake()
     {
         base.Awake();
         neighborHexes = new();
         neighborEdges = new();
+        spriteRenderer.sprite = noneSprite;
         HideSpriteAndCollider();
+    }
+
+    private void ChangeBuildingSpriteType()
+    {
+        switch (type)
+        {
+            case VertexBuildingType.NONE:
+                spriteRenderer.sprite = noneSprite; 
+                break;
+            case VertexBuildingType.SETTLEMENT:
+                spriteRenderer.sprite = settlementSprite; 
+                break;
+            case VertexBuildingType.CITY:
+                spriteRenderer.sprite = citySprite;
+                break;
+        }
     }
 
     public void SetVertexBuilding(VertexBuildingType type, User u)
     {
         this.type = type;
         user = u;
-        sprite.color = Color.blue;
+        spriteRenderer.color = Color.blue;
         ShowSpriteAndCollider();
+        ChangeBuildingSpriteType();
     }
 }

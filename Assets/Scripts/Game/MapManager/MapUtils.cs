@@ -42,9 +42,9 @@ public class MapUtils
         return neighborVerticesToVertex;
     }
 
-    public static List<Edge> GetAvaliableEdgesForUser(User user, List<Vertex> vertices, List<Edge> edges)
+    public static List<Edge> GetAvailableEdgesForUser(User user, List<Vertex> vertices, List<Edge> edges)
     {
-        HashSet<Edge> avaliableEdges = new HashSet<Edge>();
+        HashSet<Edge> availableEdges = new HashSet<Edge>();
 
         List<Vertex> userVertices = vertices.FindAll(v => v.user == user);
         foreach (var v in userVertices)
@@ -53,7 +53,7 @@ public class MapUtils
             {
                 if (edge.type == EdgeBuildingType.NONE)
                 {
-                    avaliableEdges.Add(edge);
+                    availableEdges.Add(edge);
                 }
             }
         }
@@ -61,15 +61,15 @@ public class MapUtils
         List<Edge> userEdges = edges.FindAll(e => e.user == user);
         foreach (var edge in userEdges)
         {
-            avaliableEdges.AddRange(MapUtils.GetNeighborEdgesToEdge(edge));
+            availableEdges.AddRange(GetNeighborEdgesToEdge(edge));
         }
 
-        return avaliableEdges.ToList();
+        return availableEdges.ToList();
     }
 
-    public static List<Vertex> GetAvaliableVerticiesForUser(User thisUser, List<Edge> edges)
+    public static List<Vertex> GetAvailableVerticiesForUser(User thisUser, List<Edge> edges)
     {
-        HashSet<Vertex> avaliableVerticies = new HashSet<Vertex>();
+        HashSet<Vertex> availableVerticies = new HashSet<Vertex>();
         List<Edge> userEdges = edges.FindAll(e => e.user == thisUser);
         foreach (var e in userEdges)
         {
@@ -77,12 +77,12 @@ public class MapUtils
             {
                 if (vertex.type == VertexBuildingType.NONE)
                 {
-                    avaliableVerticies.Add(vertex);
+                    availableVerticies.Add(vertex);
                 }
             }
         }
 
-        return avaliableVerticies.ToList();
+        return availableVerticies.ToList();
     }
 
     public static bool IsVertexFree(Vertex v)

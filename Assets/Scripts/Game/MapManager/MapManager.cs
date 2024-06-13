@@ -16,7 +16,7 @@ public class MapManager : MonoBehaviour
     public void InitializeMap(SocketBroadcastStartGameDTO dto)
     {
         var mapBuilder = gameObject.AddComponent<MapBuilder>();
-        var mapInfo = mapBuilder.CreateMap(dto.hexesInRowCounts, dto.hexes);
+        var mapInfo = mapBuilder.CreateMap(dto.hexesInRowCounts, dto.seed);
 
         hexes = mapInfo.hexes;
         vertices = mapInfo.vertices;
@@ -35,8 +35,8 @@ public class MapManager : MonoBehaviour
         return edges.Where(e => e.user == user).ToList();
     }
 
-    #region Show/Hide Avaliable Vertices
-    private void ShowAllAvaliableVertices()
+    #region Show/Hide Available Vertices
+    private void ShowAllAvailableVertices()
     {
         foreach (var v in vertices)
         {
@@ -47,7 +47,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void HideAllAvaliableVertices()
+    private void HideAllAvailableVertices()
     {
         foreach (var v in vertices)
         {
@@ -58,18 +58,18 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void ShowAllAvaliableVerticesForUser()
+    private void ShowAllAvailableVerticesForUser()
     {
-        List<Vertex> avaliableVertices = MapUtils.GetAvaliableVerticiesForUser(GameManager.Instance.userManager.currentUser, edges);
-        foreach (var v in avaliableVertices)
+        List<Vertex> availableVertices = MapUtils.GetAvailableVerticiesForUser(GameManager.Instance.userManager.currentUser, edges);
+        foreach (var v in availableVertices)
         {
             v.ShowSpriteAndCollider();
         }
     }
     #endregion
 
-    #region Show/Hide Avaliable Edges
-    private void ShowAllAvaliableEdges()
+    #region Show/Hide Available Edges
+    private void ShowAllAvailableEdges()
     {
         foreach (var e in edges)
         {
@@ -80,7 +80,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void HideAllAvaliableEdges()
+    private void HideAllAvailableEdges()
     {
         foreach (var e in edges)
         {
@@ -91,10 +91,10 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    private void ShowAllAvaliableEdgesForUser()
+    private void ShowAllAvailableEdgesForUser()
     {
-        List<Edge> avaliableEdges = MapUtils.GetAvaliableEdgesForUser(GameManager.Instance.userManager.currentUser, vertices, edges);
-        foreach (var e in avaliableEdges)
+        List<Edge> availableEdges = MapUtils.GetAvailableEdgesForUser(GameManager.Instance.userManager.currentUser, vertices, edges);
+        foreach (var e in availableEdges)
         {
             e.ShowSpriteAndCollider();
         }
@@ -104,18 +104,18 @@ public class MapManager : MonoBehaviour
     #region Show/Hide Places For Buildings
     public void ShowPlacesForRoads()
     {
-        ShowAllAvaliableEdgesForUser();
+        ShowAllAvailableEdgesForUser();
     }
 
     public void ShowPlacesForSettlements()
     {
         if (GameManager.Instance.gameState == GameState.PREPARATION_BUILD_SETTLEMENTS)
         {
-            ShowAllAvaliableVertices();
+            ShowAllAvailableVertices();
         }
         else
         {
-            ShowAllAvaliableVerticesForUser();
+            ShowAllAvailableVerticesForUser();
         }
     }
 
@@ -124,10 +124,10 @@ public class MapManager : MonoBehaviour
 
     }
 
-    public void HideAllAvaliablePlaces()
+    public void HideAllAvailablePlaces()
     {
-        HideAllAvaliableEdges();
-        HideAllAvaliableVertices();
+        HideAllAvailableEdges();
+        HideAllAvailableVertices();
     }
     #endregion
 
@@ -172,7 +172,6 @@ public class MapManager : MonoBehaviour
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
         User currentUser = GameManager.Instance.userManager.currentUser;
 
-
         if (!MapUtils.IsCurrentUserSettlementOnThisVertex(vertex, currentUser))
         {
             return;
@@ -183,23 +182,43 @@ public class MapManager : MonoBehaviour
     #endregion
 
     #region Build
-    public void BuildRoad(int edgeId, int userId)
+    public void BuildRoad(int edgeId, User user)
     {
-        User u = GameManager.Instance.userManager.GetUserById(userId);
-        edges.FirstOrDefault(v => v.id == edgeId).SetEdgeBuilding(EdgeBuildingType.ROAD, u);
+        if (GameManager.Instance.gameState == GameState.GAME)
+        {
+            GameManager.Instance.userManager.RemoveResourcesFromUserAsBuying(user, Goods.Road);
+        }
+        Edge edge = edges.FirstOrDefault(v => v.id == edgeId);
+        edge.SetEdgeBuilding(EdgeBuildingType.ROAD, user);
+        SetColorToUserBuilding(edge, user);
     }
 
-    public void BuildSettlement(int vertexId, int userId)
+    public void BuildSettlement(int vertexId, User user)
     {
-        User u = GameManager.Instance.userManager.GetUserById(userId);
-        vertices.FirstOrDefault(v => v.id == vertexId).SetVertexBuilding(VertexBuildingType.SETTLEMENT, u);
+        if (GameManager.Instance.gameState == GameState.GAME)
+        {
+            GameManager.Instance.userManager.RemoveResourcesFromUserAsBuying(user, Goods.Settlement);
+        }
+        Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
+        vertex.SetVertexBuilding(VertexBuildingType.SETTLEMENT, user);
+        SetColorToUserBuilding(vertex, user);
     }
 
-    public void BuildCity(int vertexId, int userId)
+    public void BuildCity(int vertexId, User user)
     {
-        User u = GameManager.Instance.userManager.GetUserById(userId);
-        vertices.FirstOrDefault(v => v.id == vertexId).SetVertexBuilding(VertexBuildingType.CITY, u);
+        if (GameManager.Instance.gameState == GameState.GAME)
+        {
+            GameManager.Instance.userManager.RemoveResourcesFromUserAsBuying(user, Goods.City);
+        }
+        Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
+        vertex.SetVertexBuilding(VertexBuildingType.CITY, user);
+        SetColorToUserBuilding(vertex, user);
     }
     #endregion
+
+    private void SetColorToUserBuilding<T>(T placeForBuilding, User user) where T : PlaceForBuildings
+    {
+        placeForBuilding.spriteRenderer.color = user.color;
+    }
 }
 

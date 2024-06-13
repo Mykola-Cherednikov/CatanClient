@@ -2,26 +2,43 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class DragAndDropBuilding : MonoBehaviour, IBeginDragHandler, IEndDragHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private RectTransform rectTransform;
     [SerializeField] private GameObject infoMenuPrefab;
+    [SerializeField] private Image image;
     public BuildingsUI buildingsUI;
 
-    private GameObject infoMenuGO;
     public UnityEvent onBeginDrag;
     public UnityEvent onDrop;
-    public Func<bool> isAvaliable;
+    public Func<bool> isAvailable;
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
     }
 
+    private void FixedUpdate()
+    {
+        Color newColor = image.color;
+
+        if (isAvailable.Invoke() && !buildingsUI.isDragging)
+        {
+            newColor.a = 1f;
+        }
+        else
+        {
+            newColor.a = 0.5f;
+        }
+
+        image.color = newColor;
+    }
+
     public virtual void OnBeginDrag(PointerEventData eventData)
     {
-        if (!isAvaliable.Invoke() || buildingsUI.isDragging)
+        if (!isAvailable.Invoke() || buildingsUI.isDragging)
         {
             return;
         }
@@ -54,18 +71,19 @@ public class DragAndDropBuilding : MonoBehaviour, IBeginDragHandler, IEndDragHan
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!buildingsUI.isDragging && infoMenuGO == null)
+        if (!buildingsUI.isDragging && buildingsUI.infoMenuGO == null)
         {
-            infoMenuGO = Instantiate(infoMenuPrefab, transform.position + new Vector3(0f, 120f, 0f), Quaternion.identity, transform.parent);
+            buildingsUI.infoMenuGO = Instantiate(infoMenuPrefab, 
+                transform.position + new Vector3(0f, 150f, 0f), Quaternion.identity, transform.parent);
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (infoMenuGO != null)
+        if (buildingsUI.infoMenuGO != null)
         {
-            Destroy(infoMenuGO);
-            infoMenuGO = null;
+            Destroy(buildingsUI.infoMenuGO);
+            buildingsUI.infoMenuGO = null;
         }
     }
 }

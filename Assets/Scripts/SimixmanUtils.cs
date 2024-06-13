@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -79,6 +80,25 @@ public static class SimixmanUtils
         decimal x = (decimal)firstVector.x + (decimal)secondVector.x;
         decimal y = (decimal)firstVector.y + (decimal)secondVector.y;
         return new Vector2((float)x, (float)y);
+    }
+
+    public static Dictionary<Resource, int> ResourceListToResourceDictionary(List<string> resources)
+    {
+        Dictionary<Resource, int> resourcesToAmount = new();
+        foreach (string s in resources)
+        {
+            Resource resource = (Resource)Enum.Parse(typeof(Resource), s);
+            if (resourcesToAmount.ContainsKey(resource))
+            {
+                resourcesToAmount[resource]++;
+            }
+            else
+            {
+                resourcesToAmount.Add(resource, 1);
+            }
+        }
+
+        return resourcesToAmount;
     }
 }
 

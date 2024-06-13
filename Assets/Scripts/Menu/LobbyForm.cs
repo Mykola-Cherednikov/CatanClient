@@ -16,7 +16,7 @@ public class LobbyForm : Form
     [SerializeField] private GameObject gamePrefab;
     [SerializeField] private TMP_Text lobbyNameText;
 
-    private List<UserInLobbyRow> users;
+    private List<UserRow> users;
     [NonSerialized] private int userId;
     [NonSerialized] private int hostId;
 
@@ -39,7 +39,7 @@ public class LobbyForm : Form
         hostId = lobbyDataResponseDTO.users.FirstOrDefault(u => u.host).id;
         foreach (var user in lobbyDataResponseDTO.users)
         {
-            var userRow = Instantiate(userRowPrefab, usersContent.transform).GetComponent<UserInLobbyRow>();
+            var userRow = Instantiate(userRowPrefab, usersContent.transform).GetComponent<UserRow>();
 
             userRow.SetUserInLobbyInfo(user.id, user.name, new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
 
@@ -91,7 +91,7 @@ public class LobbyForm : Form
         {
             return;
         }
-        var lobbyRow = Instantiate(userRowPrefab, usersContent.transform).GetComponent<UserInLobbyRow>();
+        var lobbyRow = Instantiate(userRowPrefab, usersContent.transform).GetComponent<UserRow>();
         lobbyRow.SetUserInLobbyInfo(dto.connectedUser.id, dto.connectedUser.name, new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
         users.Add(lobbyRow);
     }
@@ -108,11 +108,11 @@ public class LobbyForm : Form
     {
         SocketBroadcastUserNewHostDTO dto = (SocketBroadcastUserNewHostDTO)dtoObject;
         hostId = dto.userHost.id;
-        UserInLobbyRow userInLobbyRow = users.FirstOrDefault(u => u.id == dto.userHost.id);
+        UserRow userInLobbyRow = users.FirstOrDefault(u => u.id == dto.userHost.id);
         SetRowColor(userInLobbyRow, dto.userHost.id);
     }
 
-    private void SetRowColor(UserInLobbyRow userRow, int newId)
+    private void SetRowColor(UserRow userRow, int newId)
     {
         if (userRow != null)
         {

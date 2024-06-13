@@ -37,8 +37,6 @@ public class Hex : MonoBehaviour
 
     public HexType type;
 
-    public int numberToken;
-
     [SerializeField] private Sprite desertSprite;
     [SerializeField] private Sprite pastureSprite;
     [SerializeField] private Sprite fieldSprite;
@@ -53,6 +51,8 @@ public class Hex : MonoBehaviour
     public Dictionary<EdgeDirection, Edge> edgeDirectionToContainedEdges;
 
     public Dictionary<HexType, Sprite> sprites;
+
+    [SerializeField] public NumberToken numberToken;
 
     public void Awake()
     {

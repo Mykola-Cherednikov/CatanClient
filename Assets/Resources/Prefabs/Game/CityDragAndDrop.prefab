@@ -59,14 +59,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 0.008504152, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 7961463184084027955, guid: b9e1bc7c9b964954abb922d3b7cb6969, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -88,7 +88,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41c14b6c71251e44e887cf508162a142, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  infoMenuPrefab: {fileID: 147069704086636614, guid: 009df440b375c3f4894a730004240e43, type: 3}
+  infoMenuPrefab: {fileID: 147069704086636614, guid: aaf14c1e621af26409311b1828ab247e, type: 3}
+  image: {fileID: 5557921357942125215}
   buildingsUI: {fileID: 0}
   onBeginDrag:
     m_PersistentCalls:

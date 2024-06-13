@@ -25,12 +25,11 @@ public class Test : MonoBehaviour
         User user1 = new User();
         user1.id = 2;
         SocketBroadcastStartGameDTO dto = new SocketBroadcastStartGameDTO();
-        dto.hexesInRowCounts = new() { 3, 4, 5, 4, 3 };
-        dto.hexes = testData;
+        dto.hexesInRowCounts = new() { 4, 5, 6, 7, 6, 5, 4 };
+        dto.seed = 1;
         dto.users = new List<User>() { user, user1 };
         dto.currentUser = user;
         game.StartGame(dto, canvas);
-
 
 
         /*

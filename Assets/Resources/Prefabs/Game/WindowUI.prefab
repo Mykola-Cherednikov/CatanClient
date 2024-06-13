@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1554970343381391524}
   - component: {fileID: 4728246812675789426}
   m_Layer: 5
-  m_Name: EscapeUI
+  m_Name: WindowUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

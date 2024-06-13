@@ -26,7 +26,7 @@ public class Edge : PlaceForBuildings
     {
         this.type = type;
         user = u;
-        sprite.color = Color.blue;
+        spriteRenderer.color = Color.blue;
         ShowSpriteAndCollider();
     }
 }

@@ -23,13 +23,25 @@ public enum EventType
     BROADCAST_USER_TURN,
     BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS,
     BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS,
-    BROADCAST_GIVE_RESOURCE,
+    BROADCAST_USER_GET_RESOURCE,
     REQUEST_BUILD_SETTLEMENT,
     BROADCAST_BUILD_SETTLEMENT,
     REQUEST_BUILD_ROAD,
     BROADCAST_BUILD_ROAD,
     REQUEST_BUILD_CITY,
-    BROADCAST_BUILD_CITY
+    BROADCAST_BUILD_CITY,
+    BROADCAST_DICE_THROW,
+    REQUEST_USER_TURN_READY,
+    REQUEST_TRADE_RESOURCE,
+    BROADCAST_USER_TRADE,
+    REQUEST_BUY_DEV_CARD,
+    RESPONSE_BUY_DEV_CARD,
+    BROADCAST_BUY_DEV_CARD,
+    BROADCAST_ROBBERY_START,
+    BROADCAST_ROBBER_ROBBERY,
+    REQUEST_USER_ROBBERY,
+    BROADCAST_USER_ROBBERY,
+    BROADCAST_ROBBERY_END
 }
 
 public class Multiplayer : MonoBehaviour
@@ -62,6 +74,24 @@ public class Multiplayer : MonoBehaviour
     public UnityEvent<object> BROADCAST_BUILD_SETTLEMENT_EVENT;
 
     public UnityEvent<object> BROADCAST_BUILD_CITY_EVENT;
+
+    public UnityEvent<object> BROADCAST_GET_RESOURCE_EVENT;
+
+    public UnityEvent<object> BROADCAST_DICE_THROW_EVENT;
+
+    public UnityEvent<object> BROADCAST_USER_TRADE_EVENT;
+
+    public UnityEvent<object> RESPONSE_BUY_DEV_CARD_EVENT;
+
+    public UnityEvent<object> BROADCAST_BUY_DEV_CARD_EVENT;
+
+    public UnityEvent<object> BROADCAST_ROBBERY_START_EVENT;
+
+    public UnityEvent<object> BROADCAST_ROBBER_ROBBERY_EVENT;
+
+    public UnityEvent<object> BROADCAST_USER_ROBBERY_EVENT;
+
+    public UnityEvent<object> BROADCAST_ROBBERY_END_EVENT;
     #endregion
 
     private void Awake()
@@ -78,7 +108,16 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS, typeof(SocketBroadcastUserTurnDTO) },
             { EventType.BROADCAST_BUILD_SETTLEMENT,  typeof(SocketBroadcastBuildDTO) },
             { EventType.BROADCAST_BUILD_ROAD,  typeof(SocketBroadcastBuildDTO) },
-            { EventType.BROADCAST_BUILD_CITY,  typeof(SocketBroadcastBuildDTO) }
+            { EventType.BROADCAST_BUILD_CITY,  typeof(SocketBroadcastBuildDTO) },
+            { EventType.BROADCAST_USER_GET_RESOURCE, typeof(SocketBroadcastResourcesDTO) },
+            { EventType.BROADCAST_DICE_THROW, typeof(SocketBroadcastDiceThrowDTO) },
+            { EventType.BROADCAST_USER_TRADE, typeof(SocketBroadcastTradeDTO) },
+            { EventType.RESPONSE_BUY_DEV_CARD, typeof(SocketDTOClass) },
+            { EventType.BROADCAST_BUY_DEV_CARD, typeof (SocketDTOClass) },
+            { EventType.BROADCAST_ROBBERY_START, typeof(SocketDTOClass) },
+            { EventType.BROADCAST_ROBBER_ROBBERY, typeof(SocketBroadcastResourcesDTO) },
+            { EventType.BROADCAST_USER_ROBBERY, typeof(SocketBroadcastUserRobberyDTO) },
+            { EventType.BROADCAST_ROBBERY_END, typeof(SocketDTOClass) }
         };
         eventTypesToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
         {
@@ -92,7 +131,16 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS, BROADCAST_USER_TURN_EVENT },
             { EventType.BROADCAST_BUILD_SETTLEMENT,  BROADCAST_BUILD_SETTLEMENT_EVENT },
             { EventType.BROADCAST_BUILD_ROAD,  BROADCAST_BUILD_ROAD_EVENT },
-            { EventType.BROADCAST_BUILD_CITY,  BROADCAST_BUILD_CITY_EVENT }
+            { EventType.BROADCAST_BUILD_CITY,  BROADCAST_BUILD_CITY_EVENT },
+            { EventType.BROADCAST_USER_GET_RESOURCE, BROADCAST_GET_RESOURCE_EVENT},
+            { EventType.BROADCAST_DICE_THROW, BROADCAST_DICE_THROW_EVENT },
+            { EventType.BROADCAST_USER_TRADE, BROADCAST_USER_TRADE_EVENT },
+            { EventType.RESPONSE_BUY_DEV_CARD, RESPONSE_BUY_DEV_CARD_EVENT },
+            { EventType.BROADCAST_BUY_DEV_CARD, BROADCAST_BUY_DEV_CARD_EVENT },
+            { EventType.BROADCAST_ROBBERY_START, BROADCAST_ROBBERY_START_EVENT},
+            { EventType.BROADCAST_ROBBER_ROBBERY, BROADCAST_ROBBER_ROBBERY_EVENT },
+            { EventType.BROADCAST_USER_ROBBERY, BROADCAST_USER_ROBBERY_EVENT },
+            { EventType.BROADCAST_ROBBERY_END, BROADCAST_ROBBERY_END_EVENT }
         };
 
         RESPONSE_CONNECT_TO_LOBBY_EVENT.AddListener(ConnectFromServer);
@@ -158,9 +206,9 @@ public class Multiplayer : MonoBehaviour
             StringBuilder message = new StringBuilder();
             while ((receivedNumOfBytes = await clientSocket.ReceiveAsync(receiveBuffer, SocketFlags.None)) != 0)
             {
-                Debug.LogError(message.ToString());
+                //Debug.LogError(message.ToString());
                 message.Append(Encoding.UTF8.GetString(receiveBuffer[..receivedNumOfBytes]));
-                if (message.ToString().Contains("\r\n"))
+                if (message.ToString()[(message.Length-2)..message.Length] == "\r\n")
                 {
                     HandleMessage(message.ToString());
                     message = new StringBuilder();
@@ -188,23 +236,29 @@ public class Multiplayer : MonoBehaviour
                 HandleJsonQueryAndInvokeEvent(jsonQuery);
             }
         }
-        catch (Exception e)
+        catch
         {
-            Debug.LogError("Handle Message: " + e);
+            Debug.LogError("Handle Message: " + message);
         }
     }
 
     private void HandleJsonQueryAndInvokeEvent(string jsonQuery)
     {
-        SocketDTOClass dto = JsonUtility.FromJson<SocketDTOClass>(jsonQuery);
-        Debug.Log("Handle Message: Receive data from server with event: " + dto.eventType);
-        Debug.Log($"{jsonQuery}");
-        EventType eventType = (EventType)Enum.Parse(typeof(EventType), dto.eventType);
-        object objectFromJson = JsonUtility.FromJson(jsonQuery, eventTypesToDTOTypes[eventType]);
-        eventTypesToUnityEvent[eventType]?.Invoke(objectFromJson);
+        try
+        {
+            SocketDTOClass dto = JsonUtility.FromJson<SocketDTOClass>(jsonQuery);
+            Debug.Log("Handle Message: Receive data from server with event: " + dto.eventType);
+            Debug.Log($"{jsonQuery}");
+            EventType eventType = (EventType)Enum.Parse(typeof(EventType), dto.eventType);
+            object objectFromJson = JsonUtility.FromJson(jsonQuery, eventTypesToDTOTypes[eventType]);
+            eventTypesToUnityEvent[eventType]?.Invoke(objectFromJson);
+        }
+        catch (Exception)
+        {
+            Debug.LogError("Error in parse eventtype: " + jsonQuery);
+        }
     }
     #endregion
-
 
     public void Disconnect()
     {
@@ -270,6 +324,39 @@ public class Multiplayer : MonoBehaviour
         SocketRequestBuildDTO dto = new SocketRequestBuildDTO();
         dto.fieldId = vertexId;
         dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_BUILD_CITY);
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendUserTurnReadyRequest()
+    {
+        SocketDTOClass dto = new SocketDTOClass();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USER_TURN_READY);
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendUserTradeRequest(Resource incomeResource, Resource outgoingResource, int count)
+    {
+        SocketRequestTradeDTO dto = new SocketRequestTradeDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_TRADE_RESOURCE);
+        dto.incomingResource = Enum.GetName(typeof(Resource), incomeResource);
+        dto.outgoingResource = Enum.GetName(typeof(Resource), outgoingResource);
+        dto.requestedCountOfOutgoingResource = count;
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendRobberyRequest(int hexId, int robbedUserId)
+    {
+        SocketRequestRobberyDTO dto = new SocketRequestRobberyDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USER_ROBBERY);
+        dto.hexId = hexId;
+        dto.robbedUserId = robbedUserId;
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendBuyDevCardRequest()
+    {
+        SocketDTOClass dto = new SocketDTOClass();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_BUY_DEV_CARD);
         await clientSocket.SendToServer(dto);
     }
     #endregion

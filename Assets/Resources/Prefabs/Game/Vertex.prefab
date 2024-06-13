@@ -29,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -50,9 +50,15 @@ MonoBehaviour:
   user:
     id: 0
     name: 
+    color: {r: 0, g: 0, b: 0, a: 0}
+  spriteRenderer: {fileID: 0}
+  collider2d: {fileID: 0}
   neighborHexes: []
   neighborEdges: []
   type: 0
+  noneSprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  citySprite: {fileID: 7961463184084027955, guid: b9e1bc7c9b964954abb922d3b7cb6969, type: 3}
+  settlementSprite: {fileID: -7411974349392773033, guid: bef8ea53927393f4d82761bb77b57acd, type: 3}
 --- !u!58 &-2858051434424821986
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -88,7 +94,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.1
+  m_Radius: 0.5
 --- !u!212 &-8993450595171143598
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -131,9 +137,9 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  m_Color: {r: 0.8235295, g: 0.03529412, b: 0.03529412, a: 1}
+  m_SortingOrder: 2
+  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

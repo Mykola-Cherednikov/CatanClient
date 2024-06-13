@@ -4,19 +4,25 @@ public class UIManager : MonoBehaviour
 {
     public GameObject uiCanvas;
 
-    [SerializeField] private GameObject escapeUIPrefab;
+    [SerializeField] private GameObject windowUIPrefab;
     [SerializeField] private GameObject buildingsUIPrefab;
     [SerializeField] private GameObject gameNotificationsUIPrefab;
+    [SerializeField] private GameObject resourceBoxUIPrefab;
+    [SerializeField] private GameObject readyButtonUIPrefab;
 
     private BuildingsUI buildingsUI;
     private GameNotificationsUI gameNotificationsUI;
-    private EscapeUI escapeUI;
+    private WindowUI windowUI;
+    private ResourceBoxUI resourceBoxUI;
+    private GameObject readyButtonUI;
 
     private void Awake()
     {
-        escapeUIPrefab = Resources.Load<GameObject>("Prefabs/Game/EscapeUI");
+        windowUIPrefab = Resources.Load<GameObject>("Prefabs/Game/WindowUI");
         buildingsUIPrefab = Resources.Load<GameObject>("Prefabs/Game/BuildingsUI");
         gameNotificationsUIPrefab = Resources.Load<GameObject>("Prefabs/Game/GameNotificationsUI");
+        resourceBoxUIPrefab = Resources.Load<GameObject>("Prefabs/Game/ResourceBoxUI");
+        readyButtonUIPrefab = Resources.Load<GameObject>("Prefabs/Game/ReadyButtonUI");
     }
 
     public void InitializeUI(GameObject uiCanvas)
@@ -24,7 +30,9 @@ public class UIManager : MonoBehaviour
         this.uiCanvas = uiCanvas;
         buildingsUI = Instantiate(buildingsUIPrefab, uiCanvas.transform).GetComponent<BuildingsUI>();
         gameNotificationsUI = Instantiate(gameNotificationsUIPrefab, uiCanvas.transform).GetComponent<GameNotificationsUI>();
-        escapeUI = Instantiate(escapeUIPrefab, uiCanvas.transform).GetComponent<EscapeUI>();
+        resourceBoxUI = Instantiate(resourceBoxUIPrefab, uiCanvas.transform).GetComponent<ResourceBoxUI>();
+        readyButtonUI = Instantiate(readyButtonUIPrefab, uiCanvas.transform);
+        windowUI = Instantiate(windowUIPrefab, uiCanvas.transform).GetComponent<WindowUI>();
     }
 
     public void ClearAllElementsFromCanvas()
@@ -37,6 +45,16 @@ public class UIManager : MonoBehaviour
 
     public void DisplayUserTurnText(User user)
     {
-        gameNotificationsUI.CreateNotification(user.name);
+        gameNotificationsUI.CreateNotificationUserTurn(user.name);
+    }
+
+    public void DisplayUserDiceThrow(User user, int diceNum)
+    {
+        gameNotificationsUI.CreateNotificationDiceThrow(user.name, diceNum);
+    }
+
+    public void ChangeUIToGameState()
+    {
+        buildingsUI.ChangeUIToGameState();
     }
 }

@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,8 +20,8 @@ public class MapBuilder : MonoBehaviour
     private Dictionary<Vector2, Vertex> coordinatesToVertices;
     private Dictionary<Vector2, Edge> coordinatesToEdges;
     private List<int> hexesInRowCounts;
-    private List<SocketHexDTO> hexesDataFromServerDTO;
 
+    private JavaRandom mapRandom;
     private float xOffsetBetweenHex = 4.7f;
     private float yOffsetBetweenHex = 4f;
     private float xVertexOffsetFromHexCentre = 2.35f;
@@ -90,9 +91,9 @@ public class MapBuilder : MonoBehaviour
         coordinatesToEdges = new();
     }
 
-    public MapInfo CreateMap(List<int> hexesInRowCounts, List<SocketHexDTO> hexesDataFromServerDTO)
+    public MapInfo CreateMap(List<int> hexesInRowCounts, int seed)
     {
-        this.hexesDataFromServerDTO = hexesDataFromServerDTO;
+        mapRandom = new JavaRandom(seed);
         this.hexesInRowCounts = hexesInRowCounts;
 
         GenerateMap();
@@ -107,7 +108,8 @@ public class MapBuilder : MonoBehaviour
         CreateVertices();
         CreateEdges();
         LinkEdgesAndVerticesNeighbors();
-        SetHexesResourse();
+        GenerateAndSetHexTypes();
+        GenerateHexNumberTokens();
     }
 
     private MapInfo GenerateMapInfoWithExistingInfo()
@@ -313,31 +315,94 @@ public class MapBuilder : MonoBehaviour
         }
     }
 
-    private void SetHexesResourse()
+    private void GenerateAndSetHexTypes()
+    {
+        int numOfHexes = hexesInRowCounts.Sum();
+        numOfHexes--;
+        List<HexType> hexTypes = new();
+        CreateHexTypes(hexTypes, numOfHexes);
+        Shuffle(hexTypes);
+        AddDesertType(hexTypes, numOfHexes);
+        SetHexTypes(hexTypes);
+    }
+
+    private List<HexType> CreateHexTypes(List<HexType> hexTypes, int numOfHexes)
+    {
+        int koefHexNum = numOfHexes / 3;
+        int numOfPrimaryResources = koefHexNum * 2;
+        int numOfSecondaryResources = koefHexNum;
+        for (int i = 0; i < numOfPrimaryResources; i++)
+        {
+            hexTypes.Add((HexType)(i % 3));
+        }
+
+        for (int i = 0; i < numOfSecondaryResources; i++)
+        {
+            hexTypes.Add((HexType)(3 + (i % 2)));
+        }
+
+        return hexTypes;
+    }
+
+    private void Shuffle<T>(List<T> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int index = mapRandom.NextInt(list.Count);
+            (list[i], list[index]) = (list[index], list[i]);
+        }
+    }
+
+    private void AddDesertType(List<HexType> hexTypes, int numOfHexes)
+    {
+        hexTypes.Add(HexType.DESERT);
+        numOfHexes++;
+        (hexTypes[numOfHexes / 2], hexTypes[numOfHexes - 1]) = (hexTypes[numOfHexes - 1], hexTypes[numOfHexes / 2]);
+    }
+
+    private void SetHexTypes(List<HexType> hexTypes)
     {
         List<Hex> hexes = coordinatesToHexes.Values.ToList();
-        int indexMapCentre = hexesDataFromServerDTO.Count / 2;
         for (int i = 0; i < hexes.Count; i++)
         {
-            SetHexResourse(hexes[i], hexesDataFromServerDTO[i]);
-            if (i != indexMapCentre)
+            hexes[i].type = hexTypes[i];
+            hexes[i].gameObject.GetComponent<SpriteRenderer>().sprite = hexes[i].sprites[hexes[i].type];
+        }
+    }
+
+    private void GenerateHexNumberTokens()
+    {
+        List<Hex> hexes = coordinatesToHexes.Values.ToList();
+        List<int> numberTokens = new List<int>() { 2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12 };
+        Queue<int> numberTokensQueue = new Queue<int>();
+
+        CreateNumsToNumberTokensWithShuffle(numberTokens, numberTokensQueue, hexes);
+        CreateNumberTokensToHexes(numberTokensQueue, hexes);
+    }
+
+    private void CreateNumsToNumberTokensWithShuffle(List<int> numberTokens, Queue<int> numberTokensQueue, List<Hex> hexes)
+    {
+        while (numberTokensQueue.Count < hexes.Count)
+        {
+            Shuffle(numberTokens);
+            foreach (int num in numberTokens)
             {
-                SetHexNumberToken(hexes[i], hexesDataFromServerDTO[i]);
+                numberTokensQueue.Enqueue(num);
             }
         }
     }
 
-    private void SetHexResourse(Hex hex, SocketHexDTO hexDTO)
+    private void CreateNumberTokensToHexes(Queue<int> numberTokensQueue, List<Hex> hexes)
     {
-        hex.type = (HexType)Enum.Parse(typeof(HexType), hexDTO.hexType);
-        hex.gameObject.GetComponent<SpriteRenderer>().sprite = hex.sprites[hex.type];
-        hex.numberToken = hexDTO.numberToken;
-
-    }
-
-    private void SetHexNumberToken(Hex hex, SocketHexDTO hexDTO)
-    {
-        NumberToken numberToken = Instantiate(numberTokenPrefab, hex.transform).GetComponent<NumberToken>();
-        numberToken.numberText.text = hexDTO.numberToken.ToString();
+        for (int i = 0; i < hexes.Count; i++)
+        {
+            if (hexes[i] == hexes[hexes.Count / 2])
+            {
+                continue;
+            }
+            int num = numberTokensQueue.Dequeue();
+            hexes[i].numberToken = Instantiate(numberTokenPrefab, hexes[i].transform).GetComponent<NumberToken>();
+            hexes[i].numberToken.numberText.text = num.ToString();
+        }
     }
 }

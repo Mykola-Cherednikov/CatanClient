@@ -47,7 +47,7 @@ public class SocketBroadcastStartGameDTO : SocketDTOClass
 {
     public List<int> hexesInRowCounts;
 
-    public List<SocketHexDTO> hexes;
+    public int seed;
 
     public List<User> users;
 
@@ -90,4 +90,64 @@ public class SocketBroadcastBuildDTO : SocketDTOClass
     public int userId;
 
     public int fieldId;
+}
+
+[SerializeField]
+public class SocketBroadcastDiceThrowDTO : SocketDTOClass
+{
+    public int userId;
+
+    public int firstDiceNum;
+
+    public int secondDiceNum;
+}
+
+[SerializeField]
+public class SocketBroadcastResourcesDTO : SocketDTOClass
+{
+    public int userId;
+
+    public List<string> resources;
+}
+
+[SerializeField]
+public class SocketRequestTradeDTO : SocketDTOClass
+{
+    public int requestedCountOfOutgoingResource;
+
+    public string incomingResource;
+
+    public string outgoingResource;
+}
+
+[SerializeField]
+public class SocketBroadcastTradeDTO : SocketDTOClass
+{
+    public int userId;
+
+    public string userIncomingResources;
+
+    public string userOutgoingResources;
+
+    public int requestedCountOfOutgoingResource;
+}
+
+[SerializeField]
+public class SocketRequestRobberyDTO : SocketDTOClass
+{
+    public int robbedUserId;
+
+    public int hexId;
+}
+
+[SerializeField]
+public class SocketBroadcastUserRobberyDTO : SocketDTOClass
+{
+    public int stealerUserId;
+
+    public int robbedUserId;
+
+    public int hexId;
+
+    public string resource;
 }

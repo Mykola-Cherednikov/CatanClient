@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UserInLobbyRow : MonoBehaviour
+public class UserRow : MonoBehaviour
 {
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Image colorImage;
