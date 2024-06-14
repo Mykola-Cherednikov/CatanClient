@@ -114,4 +114,14 @@ public class MapUtils
 
         return true;
     }
+
+    public static List<User> GetUniqueUsersInHex(Hex hex)
+    {
+        List<Vertex> verticesToHex = hex.vertexDirectionToContainedVertiñes.Values.ToList();
+        List<Vertex> verticiesWithUser = verticesToHex.Where(v => v.user != null).ToList();
+        List<User> usersInHex = verticiesWithUser.Select(v => v.user).ToList();
+        List<User> uniqueUsersInHex = usersInHex.Distinct().ToList();
+
+        return uniqueUsersInHex;
+    }
 }

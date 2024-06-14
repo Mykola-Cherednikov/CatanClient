@@ -10,7 +10,7 @@ public class TabForm : MonoBehaviour
     [SerializeField] private TMP_Text woolText;
 
     [SerializeField] private GameObject content;
-    [SerializeField] private GameObject userRowPrefab;
+    [SerializeField] private GameObject userInTabFormPrefab;
 
     private void Awake()
     {
@@ -24,8 +24,8 @@ public class TabForm : MonoBehaviour
         var users = GameManager.Instance.userManager.users;
         foreach (var user in users)
         {
-            var userRow = Instantiate(userRowPrefab, content.transform).GetComponent<UserRow>();
-            userRow.SetUserInLobbyInfo(user.id, user.name, user.color);
+            var userRow = Instantiate(userInTabFormPrefab, content.transform).GetComponent<UserInTabForm>();
+            userRow.SetUserInTabFormInfo(user);
         }
     }
 }

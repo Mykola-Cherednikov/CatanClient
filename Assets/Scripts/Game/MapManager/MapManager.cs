@@ -35,6 +35,11 @@ public class MapManager : MonoBehaviour
         return edges.Where(e => e.user == user).ToList();
     }
 
+    public Hex GetHexById(int hexId)
+    {
+        return hexes.FirstOrDefault(h => h.id == hexId);
+    }
+
     #region Show/Hide Available Vertices
     private void ShowAllAvailableVertices()
     {
@@ -216,9 +221,39 @@ public class MapManager : MonoBehaviour
     }
     #endregion
 
-    private void SetColorToUserBuilding<T>(T placeForBuilding, User user) where T : PlaceForBuildings
+    private void SetColorToUserBuilding<T>(T placeForBuilding, User user) where T : Place
     {
         placeForBuilding.spriteRenderer.color = user.color;
+    }
+
+    public void ShowPlacesForRobber()
+    {
+        foreach(var hex in hexes)
+        {
+            NumberToken numberToken = hex.GetComponent<NumberToken>();
+            numberToken.ShowCollider();
+        }
+    }
+
+    public void HideAllPlacesForRobber()
+    {
+        foreach (var hex in hexes)
+        {
+            NumberToken numberToken = hex.GetComponent<NumberToken>();
+            numberToken.HideCollider();
+        }
+    }
+
+    
+
+    public async void PlanPlaceRobberAndPlanRobberyUser(int hexId, int userId)
+    {
+        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobber())
+        {
+            return;
+        }
+
+        await Multiplayer.Instance.SocketSendRobberyRequest(hexId, userId);
     }
 }
 

@@ -403,6 +403,7 @@ public class MapBuilder : MonoBehaviour
             int num = numberTokensQueue.Dequeue();
             hexes[i].numberToken = Instantiate(numberTokenPrefab, hexes[i].transform).GetComponent<NumberToken>();
             hexes[i].numberToken.numberText.text = num.ToString();
+            hexes[i].numberToken.id = hexes[i].id;
         }
     }
 }

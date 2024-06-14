@@ -1,14 +1,16 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
     public GameObject uiCanvas;
 
-    [SerializeField] private GameObject windowUIPrefab;
-    [SerializeField] private GameObject buildingsUIPrefab;
-    [SerializeField] private GameObject gameNotificationsUIPrefab;
-    [SerializeField] private GameObject resourceBoxUIPrefab;
-    [SerializeField] private GameObject readyButtonUIPrefab;
+    private GameObject windowUIPrefab;
+    private GameObject buildingsUIPrefab;
+    private GameObject gameNotificationsUIPrefab;
+    private GameObject resourceBoxUIPrefab;
+    private GameObject readyButtonUIPrefab;
 
     private BuildingsUI buildingsUI;
     private GameNotificationsUI gameNotificationsUI;
@@ -56,5 +58,10 @@ public class UIManager : MonoBehaviour
     public void ChangeUIToGameState()
     {
         buildingsUI.ChangeUIToGameState();
+    }
+
+    public void ShowRobberyFormWithUniqueUsers(int hexId, List<User> uniqueUsers)
+    {
+        windowUI.OpenRobberyFormWithUniqueUsers(hexId, uniqueUsers);
     }
 }

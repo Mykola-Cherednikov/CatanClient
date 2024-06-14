@@ -8,7 +8,7 @@ public enum VertexBuildingType
     CITY
 }
 
-public class Vertex : PlaceForBuildings
+public class Vertex : Place
 {
     public List<Hex> neighborHexes;
 

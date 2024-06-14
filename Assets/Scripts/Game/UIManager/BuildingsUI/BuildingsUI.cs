@@ -16,10 +16,10 @@ public class BuildingsUI : MonoBehaviour
     [SerializeField] private Transform roadTransformPosition;
     [SerializeField] private Transform settlementTransformPosition;
     [SerializeField] private Transform cityTransformPosition;
-    [SerializeField] private GameObject roadGO;
-    [SerializeField] private GameObject settlementGO;
-    [SerializeField] private GameObject cityGO;
-    [SerializeField] private GameObject robberGO;
+    private GameObject roadGO;
+    private GameObject settlementGO;
+    private GameObject cityGO;
+    private GameObject robberGO;
     [SerializeField] private TMP_Text hideAndShowButtonText;
     private RectTransform rect;
     private bool isHiden;
@@ -34,7 +34,7 @@ public class BuildingsUI : MonoBehaviour
         UnityAction onBeginDragShowAllPlaces, UnityAction onDropFindAndBuild, UnityAction onDropHideAll, Func<bool> isAvailableFunc)
     {
         GameObject dragAndDropGO = Instantiate(prefab, transformPosition);
-        DragAndDropBuilding dragAndDropBuilding = dragAndDropGO.GetComponent<DragAndDropBuilding>();
+        DragAndDropObject dragAndDropBuilding = dragAndDropGO.GetComponent<DragAndDropObject>();
         dragAndDropBuilding.buildingsUI = this;
         dragAndDropBuilding.onBeginDrag.AddListener(onBeginDragCreateNew);
         dragAndDropBuilding.onBeginDrag.AddListener(onBeginDragShowAllPlaces);
@@ -86,18 +86,18 @@ public class BuildingsUI : MonoBehaviour
 
     public void CreateNewRobberGameObject()
     {
-        /*robberGO = CreateNewBuildingGameObject(
+        robberGO = CreateNewBuildingGameObject(
             robberPrefab,
             settlementTransformPosition,
             CreateNewRobberGameObject,
             GameManager.Instance.mapManager.ShowPlacesForRobber,
-            FindVertexAndBuildCity,
-            GameManager.Instance.mapManager.HideAllAvailablePlacesForRobber,
+            FindNumberTokenAndPlaceRobber,
+            GameManager.Instance.mapManager.HideAllPlacesForRobber,
             GameManager.Instance.userManager.IsCurrentUserCanPlaceRobber
-        );*/
+        );
     }
 
-    public void FindObjectAndBuild<T>(Action<int> planToBuild) where T : PlaceForBuildings
+    public void FindObjectAndBuild<T>(UnityAction<int> planToBuild) where T : Place
     {
         T objectCollider = GetColliderFromMousePosition<T>();
         if (objectCollider != null)
@@ -122,7 +122,37 @@ public class BuildingsUI : MonoBehaviour
         FindObjectAndBuild<Vertex>(id => GameManager.Instance.mapManager.PlanToBuildCity(id));
     }
 
-    private T GetColliderFromMousePosition<T>() where T : PlaceForBuildings
+    public void FindNumberTokenAndPlaceRobber()
+    {
+        FindObjectAndBuild<NumberToken>(id => SelectPlaceRobberAndSelectRobberyUser(id));
+    }
+
+    public void SelectPlaceRobberAndSelectRobberyUser(int hexId)
+    {
+        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobber())
+        {
+            return;
+        }
+
+        Hex hex = GameManager.Instance.mapManager.GetHexById(hexId);
+        List<User> uniqueUsers = MapUtils.GetUniqueUsersInHex(hex);
+        uniqueUsers.Remove(GameManager.Instance.userManager.currentUser);
+
+        switch (uniqueUsers.Count)
+        {
+            case > 1:
+                GameManager.Instance.uiManager.ShowRobberyFormWithUniqueUsers(hexId, uniqueUsers);
+                break;
+            case 1:
+                GameManager.Instance.mapManager.PlanPlaceRobberAndPlanRobberyUser(hexId, uniqueUsers[0].id);
+                break;
+            default:
+                GameManager.Instance.mapManager.PlanPlaceRobberAndPlanRobberyUser(hexId, -1);
+                break;
+        }
+    }
+
+    private T GetColliderFromMousePosition<T>() where T : Place
     {
         Vector2 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         List<RaycastHit2D> hits = Physics2D.BoxCastAll(position, new Vector2(0.5f, 0.5f), 90f, Vector2.zero).ToList();
@@ -157,7 +187,7 @@ public class BuildingsUI : MonoBehaviour
                 ChangeUIToMainGameState();
                 break;
             case GameState.ROBBERY:
-                ChangeCurrentUserUIToRobberyOrRemainInMainGameState();
+                ChangeUIToRobberyForCurrentUserForOthersRemainMainUI();
                 break;
         }
     }
@@ -179,7 +209,7 @@ public class BuildingsUI : MonoBehaviour
         CreateNewSettlementGameObject();
     }
 
-    private void ChangeCurrentUserUIToRobberyOrRemainInMainGameState()
+    private void ChangeUIToRobberyForCurrentUserForOthersRemainMainUI()
     {
         if (GameManager.Instance.userManager.IsCurrentUserTurn())
         {
@@ -204,6 +234,10 @@ public class BuildingsUI : MonoBehaviour
         if (cityGO != null)
         {
             Destroy(cityGO);
+        }
+        if(robberGO != null)
+        {
+            Destroy(robberGO);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PlaceForBuildings : MonoBehaviour
+public class Place : MonoBehaviour
 {
     public int id;
 

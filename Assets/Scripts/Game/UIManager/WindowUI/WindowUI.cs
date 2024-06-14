@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +15,7 @@ public class WindowUI : MonoBehaviour
         escapeFormPrefab = Resources.Load<GameObject>("Prefabs/Form/EscapeForm");
         tradeFormPrefab = Resources.Load<GameObject>("Prefabs/Form/TradeForm");
         tabFormPrefab = Resources.Load<GameObject>("Prefabs/Form/TabForm");
+        tabFormPrefab = Resources.Load<GameObject>("Prefabs/Form/RobberyForm");
         tradeButtonPrefab = Resources.Load<GameObject>("Prefabs/Game/TradeButton");
         Instantiate(tradeButtonPrefab, transform).GetComponent<Button>().onClick.AddListener(OpenTradeForm);
     }
@@ -55,5 +57,16 @@ public class WindowUI : MonoBehaviour
         {
             Destroy(formGO);
         }
+    }
+
+    public void OpenRobberyFormWithUniqueUsers(int hexId, List<User> uniqueUsers)
+    {
+        if (formGO != null)
+        {
+            Destroy(formGO);
+        }
+
+        formGO = Instantiate(tradeFormPrefab, transform);
+        formGO.GetComponent<RobberyForm>().SetInfo(hexId, uniqueUsers);
     }
 }

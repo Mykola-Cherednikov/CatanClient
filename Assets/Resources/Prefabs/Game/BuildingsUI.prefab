@@ -233,9 +233,14 @@ MonoBehaviour:
   roadPrefab: {fileID: 3472977417238810167, guid: 79a415390ba2ae041a8e472a9a44e4b5, type: 3}
   settlementPrefab: {fileID: 3632634428632313137, guid: a41084478a2ffef4cb687347d727d9fb, type: 3}
   cityPrefab: {fileID: 2964849998140045286, guid: 668d8bbc1c19b634688aa4d102c3c117, type: 3}
+  robberPrefab: {fileID: 3659346522263068397, guid: fcc48d0f97e4e144589d45d69e49ccfc, type: 3}
   roadTransformPosition: {fileID: 7198963414287473169}
   settlementTransformPosition: {fileID: 3538918339316708506}
   cityTransformPosition: {fileID: 8289790659615938800}
+  roadGO: {fileID: 0}
+  settlementGO: {fileID: 0}
+  cityGO: {fileID: 0}
+  robberGO: {fileID: 0}
   hideAndShowButtonText: {fileID: 5930912259682378315}
 --- !u!1 &3155065039813353276
 GameObject:

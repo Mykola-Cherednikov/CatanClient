@@ -7,7 +7,7 @@ public enum EdgeBuildingType
     ROAD
 }
 
-public class Edge : PlaceForBuildings
+public class Edge : Place
 {
     public List<Vertex> neighborVertices;
 
