@@ -15,7 +15,7 @@ public class ReadyButtonUI : MonoBehaviour
     private void Update()
     {
         button.interactable = GameManager.Instance.userManager.IsCurrentUserTurn() && 
-            GameManager.Instance.gameState == GameState.GAME;
+            GameManager.Instance.gameState == GameState.USER_TURN;
     }
 
     public void Ready()

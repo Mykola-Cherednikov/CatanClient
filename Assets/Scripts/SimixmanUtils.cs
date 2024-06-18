@@ -100,5 +100,19 @@ public static class SimixmanUtils
 
         return resourcesToAmount;
     }
+    
+    public static List<Resource> ResourceDictionaryToResourceList(Dictionary<Resource, int> resourcesToAmount)
+    {
+        List<Resource> resources = new();
+        foreach(var resourceToAmount in resourcesToAmount)
+        {
+            for(int i = 0; i < resourceToAmount.Value; i++)
+            {
+                resources.Add(resourceToAmount.Key);
+            }
+        }
+
+        return resources;
+    }
 }
 

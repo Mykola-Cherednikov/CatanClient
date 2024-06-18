@@ -137,7 +137,7 @@ public class MapManager : MonoBehaviour
     #endregion
 
     #region Plan To Build
-    public async void PlanToBuildRoad(int edgeId)
+    public async void PlanToBuildRoadAndEndTurnIfPlaceOnPreparation(int edgeId)
     {
         if (!GameManager.Instance.userManager.IsCurrentUserCanBuildRoadNow())
         {
@@ -149,10 +149,15 @@ public class MapManager : MonoBehaviour
             return;
         }
 
+        if (GameManager.Instance.gameState == GameState.PREPARATION_BUILD_ROADS)
+        {
+            GameManager.Instance.userManager.UserTurnReady();
+        }
+
         await Multiplayer.Instance.SocketSendBuildRoadRequest(edgeId);
     }
 
-    public async void PlanToBuildSettlement(int vertexId)
+    public async void PlanToBuildSettlementAndEndTurnIfPlaceOnPreparation(int vertexId)
     {
         if (!GameManager.Instance.userManager.IsCurrentUserCanBuildSettlementNow())
         {
@@ -162,6 +167,11 @@ public class MapManager : MonoBehaviour
         if (!MapUtils.IsVertexFree(vertices.FirstOrDefault(v => v.id == vertexId)))
         {
             return;
+        }
+
+        if (GameManager.Instance.gameState == GameState.PREPARATION_BUILD_SETTLEMENTS)
+        {
+            GameManager.Instance.userManager.UserTurnReady();
         }
 
         await Multiplayer.Instance.SocketSendBuildSettlementRequest(vertexId);
@@ -189,20 +199,21 @@ public class MapManager : MonoBehaviour
     #region Build
     public void BuildRoad(int edgeId, User user)
     {
-        if (GameManager.Instance.gameState == GameState.GAME)
+        if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            GameManager.Instance.userManager.RemoveResourcesFromUserAsBuying(user, Goods.Road);
+            GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.Road);
         }
         Edge edge = edges.FirstOrDefault(v => v.id == edgeId);
         edge.SetEdgeBuilding(EdgeBuildingType.ROAD, user);
         SetColorToUserBuilding(edge, user);
+        Debug.Log(MapUtils.GetLongestRoadLengthForUser(user, edges));
     }
 
     public void BuildSettlement(int vertexId, User user)
     {
-        if (GameManager.Instance.gameState == GameState.GAME)
+        if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            GameManager.Instance.userManager.RemoveResourcesFromUserAsBuying(user, Goods.Settlement);
+            GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.Settlement);
         }
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
         vertex.SetVertexBuilding(VertexBuildingType.SETTLEMENT, user);
@@ -211,9 +222,9 @@ public class MapManager : MonoBehaviour
 
     public void BuildCity(int vertexId, User user)
     {
-        if (GameManager.Instance.gameState == GameState.GAME)
+        if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            GameManager.Instance.userManager.RemoveResourcesFromUserAsBuying(user, Goods.City);
+            GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.City);
         }
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
         vertex.SetVertexBuilding(VertexBuildingType.CITY, user);
@@ -228,9 +239,13 @@ public class MapManager : MonoBehaviour
 
     public void ShowPlacesForRobber()
     {
-        foreach(var hex in hexes)
+        foreach (var hex in hexes)
         {
-            NumberToken numberToken = hex.GetComponent<NumberToken>();
+            if(hex.numberToken == null)
+            {
+                continue;
+            }
+            NumberToken numberToken = hex.numberToken;
             numberToken.ShowCollider();
         }
     }
@@ -239,21 +254,53 @@ public class MapManager : MonoBehaviour
     {
         foreach (var hex in hexes)
         {
-            NumberToken numberToken = hex.GetComponent<NumberToken>();
+            if (hex.numberToken == null)
+            {
+                continue;
+            }
+            NumberToken numberToken = hex.numberToken;
             numberToken.HideCollider();
         }
     }
 
-    
-
-    public async void PlanPlaceRobberAndPlanRobberyUser(int hexId, int userId)
+    public async void PlanPlaceRobberAndPlanToRobUser(int hexId, int userId)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobber())
+        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobberNow())
         {
             return;
         }
 
-        await Multiplayer.Instance.SocketSendRobberyRequest(hexId, userId);
+        await Multiplayer.Instance.SocketSendUserRobberyRequest(hexId, userId);
+    }
+
+    public void PlaceRobber(int hexId)
+    {
+        foreach(var hex in hexes)
+        {
+            hex.numberToken.SetBanditOff();
+        }
+
+        hexes.FirstOrDefault(h => h.id == hexId).numberToken.SetBanditOn();
+    }
+
+    public bool IsRobberNearbyCurrentUser() 
+    {
+        HashSet<Hex> hexes = new HashSet<Hex>();
+        List<Vertex> vertices = GetUserVerticies(GameManager.Instance.userManager.currentUser);
+        foreach (var vertex in vertices)
+        {
+            hexes.AddRange(vertex.neighborHexes);
+        }
+        
+        foreach (var hex in hexes)
+        {
+            if (hex.numberToken.isBandit)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

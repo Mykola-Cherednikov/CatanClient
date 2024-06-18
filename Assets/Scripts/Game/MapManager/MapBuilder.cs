@@ -396,14 +396,16 @@ public class MapBuilder : MonoBehaviour
     {
         for (int i = 0; i < hexes.Count; i++)
         {
+            hexes[i].numberToken = Instantiate(numberTokenPrefab, hexes[i].transform).GetComponent<NumberToken>();
+            hexes[i].numberToken.id = hexes[i].id;
             if (hexes[i] == hexes[hexes.Count / 2])
             {
+                hexes[i].numberToken.spriteRenderer.enabled = false;
+                hexes[i].numberToken.numberText.text = "";
                 continue;
             }
             int num = numberTokensQueue.Dequeue();
-            hexes[i].numberToken = Instantiate(numberTokenPrefab, hexes[i].transform).GetComponent<NumberToken>();
             hexes[i].numberToken.numberText.text = num.ToString();
-            hexes[i].numberToken.id = hexes[i].id;
         }
     }
 }

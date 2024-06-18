@@ -133,9 +133,9 @@ public class SocketBroadcastTradeDTO : SocketDTOClass
 }
 
 [SerializeField]
-public class SocketRequestRobberyDTO : SocketDTOClass
+public class SocketRequestUserRobberyDTO : SocketDTOClass
 {
-    public int robbedUserId;
+    public int victimUserId;
 
     public int hexId;
 }
@@ -143,11 +143,67 @@ public class SocketRequestRobberyDTO : SocketDTOClass
 [SerializeField]
 public class SocketBroadcastUserRobberyDTO : SocketDTOClass
 {
-    public int stealerUserId;
+    public int robberUserId;
 
-    public int robbedUserId;
+    public int victimUserId;
 
     public int hexId;
 
     public string resource;
+}
+
+[SerializeField]
+public class SocketBroadcastBuyCardDTO : SocketDTOClass
+{
+    public int userId;
+
+    public string card;
+}
+
+[SerializeField]
+public class SocketRequestUseKnightCardDTO : SocketDTOClass
+{
+    public int hexId;
+}
+
+[SerializeField]
+public class SocketRequestUseMonopolyCardDTO : SocketDTOClass
+{
+    public string resource;
+}
+
+[SerializeField]
+public class SocketRequestUseYearOfPlentyCardDTO : SocketDTOClass
+{
+    public List<string> resources;
+}
+
+[SerializeField]
+public class SocketBroadcastUseYearOfPlentyCardDTO : SocketDTOClass
+{
+    public int userId;
+
+    public List<string> resources;
+}
+
+[SerializeField]
+public class SocketBroadcastUseRoadBuildingCardDTO : SocketDTOClass
+{
+    public int userId;
+}
+
+[SerializeField]
+public class SocketBroadcastUseMonopolyCardDTO : SocketDTOClass
+{
+    public int userId;
+
+    public string resource;
+}
+
+[SerializeField]
+public class SocketBroadcastUseKnightCardDTO : SocketDTOClass
+{
+    public int userId;
+
+    public int hexId;
 }

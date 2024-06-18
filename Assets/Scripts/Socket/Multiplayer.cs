@@ -20,6 +20,7 @@ public enum EventType
     BROADCAST_NEW_HOST,
     BROADCAST_START_GAME,
 
+    BROADCAST_PREPARE_USER_TURN,
     BROADCAST_USER_TURN,
     BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS,
     BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS,
@@ -34,14 +35,20 @@ public enum EventType
     REQUEST_USER_TURN_READY,
     REQUEST_TRADE_RESOURCE,
     BROADCAST_USER_TRADE,
-    REQUEST_BUY_DEV_CARD,
-    RESPONSE_BUY_DEV_CARD,
-    BROADCAST_BUY_DEV_CARD,
+    REQUEST_BUY_CARD,
+    BROADCAST_BUY_CARD,
     BROADCAST_ROBBERY_START,
     BROADCAST_ROBBER_ROBBERY,
     REQUEST_USER_ROBBERY,
     BROADCAST_USER_ROBBERY,
-    BROADCAST_ROBBERY_END
+    REQUEST_USE_KNIGHT_CARD,
+    REQUEST_USE_MONOPOLY_CARD,
+    REQUEST_USE_YEAR_OF_PLENTY_CARD,
+    REQUEST_USE_ROAD_BUILDING_CARD,
+    BROADCAST_USE_KNIGHT_CARD,
+    BROADCAST_USE_MONOPOLY_CARD,
+    BROADCAST_USE_YEAR_OF_PLENTY_CARD,
+    BROADCAST_USE_ROAD_BUILDING_CARD
 }
 
 public class Multiplayer : MonoBehaviour
@@ -67,6 +74,8 @@ public class Multiplayer : MonoBehaviour
 
     public UnityEvent<object> BROADCAST_START_GAME_EVENT;
 
+    public UnityEvent<object> BROADCAST_PREPARE_USER_TURN_EVENT;
+
     public UnityEvent<object> BROADCAST_USER_TURN_EVENT;
 
     public UnityEvent<object> BROADCAST_BUILD_ROAD_EVENT;
@@ -81,9 +90,7 @@ public class Multiplayer : MonoBehaviour
 
     public UnityEvent<object> BROADCAST_USER_TRADE_EVENT;
 
-    public UnityEvent<object> RESPONSE_BUY_DEV_CARD_EVENT;
-
-    public UnityEvent<object> BROADCAST_BUY_DEV_CARD_EVENT;
+    public UnityEvent<object> BROADCAST_BUY_CARD_EVENT;
 
     public UnityEvent<object> BROADCAST_ROBBERY_START_EVENT;
 
@@ -91,7 +98,13 @@ public class Multiplayer : MonoBehaviour
 
     public UnityEvent<object> BROADCAST_USER_ROBBERY_EVENT;
 
-    public UnityEvent<object> BROADCAST_ROBBERY_END_EVENT;
+    public UnityEvent<object> BROADCAST_USE_KNIGHT_CARD_EVENT;
+
+    public UnityEvent<object> BROADCAST_USE_ROAD_BUILDING_CARD_EVENT;
+
+    public UnityEvent<object> BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT;
+
+    public UnityEvent<object> BROADCAST_USE_MONOPOLY_CARD_EVENT;
     #endregion
 
     private void Awake()
@@ -103,7 +116,8 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USER_DISCONNECTED, typeof(SocketBroadcastUserDisconnectedDTO) },
             { EventType.BROADCAST_NEW_HOST, typeof(SocketBroadcastUserNewHostDTO) },
             { EventType.BROADCAST_START_GAME, typeof(SocketBroadcastStartGameDTO) },
-            { EventType.BROADCAST_USER_TURN, typeof(SocketBroadcastUserTurnDTO) },
+            { EventType.BROADCAST_PREPARE_USER_TURN, typeof(SocketBroadcastUserTurnDTO) },
+            { EventType.BROADCAST_USER_TURN, typeof(SocketDTOClass) },
             { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS, typeof(SocketBroadcastUserTurnDTO) },
             { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS, typeof(SocketBroadcastUserTurnDTO) },
             { EventType.BROADCAST_BUILD_SETTLEMENT,  typeof(SocketBroadcastBuildDTO) },
@@ -112,12 +126,11 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USER_GET_RESOURCE, typeof(SocketBroadcastResourcesDTO) },
             { EventType.BROADCAST_DICE_THROW, typeof(SocketBroadcastDiceThrowDTO) },
             { EventType.BROADCAST_USER_TRADE, typeof(SocketBroadcastTradeDTO) },
-            { EventType.RESPONSE_BUY_DEV_CARD, typeof(SocketDTOClass) },
-            { EventType.BROADCAST_BUY_DEV_CARD, typeof (SocketDTOClass) },
+            { EventType.BROADCAST_BUY_CARD, typeof (SocketBroadcastBuyCardDTO) },
             { EventType.BROADCAST_ROBBERY_START, typeof(SocketDTOClass) },
             { EventType.BROADCAST_ROBBER_ROBBERY, typeof(SocketBroadcastResourcesDTO) },
             { EventType.BROADCAST_USER_ROBBERY, typeof(SocketBroadcastUserRobberyDTO) },
-            { EventType.BROADCAST_ROBBERY_END, typeof(SocketDTOClass) }
+            { EventType.BROADCAST_USE_KNIGHT_CARD, typeof(SocketBroadcastUseKnightCardDTO) }
         };
         eventTypesToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
         {
@@ -126,21 +139,21 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USER_DISCONNECTED, BROADCAST_USER_DISCONNECT_FROM_LOBBY_EVENT },
             { EventType.BROADCAST_NEW_HOST, BROADCAST_NEW_HOST_IN_LOBBY_EVENT },
             { EventType.BROADCAST_START_GAME, BROADCAST_START_GAME_EVENT },
+            { EventType.BROADCAST_PREPARE_USER_TURN, BROADCAST_PREPARE_USER_TURN_EVENT },
             { EventType.BROADCAST_USER_TURN, BROADCAST_USER_TURN_EVENT },
-            { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS, BROADCAST_USER_TURN_EVENT },
-            { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS, BROADCAST_USER_TURN_EVENT },
+            { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS, BROADCAST_PREPARE_USER_TURN_EVENT },
+            { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS, BROADCAST_PREPARE_USER_TURN_EVENT },
             { EventType.BROADCAST_BUILD_SETTLEMENT,  BROADCAST_BUILD_SETTLEMENT_EVENT },
             { EventType.BROADCAST_BUILD_ROAD,  BROADCAST_BUILD_ROAD_EVENT },
             { EventType.BROADCAST_BUILD_CITY,  BROADCAST_BUILD_CITY_EVENT },
             { EventType.BROADCAST_USER_GET_RESOURCE, BROADCAST_GET_RESOURCE_EVENT},
             { EventType.BROADCAST_DICE_THROW, BROADCAST_DICE_THROW_EVENT },
             { EventType.BROADCAST_USER_TRADE, BROADCAST_USER_TRADE_EVENT },
-            { EventType.RESPONSE_BUY_DEV_CARD, RESPONSE_BUY_DEV_CARD_EVENT },
-            { EventType.BROADCAST_BUY_DEV_CARD, BROADCAST_BUY_DEV_CARD_EVENT },
+            { EventType.BROADCAST_BUY_CARD, BROADCAST_BUY_CARD_EVENT },
             { EventType.BROADCAST_ROBBERY_START, BROADCAST_ROBBERY_START_EVENT},
             { EventType.BROADCAST_ROBBER_ROBBERY, BROADCAST_ROBBER_ROBBERY_EVENT },
             { EventType.BROADCAST_USER_ROBBERY, BROADCAST_USER_ROBBERY_EVENT },
-            { EventType.BROADCAST_ROBBERY_END, BROADCAST_ROBBERY_END_EVENT }
+            { EventType.BROADCAST_USE_KNIGHT_CARD, BROADCAST_USE_KNIGHT_CARD_EVENT }
         };
 
         RESPONSE_CONNECT_TO_LOBBY_EVENT.AddListener(ConnectFromServer);
@@ -208,7 +221,7 @@ public class Multiplayer : MonoBehaviour
             {
                 //Debug.LogError(message.ToString());
                 message.Append(Encoding.UTF8.GetString(receiveBuffer[..receivedNumOfBytes]));
-                if (message.ToString()[(message.Length-2)..message.Length] == "\r\n")
+                if (message.ToString()[(message.Length - 2)..message.Length] == "\r\n")
                 {
                     HandleMessage(message.ToString());
                     message = new StringBuilder();
@@ -253,9 +266,10 @@ public class Multiplayer : MonoBehaviour
             object objectFromJson = JsonUtility.FromJson(jsonQuery, eventTypesToDTOTypes[eventType]);
             eventTypesToUnityEvent[eventType]?.Invoke(objectFromJson);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            Debug.LogError("Error in parse eventtype: " + jsonQuery);
+            Debug.LogError("Error: " + e);
+            Debug.LogError("Error in parse eventType: " + jsonQuery);
         }
     }
     #endregion
@@ -344,19 +358,55 @@ public class Multiplayer : MonoBehaviour
         await clientSocket.SendToServer(dto);
     }
 
-    public async Task SocketSendRobberyRequest(int hexId, int robbedUserId)
+    public async Task SocketSendUserRobberyRequest(int hexId, int robbedUserId)
     {
-        SocketRequestRobberyDTO dto = new SocketRequestRobberyDTO();
+        SocketRequestUserRobberyDTO dto = new SocketRequestUserRobberyDTO();
         dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USER_ROBBERY);
         dto.hexId = hexId;
-        dto.robbedUserId = robbedUserId;
+        dto.victimUserId = robbedUserId;
         await clientSocket.SendToServer(dto);
     }
 
-    public async Task SocketSendBuyDevCardRequest()
+    public async Task SocketSendBuyCardRequest()
     {
         SocketDTOClass dto = new SocketDTOClass();
-        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_BUY_DEV_CARD);
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_BUY_CARD);
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendUseRoadBuildingCardRequest()
+    {
+        SocketDTOClass dto = new SocketDTOClass();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USE_ROAD_BUILDING_CARD);
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendUseMonopolyCardRequest(Resource resource)
+    {
+        SocketRequestUseMonopolyCardDTO dto = new SocketRequestUseMonopolyCardDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USE_MONOPOLY_CARD);
+        dto.resource = Enum.GetName(typeof(Resource), resource);
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendUseYearOfPlentyCardRequest(List<Resource> resources)
+    {
+        SocketRequestUseYearOfPlentyCardDTO dto = new SocketRequestUseYearOfPlentyCardDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USE_YEAR_OF_PLENTY_CARD);
+        List<string> resourcesString = new List<string>();
+        foreach (var resource in resources)
+        {
+            resourcesString.Add(Enum.GetName(typeof(Resource), resource));
+        }
+        dto.resources = resourcesString;
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendUseKnightCardRequest(int hexId)
+    {
+        SocketRequestUseKnightCardDTO dto = new SocketRequestUseKnightCardDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USE_KNIGHT_CARD);
+        dto.hexId = hexId;
         await clientSocket.SendToServer(dto);
     }
     #endregion

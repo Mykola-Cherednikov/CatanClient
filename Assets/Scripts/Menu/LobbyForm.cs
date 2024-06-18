@@ -134,4 +134,13 @@ public class LobbyForm : Form
             }
         }
     }
+
+    private void OnDestroy()
+    {
+        Multiplayer.Instance.CONNECTION_ERROR_EVENT.RemoveListener(OnConnectionErrorOrSocketClose);
+        Multiplayer.Instance.BROADCAST_USER_CONNECTION_TO_LOBBY_EVENT.RemoveListener(OnUserConnectToLobby);
+        Multiplayer.Instance.BROADCAST_USER_DISCONNECT_FROM_LOBBY_EVENT.RemoveListener(OnUserDisconnectFromLobby);
+        Multiplayer.Instance.BROADCAST_START_GAME_EVENT.RemoveListener(OnStartGame);
+        Multiplayer.Instance.BROADCAST_NEW_HOST_IN_LOBBY_EVENT.RemoveListener(OnNewHost);
+    }
 }

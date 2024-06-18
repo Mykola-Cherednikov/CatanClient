@@ -1,6 +1,17 @@
-using NUnit.Framework;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+
+public enum UIState
+{
+    WAITING_FOR_PLAYERS,
+    PREPARATION_BUILD_SETTLEMENTS,
+    PREPARATION_BUILD_ROADS,
+    USER_ROBBERY,
+    USER_TURN,
+    PREPARING_USER_TURN,
+    USER_MOVING_ROBBER
+}
+
 
 public class UIManager : MonoBehaviour
 {
@@ -12,11 +23,16 @@ public class UIManager : MonoBehaviour
     private GameObject resourceBoxUIPrefab;
     private GameObject readyButtonUIPrefab;
 
-    private BuildingsUI buildingsUI;
-    private GameNotificationsUI gameNotificationsUI;
-    private WindowUI windowUI;
-    private ResourceBoxUI resourceBoxUI;
-    private GameObject readyButtonUI;
+    public BuildingsUI buildingsUI;
+    public GameNotificationsUI gameNotificationsUI;
+    public WindowUI windowUI;
+    public ResourceBoxUI resourceBoxUI;
+    public GameObject readyButtonUI;
+
+    public UnityAction CHANGE_UI_STATE;
+    [SerializeField]public UIState uiState;
+
+    private UnityAction ESCAPE_PRESSED_EVENT;
 
     private void Awake()
     {
@@ -27,6 +43,14 @@ public class UIManager : MonoBehaviour
         readyButtonUIPrefab = Resources.Load<GameObject>("Prefabs/Game/ReadyButtonUI");
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ESCAPE_PRESSED_EVENT?.Invoke();
+        }
+    }
+
     public void InitializeUI(GameObject uiCanvas)
     {
         this.uiCanvas = uiCanvas;
@@ -35,6 +59,8 @@ public class UIManager : MonoBehaviour
         resourceBoxUI = Instantiate(resourceBoxUIPrefab, uiCanvas.transform).GetComponent<ResourceBoxUI>();
         readyButtonUI = Instantiate(readyButtonUIPrefab, uiCanvas.transform);
         windowUI = Instantiate(windowUIPrefab, uiCanvas.transform).GetComponent<WindowUI>();
+        GameManager.Instance.CHANGED_GAME_STATE += ChangeUIStateToGameState;
+        ESCAPE_PRESSED_EVENT += windowUI.OpenEscapeForm;
     }
 
     public void ClearAllElementsFromCanvas()
@@ -45,23 +71,57 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void DisplayUserTurnText(User user)
+    private void ChangeUIStateToGameState()
     {
-        gameNotificationsUI.CreateNotificationUserTurn(user.name);
+        switch (GameManager.Instance.gameState)
+        {
+            case GameState.WAITING_FOR_PLAYERS:
+                uiState = UIState.WAITING_FOR_PLAYERS;
+                break;
+            case GameState.PREPARATION_BUILD_SETTLEMENTS:
+                uiState = UIState.PREPARATION_BUILD_SETTLEMENTS;
+                break;
+            case GameState.PREPARATION_BUILD_ROADS:
+                uiState = UIState.PREPARATION_BUILD_ROADS;
+                break;
+            case GameState.PREPARING_USER_TURN:
+                uiState = UIState.PREPARING_USER_TURN;
+                break;
+            case GameState.ROBBERY:
+                if (!GameManager.Instance.userManager.IsCurrentUserTurn())
+                {
+                    return;
+                }
+
+                uiState = UIState.USER_ROBBERY;
+                break;
+            case GameState.USER_TURN:
+                uiState = UIState.USER_TURN;
+                break;
+        }
+        CHANGE_UI_STATE?.Invoke();
     }
 
-    public void DisplayUserDiceThrow(User user, int diceNum)
+    public void StartUserMoveRobberState()
     {
-        gameNotificationsUI.CreateNotificationDiceThrow(user.name, diceNum);
+        uiState = UIState.USER_MOVING_ROBBER;
+        CHANGE_UI_STATE?.Invoke();
+        ESCAPE_PRESSED_EVENT -= windowUI.OpenEscapeForm;
+        ESCAPE_PRESSED_EVENT += buildingsUI.CancelMoveRobber;
     }
 
-    public void ChangeUIToGameState()
+    public void StopUserMoveRobberState()
     {
-        buildingsUI.ChangeUIToGameState();
+        uiState = UIState.USER_TURN;
+        CHANGE_UI_STATE?.Invoke();
+        ESCAPE_PRESSED_EVENT += windowUI.OpenEscapeForm;
+        ESCAPE_PRESSED_EVENT -= buildingsUI.CancelMoveRobber;
     }
 
-    public void ShowRobberyFormWithUniqueUsers(int hexId, List<User> uniqueUsers)
+    private void OnDestroy()
     {
-        windowUI.OpenRobberyFormWithUniqueUsers(hexId, uniqueUsers);
+        GameManager.Instance.CHANGED_GAME_STATE -= ChangeUIStateToGameState;
+        ESCAPE_PRESSED_EVENT -= windowUI.OpenEscapeForm;
+        ESCAPE_PRESSED_EVENT -= buildingsUI.CancelMoveRobber;
     }
 }

@@ -1,15 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
-public enum Goods
-{
-    Road,
-    Settlement,
-    City,
-    DevelopmentCard
-}
+
 
 public class UserManager : MonoBehaviour
 {
@@ -17,36 +12,25 @@ public class UserManager : MonoBehaviour
     public User currentUser;
 
     [SerializeField] private bool isCurrentUserTurn;
-    public Dictionary<Resource, int> storage;
+
     public int numOfAvailableDevelopmentCard;
 
-    public UnityEvent CURRENT_USER_RESOURCES_CHANGED_EVENT;
+    private Dictionary<Card, Func<bool>> cardToSpecificCondition;
 
     private void Awake()
     {
         isCurrentUserTurn = true;
-        storage = new Dictionary<Resource, int>()
-        {
-            { Resource.WOOL, 20 },
-            { Resource.ORE, 20 },
-            { Resource.BRICK, 20 },
-            { Resource.LUMBER, 20 },
-            { Resource.GRAIN, 20 }
-        };
+
         numOfAvailableDevelopmentCard = 5;
+        Debug.Log("User Manager");
+
+        cardToSpecificCondition = new Dictionary<Card, Func<bool>>() { {Card.KNIGHT, GameManager.Instance.mapManager.IsRobberNearbyCurrentUser } };
     }
 
     public void InitializeUsers(SocketBroadcastStartGameDTO dto)
     {
         users = dto.users;
         currentUser = users.FirstOrDefault(u => u.id == dto.currentUser.id);
-
-        /*List<Color> colors = new List<Color>() { Color.red, Color.green, Color.blue, Color.yellow, Color.cyan, Color.white };
-        Queue<Color> colorQueue = new Queue<Color>(colors);
-        foreach (User user in users)
-        {
-            user.color = colorQueue.Dequeue();
-        }*/
 
         JavaRandom random = new JavaRandom(dto.seed);
         foreach (User user in users)
@@ -86,11 +70,6 @@ public class UserManager : MonoBehaviour
         return isCurrentUserTurn;
     }
 
-    private bool IsStorageHaveEnoughResources(KeyValuePair<Resource, int> resourceAmount)
-    {
-        return storage[resourceAmount.Key] >= resourceAmount.Value;
-    }
-
     #region Check If Current User Have Enough Resources
     private bool IsCurrentUserHaveEnoughResourcesForGoods(Goods goods)
     {
@@ -107,7 +86,7 @@ public class UserManager : MonoBehaviour
             case Goods.City:
                 cost = ResourceCost.GetCityCost();
                 break;
-            case Goods.DevelopmentCard:
+            case Goods.Card:
                 cost = ResourceCost.GetDevelopmentCardCost();
                 break;
         }
@@ -133,10 +112,16 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
-    public bool IsCurrentUserCanTrade(KeyValuePair<Resource, int> incomeResource, KeyValuePair<Resource, int> outgoingResource)
+    public bool IsCurrentUserCanTradeNow(KeyValuePair<Resource, int> incomeResource, KeyValuePair<Resource, int> outgoingResource)
     {
+        if (!isCurrentUserTurn)
+        {
+            return false;
+        }
+
         //Check if user have port with this resource type
-        if (!IsStorageHaveEnoughResources(outgoingResource))
+
+        if (!GameManager.Instance.resourceManager.IsStorageHaveEnoughResources(outgoingResource))
         {
             return false;
         }
@@ -194,7 +179,7 @@ public class UserManager : MonoBehaviour
 
             return true;
         }
-        else if (GameManager.Instance.gameState == GameState.GAME)
+        else if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
             if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Road))
             {
@@ -223,7 +208,7 @@ public class UserManager : MonoBehaviour
 
             return true;
         }
-        else if (GameManager.Instance.gameState == GameState.GAME)
+        else if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
             if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Settlement))
             {
@@ -238,7 +223,7 @@ public class UserManager : MonoBehaviour
 
     public bool IsCurrentUserCanBuildCityNow()
     {
-        if (GameManager.Instance.gameState == GameState.GAME)
+        if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
             if (!isCurrentUserTurn)
             {
@@ -257,96 +242,7 @@ public class UserManager : MonoBehaviour
     }
     #endregion
 
-    #region Resource Operations
-    public void AddResourcesToUserAsGathering(User user, Dictionary<Resource, int> resourcesToAmount)
-    {
-        foreach (var resourceToAmount in resourcesToAmount)
-        {
-            AddResourceToUserAndRemoveFromStorage(user, resourceToAmount);
-        }
-    }
-
-    public void AddResourcesToUserAsTrade(User user, KeyValuePair<Resource, int> resourceToAmount)
-    {
-        AddResourceToUserAndRemoveFromStorage(user, resourceToAmount);
-    }
-
-    private void AddResourceToUserAndRemoveFromStorage(User user, KeyValuePair<Resource, int> resourceToAmount)
-    {
-        user.userResources[resourceToAmount.Key] += resourceToAmount.Value;
-        storage[resourceToAmount.Key] -= resourceToAmount.Value;
-        CallCurrentUserResourceChangedEvent(user);
-    }
-
-    public void RemoveResourcesFromUserAsBuying(User user, Goods goods)
-    {
-        Dictionary<Resource, int> cost = new();
-
-        switch (goods)
-        {
-            case Goods.Road:
-                cost = ResourceCost.GetRoadCost();
-                break;
-            case Goods.Settlement:
-                cost = ResourceCost.GetSettlementCost();
-                break;
-            case Goods.City:
-                cost = ResourceCost.GetCityCost();
-                break;
-            case Goods.DevelopmentCard:
-                cost = ResourceCost.GetDevelopmentCardCost();
-                break;
-        }
-
-        foreach (var resourceToAmount in cost)
-        {
-            RemoveResourceFromUserAndAddToStorage(user, resourceToAmount);
-        }
-    }
-
-    public void RemoveResourcesFromUserAsTrade(User user, KeyValuePair<Resource, int> resourceToAmount)
-    {
-        //Check if user have port with this resource type
-        RemoveResourceFromUserAndAddToStorage(user, resourceToAmount);
-    }
-
-    public void RemoveResourcesFromUserAsRobberRobbery(User user, Dictionary<Resource, int> resourcesToAmount)
-    {
-        foreach (var resourceToAmount in resourcesToAmount)
-        {
-            RemoveResourceFromUserAndAddToStorage(user, resourceToAmount);
-        }
-    }
-
-    private void RemoveResourceFromUserAndAddToStorage(User user, KeyValuePair<Resource, int> resourceToAmount)
-    {
-        user.userResources[resourceToAmount.Key] -= resourceToAmount.Value;
-        storage[resourceToAmount.Key] += resourceToAmount.Value;
-        CallCurrentUserResourceChangedEvent(user);
-    }
-
-    public async void UserTradeResource(Resource incomeResource, Resource outgoingResource, int outgoingCount)
-    {
-        int incomeCount = outgoingCount * 4;
-
-        if (!IsCurrentUserTurn())
-        {
-            return;
-        }
-
-        KeyValuePair<Resource, int> incomeResourceAmount = new KeyValuePair<Resource, int>(incomeResource, incomeCount);
-        KeyValuePair<Resource, int> outgoingResourceAmount = new KeyValuePair<Resource, int>(outgoingResource, outgoingCount);
-
-        if (!IsCurrentUserCanTrade(incomeResourceAmount, outgoingResourceAmount))
-        {
-            return;
-        }
-
-        await Multiplayer.Instance.SocketSendUserTradeRequest(incomeResource, outgoingResource, outgoingCount);
-    }
-    #endregion
-
-    public bool IsCurrentUserCanPlaceRobber()
+    public bool IsCurrentUserCanPlaceRobberNow()
     {
         if (!isCurrentUserTurn)
         {
@@ -361,11 +257,68 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
-    private void CallCurrentUserResourceChangedEvent(User u)
+    public bool IsCurrentUserCanBuyCardNow()
     {
-        if (u == currentUser)
+        if (!isCurrentUserTurn)
         {
-            CURRENT_USER_RESOURCES_CHANGED_EVENT.Invoke();
+            return false;
         }
+
+        if(GameManager.Instance.gameState != GameState.USER_TURN)
+        {
+            return false;
+        }
+
+        if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Card))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsCurrentUserHaveCard(Card card)
+    {
+        return currentUser.userCards[card] > 0;
+    }
+
+    public bool IsCurrentUserCanUseCardNow(Card card)
+    {
+        if (!isCurrentUserTurn)
+        {
+            return false;
+        }
+
+        if (GameManager.Instance.gameState != GameState.USER_TURN)
+        {
+            return false;
+        }
+
+        if(!IsCurrentUserHaveCard(card))
+        {
+            return false;
+        }
+
+        if (!IsCardConditionSuccess(card))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsCardConditionSuccess(Card card)
+    {
+        if(!cardToSpecificCondition.ContainsKey(card))
+        {
+            return true;
+        }
+
+        if (!cardToSpecificCondition[card].Invoke())
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -2,24 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Resource
-{
-    BRICK,
-    LUMBER,
-    ORE,
-    GRAIN,
-    WOOL
-}
-
-public enum DevCard
-{
-    VICTORY_POINT_CARD,
-    KNIGHT_CARD,
-    ROAD_BUILDING_CARD,
-    YEAR_OF_PLENTY_CARD,
-    MONOPOLY_CARD
-}
-
 public class ResourceCost
 {
     public static Dictionary<Resource, int> GetRoadCost()

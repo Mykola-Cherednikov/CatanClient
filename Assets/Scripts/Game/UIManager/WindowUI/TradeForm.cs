@@ -45,16 +45,11 @@ public class TradeForm : MonoBehaviour
         }
 
         incomeField.text = incomeNum.ToString();
-        
-        if (!GameManager.Instance.userManager.IsCurrentUserTurn())
-        {
-            tradeButton.interactable = false;
-        }
 
         KeyValuePair<Resource, int> incomeResourceAmount = new KeyValuePair<Resource, int>(incomeResource, incomeNum);
         KeyValuePair<Resource, int> outgoingResourceAmount = new KeyValuePair<Resource, int>(outgoingResource, outgoingNum);
 
-        if (!GameManager.Instance.userManager.IsCurrentUserCanTrade(incomeResourceAmount, outgoingResourceAmount))
+        if (!GameManager.Instance.userManager.IsCurrentUserCanTradeNow(incomeResourceAmount, outgoingResourceAmount))
         {
             tradeButton.interactable = false;
         }
@@ -66,6 +61,6 @@ public class TradeForm : MonoBehaviour
         Resource outgoingResource = (Resource)outgoingDropdown.value;
         int outgoingNum = int.Parse(outgoingField.text);
 
-        GameManager.Instance.userManager.UserTradeResource(incomeResource, outgoingResource, outgoingNum);
+        GameManager.Instance.resourceManager.UserTradeResource(incomeResource, outgoingResource, outgoingNum);
     }
 }

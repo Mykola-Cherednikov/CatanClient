@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public enum GameState
 {
@@ -8,7 +9,8 @@ public enum GameState
     PREPARATION_BUILD_SETTLEMENTS,
     PREPARATION_BUILD_ROADS,
     ROBBERY,
-    GAME
+    USER_TURN,
+    PREPARING_USER_TURN
 }
 
 public class GameManager : MonoBehaviour
@@ -23,12 +25,17 @@ public class GameManager : MonoBehaviour
     public UIManager uiManager;
     public MapManager mapManager;
     public UserManager userManager;
+    public ResourceManager resourceManager;
+    public CardManager cardManager;
 
     public GameState gameState;
+    public GameState previousGameState;
 
     public int numOfTurn;
 
     private Dictionary<EventType, GameState> eventTypeToGameStates;
+
+    public UnityAction CHANGED_GAME_STATE;
 
     private void Awake()
     {
@@ -37,12 +44,13 @@ public class GameManager : MonoBehaviour
         eventTypeToGameStates = new Dictionary<EventType, GameState>() { 
             { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS, GameState.PREPARATION_BUILD_ROADS },
             { EventType.BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS, GameState.PREPARATION_BUILD_SETTLEMENTS },
-            { EventType.BROADCAST_USER_TURN, GameState.GAME },
+            { EventType.BROADCAST_USER_TURN, GameState.USER_TURN },
             { EventType.BROADCAST_ROBBERY_START, GameState.ROBBERY },
-            { EventType.BROADCAST_ROBBERY_END, GameState.GAME }
+            { EventType.BROADCAST_PREPARE_USER_TURN, GameState.PREPARING_USER_TURN }
         };
 
         Multiplayer.Instance.CONNECTION_ERROR_EVENT.AddListener(OnConnectionError);
+        Multiplayer.Instance.BROADCAST_PREPARE_USER_TURN_EVENT.AddListener(OnUserPreparationTurn);
         Multiplayer.Instance.BROADCAST_USER_TURN_EVENT.AddListener(OnUserTurn);
         Multiplayer.Instance.BROADCAST_BUILD_ROAD_EVENT.AddListener(OnBuildRoad);
         Multiplayer.Instance.BROADCAST_BUILD_SETTLEMENT_EVENT.AddListener(OnBuildSettlement);
@@ -50,15 +58,20 @@ public class GameManager : MonoBehaviour
         Multiplayer.Instance.BROADCAST_DICE_THROW_EVENT.AddListener(OnDiceThrow);
         Multiplayer.Instance.BROADCAST_GET_RESOURCE_EVENT.AddListener(OnResourceGet);
         Multiplayer.Instance.BROADCAST_USER_TRADE_EVENT.AddListener(OnTrade);
-        Multiplayer.Instance.BROADCAST_ROBBERY_START_EVENT.AddListener(OnRobberyStartOrEnd);
-        Multiplayer.Instance.BROADCAST_ROBBERY_END_EVENT.AddListener(OnRobberyStartOrEnd);
+        Multiplayer.Instance.BROADCAST_ROBBERY_START_EVENT.AddListener(OnRobberyStart);
         Multiplayer.Instance.BROADCAST_ROBBER_ROBBERY_EVENT.AddListener(OnRobberRobbery);
+        Multiplayer.Instance.BROADCAST_USER_ROBBERY_EVENT.AddListener(OnUserRobbery);
+        Multiplayer.Instance.BROADCAST_BUY_CARD_EVENT.AddListener(OnBuyCard);
+        Multiplayer.Instance.BROADCAST_USE_KNIGHT_CARD_EVENT.AddListener(OnUseKnightCard);
         cameraGO = Camera.main.gameObject;
         cameraGO.transform.position = new Vector3(0f, 0f, -10f);
 
-        uiManager = gameObject.AddComponent<UIManager>();
+        
         mapManager = gameObject.AddComponent<MapManager>();
         userManager = gameObject.AddComponent<UserManager>();
+        resourceManager = gameObject.AddComponent<ResourceManager>();
+        cardManager = gameObject.AddComponent<CardManager>();
+        uiManager = gameObject.AddComponent<UIManager>();
     }
 
     public async void StartGame(SocketBroadcastStartGameDTO dto, GameObject canvas)
@@ -84,24 +97,27 @@ public class GameManager : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void OnUserTurn(object dtoObject)
+    private void OnUserPreparationTurn(object dtoObject)
     {
-        SocketBroadcastUserTurnDTO dto = (SocketBroadcastUserTurnDTO)dtoObject;
+        SocketBroadcastUserTurnDTO dto = (SocketBroadcastUserTurnDTO)dtoObject;  
 
-        SetGameStateOnSpecificEventType(dto.eventType);
+        SetGameStateOnSpecificEventTypeAndChangeUIForGameState(dto.eventType);
 
         User userWhoseTurn = userManager.GetUserById(dto.userId);
-        numOfTurn = dto.numOfTurn;
-
-        uiManager.DisplayUserTurnText(userWhoseTurn);
         userManager.UpdateUserTurnStatus(userWhoseTurn);
+
+        numOfTurn = dto.numOfTurn;
     }
 
-    private void SetGameStateOnSpecificEventType(string stringEventType)
+    private void SetGameStateOnSpecificEventTypeAndChangeUIForGameState(string stringEventType)
     {
         EventType eventType = (EventType)Enum.Parse(typeof(EventType), stringEventType);
+        previousGameState = gameState;
         gameState = eventTypeToGameStates[eventType];
-        uiManager.ChangeUIToGameState();
+        if (gameState != previousGameState)
+        {
+            CHANGED_GAME_STATE?.Invoke();
+        }
     }
 
     private void OnBuildRoad(object dtoObject)
@@ -125,14 +141,13 @@ public class GameManager : MonoBehaviour
     private void OnDiceThrow(object dtoObject)
     {
         SocketBroadcastDiceThrowDTO dto = (SocketBroadcastDiceThrowDTO)dtoObject;
-        uiManager.DisplayUserDiceThrow(userManager.GetUserById(dto.userId), dto.firstDiceNum + dto.secondDiceNum);
     }
 
     private void OnResourceGet(object dtoObject)
     {
         SocketBroadcastResourcesDTO dto = (SocketBroadcastResourcesDTO)dtoObject;
         Dictionary<Resource, int> resourcesToAmount = SimixmanUtils.ResourceListToResourceDictionary(dto.resources);
-        userManager.AddResourcesToUserAsGathering(userManager.GetUserById(dto.userId), resourcesToAmount);
+        resourceManager.AddResourcesToUserAsGathering(userManager.GetUserById(dto.userId), resourcesToAmount);
     }
 
     private void OnTrade(object dtoObject)
@@ -145,20 +160,70 @@ public class GameManager : MonoBehaviour
         KeyValuePair<Resource, int> addResources = new KeyValuePair<Resource, int>(outgoingResource, outgoingCount);
         KeyValuePair<Resource, int> removeResources = new KeyValuePair<Resource, int>(incomeResource, incomeCount);
 
-        userManager.RemoveResourcesFromUserAsTrade(userManager.GetUserById(dto.userId), removeResources);
-        userManager.AddResourcesToUserAsTrade(userManager.GetUserById(dto.userId), addResources);
+        resourceManager.RemoveResourcesFromUserAsTrade(userManager.GetUserById(dto.userId), removeResources);
+        resourceManager.AddResourcesToUserAsTrade(userManager.GetUserById(dto.userId), addResources);
     }
 
-    private void OnRobberyStartOrEnd(object dtoObject)
+    private void OnRobberyStart(object dtoObject)
     {
         SocketDTOClass dto = (SocketDTOClass)dtoObject;
-        SetGameStateOnSpecificEventType(dto.eventType);
+        SetGameStateOnSpecificEventTypeAndChangeUIForGameState(dto.eventType);
     }
 
     private void OnRobberRobbery(object dtoObject)
     {
         SocketBroadcastResourcesDTO dto = (SocketBroadcastResourcesDTO)dtoObject;
         Dictionary<Resource, int> resourcesToAmount = SimixmanUtils.ResourceListToResourceDictionary(dto.resources);
-        userManager.RemoveResourcesFromUserAsRobberRobbery(userManager.GetUserById(dto.userId), resourcesToAmount);
+        resourceManager.RemoveResourcesFromUserAsRobberRobbery(userManager.GetUserById(dto.userId), resourcesToAmount);
+    }
+
+    private void OnUserRobbery(object dtoObject)
+    {
+        SocketBroadcastUserRobberyDTO dto = (SocketBroadcastUserRobberyDTO)dtoObject;
+
+        if (dto.victimUserId != -1)
+        {
+            resourceManager.UserRobberResourcesFromAnotherUser(userManager.GetUserById(dto.victimUserId),
+                userManager.GetUserById(dto.robberUserId), (Resource)Enum.Parse(typeof(Resource), dto.resource));
+        }
+
+        mapManager.PlaceRobber(dto.hexId);
+    }
+
+    private void OnUserTurn(object dtoObject)
+    {
+        SocketDTOClass dto = (SocketDTOClass)dtoObject;
+        SetGameStateOnSpecificEventTypeAndChangeUIForGameState(dto.eventType);
+    }
+
+    private void OnBuyCard(object dtoObject)
+    {
+        SocketBroadcastBuyCardDTO dto = (SocketBroadcastBuyCardDTO)dtoObject;
+        Card card = (Card) Enum.Parse(typeof(Card), dto.card);
+        cardManager.BuyCard(userManager.GetUserById(dto.userId), card);
+    }
+
+    private void OnUseKnightCard(object dtoObject)
+    {
+        SocketBroadcastUseKnightCardDTO dto = (SocketBroadcastUseKnightCardDTO)dtoObject;
+        cardManager.UseKnightCard(userManager.GetUserById(dto.userId), dto.hexId);
+    }
+
+    private void OnDestroy()
+    {
+        Multiplayer.Instance.CONNECTION_ERROR_EVENT.RemoveListener(OnConnectionError);
+        Multiplayer.Instance.BROADCAST_PREPARE_USER_TURN_EVENT.RemoveListener(OnUserPreparationTurn);
+        Multiplayer.Instance.BROADCAST_USER_TURN_EVENT.RemoveListener(OnUserTurn);
+        Multiplayer.Instance.BROADCAST_BUILD_ROAD_EVENT.RemoveListener(OnBuildRoad);
+        Multiplayer.Instance.BROADCAST_BUILD_SETTLEMENT_EVENT.RemoveListener(OnBuildSettlement);
+        Multiplayer.Instance.BROADCAST_BUILD_CITY_EVENT.RemoveListener(OnBuildCity);
+        Multiplayer.Instance.BROADCAST_DICE_THROW_EVENT.RemoveListener(OnDiceThrow);
+        Multiplayer.Instance.BROADCAST_GET_RESOURCE_EVENT.RemoveListener(OnResourceGet);
+        Multiplayer.Instance.BROADCAST_USER_TRADE_EVENT.RemoveListener(OnTrade);
+        Multiplayer.Instance.BROADCAST_ROBBERY_START_EVENT.RemoveListener(OnRobberyStart);
+        Multiplayer.Instance.BROADCAST_ROBBER_ROBBERY_EVENT.RemoveListener(OnRobberRobbery);
+        Multiplayer.Instance.BROADCAST_USER_ROBBERY_EVENT.RemoveListener(OnUserRobbery);
+        Multiplayer.Instance.BROADCAST_BUY_CARD_EVENT.RemoveListener(OnBuyCard);
+        Multiplayer.Instance.BROADCAST_USE_KNIGHT_CARD_EVENT.RemoveListener(OnUseKnightCard);
     }
 }

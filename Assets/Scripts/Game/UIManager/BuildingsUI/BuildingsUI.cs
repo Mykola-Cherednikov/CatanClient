@@ -28,8 +28,10 @@ public class BuildingsUI : MonoBehaviour
     {
         isHiden = false;
         rect = GetComponent<RectTransform>();
+        GameManager.Instance.uiManager.CHANGE_UI_STATE += ChangeUIToAnotherGameState;
     }
 
+    #region Create Drag And Drop Object
     private GameObject CreateNewBuildingGameObject(GameObject prefab, Transform transformPosition, UnityAction onBeginDragCreateNew,
         UnityAction onBeginDragShowAllPlaces, UnityAction onDropFindAndBuild, UnityAction onDropHideAll, Func<bool> isAvailableFunc)
     {
@@ -84,20 +86,35 @@ public class BuildingsUI : MonoBehaviour
         );
     }
 
-    public void CreateNewRobberGameObject()
+    public void CreateNewRobberForRobberyGameObject()
     {
         robberGO = CreateNewBuildingGameObject(
             robberPrefab,
             settlementTransformPosition,
-            CreateNewRobberGameObject,
+            CreateNewRobberForRobberyGameObject,
             GameManager.Instance.mapManager.ShowPlacesForRobber,
-            FindNumberTokenAndPlaceRobber,
+            FindNumberTokenAndPlaceRobberForRob,
             GameManager.Instance.mapManager.HideAllPlacesForRobber,
-            GameManager.Instance.userManager.IsCurrentUserCanPlaceRobber
+            GameManager.Instance.userManager.IsCurrentUserCanPlaceRobberNow
         );
     }
 
-    public void FindObjectAndBuild<T>(UnityAction<int> planToBuild) where T : Place
+    public void CreateNewRobberForMovingGameObject()
+    {
+        robberGO = CreateNewBuildingGameObject(
+            robberPrefab,
+            settlementTransformPosition,
+            CreateNewRobberForMovingGameObject,
+            GameManager.Instance.mapManager.ShowPlacesForRobber,
+            FindNumberTokenAndPlaceRobberForMove,
+            GameManager.Instance.mapManager.HideAllPlacesForRobber,
+            () => { return GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.KNIGHT); }
+        );
+    }
+    #endregion
+
+    #region Find Place And Do Action
+    public void FindObjectAndDoAction<T>(UnityAction<int> planToBuild) where T : Place
     {
         T objectCollider = GetColliderFromMousePosition<T>();
         if (objectCollider != null)
@@ -106,30 +123,36 @@ public class BuildingsUI : MonoBehaviour
             planToBuild(id);
         }
     }
-
+    
     public void FindEdgeAndBuildRoad()
     {
-        FindObjectAndBuild<Edge>(id => GameManager.Instance.mapManager.PlanToBuildRoad(id));
+        FindObjectAndDoAction<Edge>(id => GameManager.Instance.mapManager.PlanToBuildRoadAndEndTurnIfPlaceOnPreparation(id));
     }
 
     public void FindVertexAndBuildSettlement()
     {
-        FindObjectAndBuild<Vertex>(id => GameManager.Instance.mapManager.PlanToBuildSettlement(id));
+        FindObjectAndDoAction<Vertex>(id => GameManager.Instance.mapManager.PlanToBuildSettlementAndEndTurnIfPlaceOnPreparation(id));
     }
 
     public void FindVertexAndBuildCity()
     {
-        FindObjectAndBuild<Vertex>(id => GameManager.Instance.mapManager.PlanToBuildCity(id));
+        FindObjectAndDoAction<Vertex>(id => GameManager.Instance.mapManager.PlanToBuildCity(id));
     }
 
-    public void FindNumberTokenAndPlaceRobber()
+    public void FindNumberTokenAndPlaceRobberForRob()
     {
-        FindObjectAndBuild<NumberToken>(id => SelectPlaceRobberAndSelectRobberyUser(id));
+        FindObjectAndDoAction<NumberToken>(id => SelectPlaceForRobberAndSelectVictimUser(id));
     }
 
-    public void SelectPlaceRobberAndSelectRobberyUser(int hexId)
+    public void FindNumberTokenAndPlaceRobberForMove()
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobber())
+        FindObjectAndDoAction<NumberToken>(id => StopMoveRobberAndSelectPlaceForRobber(id));
+    }
+    #endregion
+
+    private void SelectPlaceForRobberAndSelectVictimUser(int hexId)
+    {
+        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobberNow())
         {
             return;
         }
@@ -141,15 +164,26 @@ public class BuildingsUI : MonoBehaviour
         switch (uniqueUsers.Count)
         {
             case > 1:
-                GameManager.Instance.uiManager.ShowRobberyFormWithUniqueUsers(hexId, uniqueUsers);
+                GameManager.Instance.uiManager.windowUI.OpenRobberyFormWithUniqueUsers(hexId, uniqueUsers);
                 break;
             case 1:
-                GameManager.Instance.mapManager.PlanPlaceRobberAndPlanRobberyUser(hexId, uniqueUsers[0].id);
+                GameManager.Instance.mapManager.PlanPlaceRobberAndPlanToRobUser(hexId, uniqueUsers[0].id);
                 break;
             default:
-                GameManager.Instance.mapManager.PlanPlaceRobberAndPlanRobberyUser(hexId, -1);
+                GameManager.Instance.mapManager.PlanPlaceRobberAndPlanToRobUser(hexId, -1);
                 break;
         }
+    }
+
+    private void StopMoveRobberAndSelectPlaceForRobber(int hexId)
+    {
+        GameManager.Instance.uiManager.StopUserMoveRobberState();
+        GameManager.Instance.cardManager.PlanUseKnightCard(hexId);
+    }
+
+    public void CancelMoveRobber()
+    {
+        GameManager.Instance.uiManager.StopUserMoveRobberState();
     }
 
     private T GetColliderFromMousePosition<T>() where T : Place
@@ -167,58 +201,65 @@ public class BuildingsUI : MonoBehaviour
     public void HideOrShow()
     {
         float rectHeight = rect.sizeDelta.y - 20f;
-        transform.position = new Vector2(transform.position.x, transform.position.y + (rectHeight * (isHiden ? 1 : - 1)));
+        transform.position = new Vector2(transform.position.x, transform.position.y + (rectHeight * (isHiden ? 1 : -1)));
         hideAndShowButtonText.text = isHiden ? "Hide" : "Show";
         isHiden = !isHiden;
     }
 
-    public void ChangeUIToGameState()
+    #region Change UI
+    public void ChangeUIToAnotherGameState()
     {
-        DestroyAllUI();
-        switch(GameManager.Instance.gameState)
+        switch (GameManager.Instance.uiManager.uiState)
         {
-            case GameState.PREPARATION_BUILD_SETTLEMENTS:
+            case UIState.PREPARATION_BUILD_SETTLEMENTS:
                 ChangeUIToPreparationSettlementState();
                 break;
-            case GameState.PREPARATION_BUILD_ROADS:
+            case UIState.PREPARATION_BUILD_ROADS:
                 ChangeUIToPreparationRoadState();
                 break;
-            case GameState.GAME:
+            case UIState.USER_TURN:
                 ChangeUIToMainGameState();
                 break;
-            case GameState.ROBBERY:
-                ChangeUIToRobberyForCurrentUserForOthersRemainMainUI();
+            case UIState.USER_ROBBERY:
+                ChangeUIToUserRobbery();
                 break;
+            case UIState.USER_MOVING_ROBBER:
+                ChangeUIToMoveRobbery();
+                break;
+
         }
     }
 
     private void ChangeUIToPreparationSettlementState()
     {
+        DestroyAllUI();
         CreateNewSettlementGameObject();
     }
 
     private void ChangeUIToPreparationRoadState()
     {
+        DestroyAllUI();
         CreateNewRoadGameObject();
     }
 
     private void ChangeUIToMainGameState()
     {
+        DestroyAllUI();
         CreateNewRoadGameObject();
         CreateNewCityGameObject();
         CreateNewSettlementGameObject();
     }
 
-    private void ChangeUIToRobberyForCurrentUserForOthersRemainMainUI()
+    private void ChangeUIToUserRobbery()
     {
-        if (GameManager.Instance.userManager.IsCurrentUserTurn())
-        {
-            CreateNewRobberGameObject();
-        }
-        else
-        {
-            ChangeUIToMainGameState();
-        }
+        DestroyAllUI();
+        CreateNewRobberForRobberyGameObject();
+    }
+
+    private void ChangeUIToMoveRobbery()
+    {
+        DestroyAllUI();
+        CreateNewRobberForMovingGameObject();
     }
 
     private void DestroyAllUI()
@@ -235,9 +276,15 @@ public class BuildingsUI : MonoBehaviour
         {
             Destroy(cityGO);
         }
-        if(robberGO != null)
+        if (robberGO != null)
         {
             Destroy(robberGO);
         }
+    }
+    #endregion
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.uiManager.CHANGE_UI_STATE -= ChangeUIToAnotherGameState;
     }
 }

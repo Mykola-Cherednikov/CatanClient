@@ -6,8 +6,16 @@ public class GameNotificationsUI : MonoBehaviour
     [SerializeField] private GameObject gameNotificationTurnText;
     [SerializeField] private GameObject gameNotificationDiceText;
 
-    public void CreateNotificationUserTurn(string username)
+    private void Awake()
     {
+        Multiplayer.Instance.BROADCAST_PREPARE_USER_TURN_EVENT.AddListener(CreateNotificationPreparationUserTurn);
+        Multiplayer.Instance.BROADCAST_DICE_THROW_EVENT.AddListener(CreateNotificationDiceThrow);
+    }
+
+    public void CreateNotificationPreparationUserTurn(object dtoObject)
+    {
+        SocketBroadcastUserTurnDTO dto = (SocketBroadcastUserTurnDTO)dtoObject;
+
         if(gameNotificationTurnText != null)
         {
             Destroy(gameNotificationTurnText.gameObject);
@@ -15,11 +23,13 @@ public class GameNotificationsUI : MonoBehaviour
 
         gameNotificationTurnText = Instantiate(notificationTextPrefab, transform);
         GameNotificationText notificationText = gameNotificationTurnText.GetComponent<GameNotificationText>();
-        notificationText.SetText($"{username} TURN", 100);
+        notificationText.SetText($"{GameManager.Instance.userManager.GetUserById(dto.userId).name} TURN", 100);
     }
 
-    public void CreateNotificationDiceThrow(string username, int diceNum)
+    public void CreateNotificationDiceThrow(object dtoObject)
     {
+        SocketBroadcastDiceThrowDTO dto = (SocketBroadcastDiceThrowDTO) dtoObject;
+
         if(gameNotificationDiceText != null)
         {
             Destroy(gameNotificationDiceText.gameObject);
@@ -28,6 +38,12 @@ public class GameNotificationsUI : MonoBehaviour
         gameNotificationDiceText = Instantiate(notificationTextPrefab, transform);
         GameNotificationText notificationText = gameNotificationDiceText.GetComponent<GameNotificationText>();
         notificationText.transform.position = new Vector3(notificationText.transform.position.x, notificationText.transform.parent.position.y, notificationText.transform.position.z);
-        notificationText.SetText($"{username} DICE THROW: {diceNum}", 60);
+        notificationText.SetText($"{GameManager.Instance.userManager.GetUserById(dto.userId).name} DICE THROW: {dto.firstDiceNum+dto.secondDiceNum}", 60);
+    }
+
+    private void OnDestroy()
+    {
+        Multiplayer.Instance.BROADCAST_PREPARE_USER_TURN_EVENT.RemoveListener(CreateNotificationPreparationUserTurn);
+        Multiplayer.Instance.BROADCAST_DICE_THROW_EVENT.RemoveListener(CreateNotificationDiceThrow);
     }
 }

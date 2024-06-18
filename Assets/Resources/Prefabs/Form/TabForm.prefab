@@ -836,7 +836,7 @@ MonoBehaviour:
   grainText: {fileID: 8016326489902953383}
   woolText: {fileID: 8066193942023649839}
   content: {fileID: 7152371631196995426}
-  userInTabFormPrefab: {fileID: 0}
+  userInTabFormPrefab: {fileID: 2584186771811646858, guid: 444b4655efdac644fbb45775191cee19, type: 3}
 --- !u!1 &4874561219560806326
 GameObject:
   m_ObjectHideFlags: 0

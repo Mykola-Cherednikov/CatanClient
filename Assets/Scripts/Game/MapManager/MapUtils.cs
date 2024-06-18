@@ -4,7 +4,7 @@ using Unity.VisualScripting;
 
 public class MapUtils
 {
-    public static List<Edge> GetNeighborEdgesToEdge(Edge e)
+    public static List<Edge> GetNeighborEdgesToEdgeWithBuildingType(Edge e, EdgeBuildingType edgeBuildingType)
     {
         List<Edge> neighborEdgesToEdge = new List<Edge>();
         List<Vertex> neighborVertices = e.neighborVertices;
@@ -13,7 +13,7 @@ public class MapUtils
         {
             foreach (var edge in v.neighborEdges)
             {
-                if (edge.type == EdgeBuildingType.NONE && edge != e)
+                if (edge.type == edgeBuildingType && edge != e)
                 {
                     neighborEdgesToEdge.Add(edge);
                 }
@@ -61,7 +61,7 @@ public class MapUtils
         List<Edge> userEdges = edges.FindAll(e => e.user == user);
         foreach (var edge in userEdges)
         {
-            availableEdges.AddRange(GetNeighborEdgesToEdge(edge));
+            availableEdges.AddRange(GetNeighborEdgesToEdgeWithBuildingType(edge, EdgeBuildingType.NONE));
         }
 
         return availableEdges.ToList();
@@ -123,5 +123,60 @@ public class MapUtils
         List<User> uniqueUsersInHex = usersInHex.Distinct().ToList();
 
         return uniqueUsersInHex;
+    }
+
+    public static int GetLongestRoadLengthForUser(User u, List<Edge> edges)
+    {
+        List<Edge> userEdges = edges.Where(e => e.user == u).ToList();
+
+        int maxNum = 0;
+        foreach (var userEdge in userEdges)
+        {
+            int currentNum = FindLongestRoadLength(userEdge, new List<Edge>(), new List<Edge>(), u);
+            if(currentNum > maxNum)
+            {
+                maxNum = currentNum;
+            }
+        }
+
+        return maxNum;
+    }
+
+    public static int FindLongestRoadLength(Edge edge, List<Edge> currentRoad, List<Edge> previousNeighboursEdges, User u)
+    {
+        currentRoad.Add(edge);
+        int maxLength = currentRoad.Count;
+        List<Edge> previousEdges = GetNeighborEdgesToEdgeWithBuildingType(edge, EdgeBuildingType.ROAD);
+        List<Edge> nextEdges = GetNeighborEdgesToEdgeWithBuildingType(edge, EdgeBuildingType.ROAD);
+
+
+        List<Vertex> edgeVertices = new List<Vertex>(edge.neighborVertices);
+        List<Vertex> previousNeighboursVertices = previousNeighboursEdges.SelectMany(e => e.neighborVertices).ToList();
+        Vertex checkingVertex = edgeVertices.FirstOrDefault(e => !previousNeighboursVertices.Contains(e));
+
+        if(checkingVertex.user != u)
+        {
+            return maxLength;
+        }
+
+        nextEdges = nextEdges.Except(previousNeighboursEdges).ToList();
+        previousEdges.Add(edge);
+
+        foreach(var currentEdge in nextEdges)
+        {
+            if(currentEdge.user != u)
+            {
+                continue;
+            }
+
+            int currentRoadLength = FindLongestRoadLength(currentEdge, new List<Edge>(currentRoad), new List<Edge>(previousEdges), u);
+
+            if(currentRoadLength > maxLength)
+            {
+                maxLength = currentRoadLength;
+            }
+        }
+
+        return maxLength;
     }
 }

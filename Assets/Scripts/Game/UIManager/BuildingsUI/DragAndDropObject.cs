@@ -18,9 +18,17 @@ public class DragAndDropObject : MonoBehaviour, IBeginDragHandler, IEndDragHandl
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
+        Color newColor = image.color;
+        newColor.a = 0.5f;
+        image.color = newColor;
     }
 
-    private void FixedUpdate()
+    private void Update()
+    {
+        ChangeColorWhenAvailable();
+    }
+
+    private void ChangeColorWhenAvailable()
     {
         Color newColor = image.color;
 
@@ -44,7 +52,7 @@ public class DragAndDropObject : MonoBehaviour, IBeginDragHandler, IEndDragHandl
         }
 
         buildingsUI.isDragging = true;
-        onBeginDrag.Invoke();
+        onBeginDrag?.Invoke();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -64,7 +72,7 @@ public class DragAndDropObject : MonoBehaviour, IBeginDragHandler, IEndDragHandl
             return;
         }
 
-        onDrop.Invoke();
+        onDrop?.Invoke();
         buildingsUI.isDragging = false;
         Destroy(gameObject);
     }

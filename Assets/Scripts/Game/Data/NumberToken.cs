@@ -33,12 +33,14 @@ public class NumberToken : Place
     public void SetBanditOn()
     {
         spriteRenderer.sprite = banditSprite;
+        isBandit = true;
         numberText.enabled = false;
     }
 
     public void SetBanditOff()
     {
         spriteRenderer.sprite = numberTokenSprite;
+        isBandit = false;
         numberText.enabled = true;
     }
 }
