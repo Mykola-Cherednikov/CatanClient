@@ -78,7 +78,7 @@ public class ExchangeFormExchangeButton : MonoBehaviour
             return;
         }
 
-        if(targetUsers.Count == 0)
+        if(targetUsers.Count == 0 || initiatorResourceAmountField.text.Length == 0 || targetResourceAmountField.text.Length == 0)
         {
             return;
         }
@@ -97,7 +97,7 @@ public class ExchangeFormExchangeButton : MonoBehaviour
     {
         exchangeButton.interactable = false;
 
-        if(initiatorUser != targetUser)
+        if(initiatorUser == targetUser)
         {
             return;
         }

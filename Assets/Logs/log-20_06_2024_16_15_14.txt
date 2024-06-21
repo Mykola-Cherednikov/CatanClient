@@ -1,0 +1,125 @@
+[20.06.2024 16:15:14] Login success: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IlNpbWl4bWFuIiwiZXhwIjoxNzE4OTc1NzE0fQ.breQ0THXLbpInIKdJsPJaj1JtEtA3wgK-W4fp4G6aiE
+[20.06.2024 16:15:14] []
+[20.06.2024 16:15:15] Connect To Lobby: Trying to connect
+[20.06.2024 16:15:15] Connect To Lobby: Client socket creation successful
+[20.06.2024 16:15:15] Connect To Lobby: Client socket connection successful
+[20.06.2024 16:15:15] Send To Server: Send data to server with type SocketRequestConnectDTO
+[20.06.2024 16:15:15] Connect To Lobby: Client socket send connection message to server
+[20.06.2024 16:15:15] Handle Message: Receive data from server with event: BROADCAST_USER_CONNECTED
+[20.06.2024 16:15:15] {"eventType":"BROADCAST_USER_CONNECTED","message":"Simixman connected","connectedUser":{"id":1,"name":"Simixman","host":false}}
+[20.06.2024 16:15:15] Connect To Lobby: Client socket receive connection message from server
+[20.06.2024 16:15:15] Listen Server: Start listen server
+[20.06.2024 16:15:16] Send To Server: Send data to server with type SocketStartGameRequestDTO
+[20.06.2024 16:15:16] Handle Message: Receive data from server with event: BROADCAST_START_GAME
+[20.06.2024 16:15:16] {"eventType":"BROADCAST_START_GAME","hexesInRowCounts":[4,5,6,7,6,5,4],"seed":596077339,"users":[{"id":1,"name":"Simixman"}],"currentUser":{"id":1,"name":"Simixman"}}
+[20.06.2024 16:15:16] User Manager
+[20.06.2024 16:15:16] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:17] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS
+[20.06.2024 16:15:17] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS","userId":1,"numOfTurn":1}
+[20.06.2024 16:15:17] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:17] Send To Server: Send data to server with type SocketRequestBuildDTO
+[20.06.2024 16:15:17] Handle Message: Receive data from server with event: BROADCAST_BUILD_SETTLEMENT
+[20.06.2024 16:15:17] {"eventType":"BROADCAST_BUILD_SETTLEMENT","message":"Simixman build settlement","userId":1,"fieldId":57}
+[20.06.2024 16:15:18] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS
+[20.06.2024 16:15:18] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS","userId":1,"numOfTurn":2}
+[20.06.2024 16:15:30] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:30] Send To Server: Send data to server with type SocketRequestBuildDTO
+[20.06.2024 16:15:30] Handle Message: Receive data from server with event: BROADCAST_BUILD_SETTLEMENT
+[20.06.2024 16:15:30] {"eventType":"BROADCAST_BUILD_SETTLEMENT","message":"Simixman build settlement","userId":1,"fieldId":0}
+[20.06.2024 16:15:30] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS
+[20.06.2024 16:15:30] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS","userId":1,"numOfTurn":1}
+[20.06.2024 16:15:32] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:32] Send To Server: Send data to server with type SocketRequestBuildDTO
+[20.06.2024 16:15:32] Handle Message: Receive data from server with event: BROADCAST_BUILD_ROAD
+[20.06.2024 16:15:32] {"eventType":"BROADCAST_BUILD_ROAD","message":"Simixman build road","userId":1,"fieldId":0}
+[20.06.2024 16:15:32] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS
+[20.06.2024 16:15:32] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS","userId":1,"numOfTurn":2}
+[20.06.2024 16:15:33] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:33] Send To Server: Send data to server with type SocketRequestBuildDTO
+[20.06.2024 16:15:33] Handle Message: Receive data from server with event: BROADCAST_BUILD_ROAD
+[20.06.2024 16:15:33] {"eventType":"BROADCAST_BUILD_ROAD","message":"Simixman build road","userId":1,"fieldId":1}
+[20.06.2024 16:15:33] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:33] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":1}
+[20.06.2024 16:15:33] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:33] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":5,"secondDiceNum":1}
+[20.06.2024 16:15:33] Handle Message: Receive data from server with event: BROADCAST_USER_GET_RESOURCE
+[20.06.2024 16:15:33] {"eventType":"BROADCAST_USER_GET_RESOURCE","userId":1,"resources":["GRAIN"]}
+[20.06.2024 16:15:33] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:33] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:38] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:38] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:38] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":2}
+[20.06.2024 16:15:38] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:38] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":3,"secondDiceNum":6}
+[20.06.2024 16:15:38] Handle Message: Receive data from server with event: BROADCAST_USER_GET_RESOURCE
+[20.06.2024 16:15:38] {"eventType":"BROADCAST_USER_GET_RESOURCE","userId":1,"resources":["GRAIN"]}
+[20.06.2024 16:15:38] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:38] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:38] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:38] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:38] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":3}
+[20.06.2024 16:15:38] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:38] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":5,"secondDiceNum":2}
+[20.06.2024 16:15:38] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:38] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:39] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:39] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:39] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":4}
+[20.06.2024 16:15:39] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:39] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":1,"secondDiceNum":4}
+[20.06.2024 16:15:39] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:39] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:39] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:39] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:39] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":5}
+[20.06.2024 16:15:39] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:39] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":5,"secondDiceNum":6}
+[20.06.2024 16:15:39] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:39] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:40] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:40] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:40] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":6}
+[20.06.2024 16:15:40] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:40] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":4,"secondDiceNum":4}
+[20.06.2024 16:15:40] Handle Message: Receive data from server with event: BROADCAST_USER_GET_RESOURCE
+[20.06.2024 16:15:40] {"eventType":"BROADCAST_USER_GET_RESOURCE","userId":1,"resources":["WOOL"]}
+[20.06.2024 16:15:40] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:40] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:40] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:40] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:40] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":7}
+[20.06.2024 16:15:40] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:40] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":2,"secondDiceNum":3}
+[20.06.2024 16:15:40] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:40] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:41] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:41] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:41] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":8}
+[20.06.2024 16:15:41] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:41] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":3,"secondDiceNum":3}
+[20.06.2024 16:15:41] Handle Message: Receive data from server with event: BROADCAST_USER_GET_RESOURCE
+[20.06.2024 16:15:41] {"eventType":"BROADCAST_USER_GET_RESOURCE","userId":1,"resources":["GRAIN"]}
+[20.06.2024 16:15:41] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:41] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:41] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:41] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:41] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":9}
+[20.06.2024 16:15:41] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:41] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":2,"secondDiceNum":3}
+[20.06.2024 16:15:41] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:41] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:42] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:15:42] Handle Message: Receive data from server with event: BROADCAST_PREPARE_USER_TURN
+[20.06.2024 16:15:42] {"eventType":"BROADCAST_PREPARE_USER_TURN","userId":1,"numOfTurn":10}
+[20.06.2024 16:15:42] Handle Message: Receive data from server with event: BROADCAST_DICE_THROW
+[20.06.2024 16:15:42] {"eventType":"BROADCAST_DICE_THROW","userId":1,"firstDiceNum":1,"secondDiceNum":5}
+[20.06.2024 16:15:42] Handle Message: Receive data from server with event: BROADCAST_USER_GET_RESOURCE
+[20.06.2024 16:15:42] {"eventType":"BROADCAST_USER_GET_RESOURCE","userId":1,"resources":["GRAIN"]}
+[20.06.2024 16:15:42] Handle Message: Receive data from server with event: BROADCAST_USER_TURN
+[20.06.2024 16:15:42] {"eventType":"BROADCAST_USER_TURN"}
+[20.06.2024 16:15:57] Send To Server: Send data to server with type SocketRequestTradeDTO
+[20.06.2024 16:15:57] Handle Message: Receive data from server with event: BROADCAST_USER_TRADE
+[20.06.2024 16:15:57] {"eventType":"BROADCAST_USER_TRADE","userId":1,"userSellResource":"GRAIN","userBuyResource":"BRICK","requestedAmountOfBuyResource":1}
+[20.06.2024 16:16:13] ERROR: Listen Server: Error stop listen server. An existing connection was forcibly closed by the remote host.
+                                                                                                                                                                                                
+[20.06.2024 16:16:15] An error occurred while sending the request

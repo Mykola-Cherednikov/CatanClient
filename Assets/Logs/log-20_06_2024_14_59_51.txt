@@ -1,0 +1,12 @@
+[20.06.2024 14:59:51] Login success: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IlNpbWl4bWFuIiwiZXhwIjoxNzE4OTcxMTkxfQ.3V7W62O3kGvBmVpJOQEyDv3qGeL8QC0D0DU2mOhz_M0
+[20.06.2024 14:59:51] []
+[20.06.2024 15:00:05] []
+[20.06.2024 15:00:07] Connect To Lobby: Trying to connect
+[20.06.2024 15:00:07] Connect To Lobby: Client socket creation successful
+[20.06.2024 15:00:07] Connect To Lobby: Client socket connection successful
+[20.06.2024 15:00:07] Send To Server: Send data to server with type SocketRequestConnectDTO
+[20.06.2024 15:00:07] Connect To Lobby: Client socket send connection message to server
+[20.06.2024 15:00:07] Handle Message: Receive data from server with event: BROADCAST_USER_CONNECTED
+[20.06.2024 15:00:07] {"eventType":"BROADCAST_USER_CONNECTED","message":"Simixman connected","connectedUser":{"id":1,"name":"Simixman","host":false}}
+[20.06.2024 15:00:07] Connect To Lobby: Client socket receive connection message from server
+[20.06.2024 15:00:07] Listen Server: Start listen server
