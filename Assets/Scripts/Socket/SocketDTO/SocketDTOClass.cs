@@ -241,11 +241,11 @@ public class SocketResponseExchangeOfferDTO : SocketDTOClass
 
     public int targetAmountOfResource;
 
+    public string targetResource;
+
     public int initiatorAmountOfResource;
 
     public string initiatorResource;
-
-    public string targetResource;
 
     public int exchangeId;
 }

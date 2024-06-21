@@ -16,6 +16,7 @@ public class TabForm : MonoBehaviour
     {
         GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateInfo;
         GameManager.Instance.cardManager.CARD_CHANGED_EVENT += UpdateInfo;
+        GameManager.Instance.mapManager.MAP_CHANGED_EVENT += UpdateInfo;
         UpdateInfo();
 
         var users = GameManager.Instance.userManager.users;
@@ -40,5 +41,6 @@ public class TabForm : MonoBehaviour
     {
         GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateInfo;
         GameManager.Instance.cardManager.CARD_CHANGED_EVENT -= UpdateInfo;
+        GameManager.Instance.mapManager.MAP_CHANGED_EVENT -= UpdateInfo;
     }
 }

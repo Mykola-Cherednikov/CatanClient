@@ -68,6 +68,8 @@ public class GameManager : MonoBehaviour
         Multiplayer.Instance.BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT.AddListener(OnUseYearOfPlentyCard);
         Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY_EVENT.AddListener(OnUserGetLargestArmy);
         Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD_EVENT.AddListener(OnUserGetLongestRoad);
+        Multiplayer.Instance.RESPONSE_EXCHANGE_OFFER_EVENT.AddListener(OnExchangeOffer);
+        Multiplayer.Instance.BROADCAST_EXCHANGE_EVENT.AddListener(OnExchange);
         cameraGO = Camera.main.gameObject;
         cameraGO.transform.position = new Vector3(0f, 0f, -10f);
 
@@ -240,6 +242,20 @@ public class GameManager : MonoBehaviour
         userManager.SetLargestArmyToUserAndClearFromOthers(userManager.GetUserById(dto.userId));
     }
 
+    public void OnExchangeOffer(object dtoObject)
+    {
+        SocketResponseExchangeOfferDTO dto = (SocketResponseExchangeOfferDTO)dtoObject;
+        uiManager.windowUI.OpenExchangeOfferForm(userManager.GetUserById(dto.initiatorUserId), dto.targetResource, 
+            dto.targetAmountOfResource, dto.initiatorResource, dto.initiatorAmountOfResource, dto.exchangeId);
+    }
+
+    public void OnExchange(object dtoObject)
+    {
+        SocketBroadcastExchangeDTO dto = (SocketBroadcastExchangeDTO)dtoObject;
+        resourceManager.UserExchangeMoveResources(userManager.GetUserById(dto.initiatorId), dto.initiatorResource, 
+            dto.initiatorAmountOfResource, userManager.GetUserById(dto.targetId), dto.targetResource, dto.targetAmountOfResource);
+    }
+
     private void OnDestroy()
     {
         Multiplayer.Instance.CONNECTION_ERROR_EVENT.RemoveListener(OnConnectionError);
@@ -261,5 +277,6 @@ public class GameManager : MonoBehaviour
         Multiplayer.Instance.BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT.RemoveListener(OnUseYearOfPlentyCard);
         Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY_EVENT.RemoveListener(OnUserGetLargestArmy);
         Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD_EVENT.RemoveListener(OnUserGetLongestRoad);
+        Multiplayer.Instance.RESPONSE_EXCHANGE_OFFER_EVENT.RemoveListener(OnExchangeOffer);
     }
 }

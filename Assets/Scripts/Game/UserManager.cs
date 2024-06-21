@@ -24,7 +24,10 @@ public class UserManager : MonoBehaviour
         numOfAvailableDevelopmentCard = 5;
         SimixmanLogger.Log("User Manager");
 
-        cardToSpecificCondition = new Dictionary<Card, Func<bool>>() { {Card.KNIGHT, GameManager.Instance.mapManager.IsRobberNearbyCurrentUser } };
+        cardToSpecificCondition = new Dictionary<Card, Func<bool>>() { 
+            { Card.KNIGHT, GameManager.Instance.mapManager.IsRobberNearbyCurrentUser },
+            { Card.VICTORY_POINT, VictoryPointCardCondition }
+        };
     }
 
     public void InitializeUsers(SocketBroadcastStartGameDTO dto)
@@ -44,6 +47,7 @@ public class UserManager : MonoBehaviour
         if (userWhoseTurn == null)
         {
             isCurrentUserTurn = false;
+            return;
         }
 
         isCurrentUserTurn = userWhoseTurn == currentUser;
@@ -104,7 +108,7 @@ public class UserManager : MonoBehaviour
 
     private bool IsCurrentUserHaveEnoughResources(KeyValuePair<Resource, int> resources)
     {
-        if (IsUserHaveEnoughResources(currentUser, resources))
+        if (!IsUserHaveEnoughResources(currentUser, resources))
         {
             return false;
         }
@@ -346,6 +350,11 @@ public class UserManager : MonoBehaviour
         }
 
         return true;
+    }
+
+    private bool VictoryPointCardCondition()
+    {
+        return false;
     }
     #endregion
 

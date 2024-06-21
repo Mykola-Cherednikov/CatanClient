@@ -2,6 +2,7 @@
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 
 
 
@@ -10,6 +11,8 @@ public class MapManager : MonoBehaviour
     private List<Hex> hexes;
     private List<Vertex> vertices;
     private List<Edge> edges;
+
+    public UnityAction MAP_CHANGED_EVENT;
 
     public void InitializeMap(SocketBroadcastStartGameDTO dto)
     {
@@ -211,6 +214,8 @@ public class MapManager : MonoBehaviour
         Edge edge = edges.FirstOrDefault(v => v.id == edgeId);
         edge.SetEdgeBuilding(EdgeBuildingType.ROAD, user);
         SetColorToUserBuilding(edge, user);
+
+        MAP_CHANGED_EVENT?.Invoke();
     }
 
     public void BuildSettlement(int vertexId, User user)
@@ -222,6 +227,8 @@ public class MapManager : MonoBehaviour
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
         vertex.SetVertexBuilding(VertexBuildingType.SETTLEMENT, user);
         SetColorToUserBuilding(vertex, user);
+
+        MAP_CHANGED_EVENT?.Invoke();
     }
 
     public void BuildCity(int vertexId, User user)
@@ -233,6 +240,8 @@ public class MapManager : MonoBehaviour
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
         vertex.SetVertexBuilding(VertexBuildingType.CITY, user);
         SetColorToUserBuilding(vertex, user);
+
+        MAP_CHANGED_EVENT?.Invoke();
     }
     #endregion
 
@@ -241,6 +250,7 @@ public class MapManager : MonoBehaviour
         placeForBuilding.spriteRenderer.color = user.color;
     }
 
+    #region Show/Hide Places For Robber
     public void ShowPlacesForRobber()
     {
         foreach (var hex in hexes)
@@ -266,7 +276,9 @@ public class MapManager : MonoBehaviour
             numberToken.HideCollider();
         }
     }
+    #endregion
 
+    #region Plan Place Robber
     public async void PlanPlaceRobberAndPlanToRobUser(int hexId, int userId)
     {
         if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobberNow())
@@ -276,7 +288,9 @@ public class MapManager : MonoBehaviour
 
         await Multiplayer.Instance.SocketSendUserRobberyRequest(hexId, userId);
     }
+    #endregion
 
+    #region Place Robber
     public void PlaceRobber(int hexId)
     {
         foreach(var hex in hexes)
@@ -285,7 +299,10 @@ public class MapManager : MonoBehaviour
         }
 
         hexes.FirstOrDefault(h => h.id == hexId).numberToken.SetBanditOn();
+
+        MAP_CHANGED_EVENT?.Invoke();
     }
+    #endregion
 
     public bool IsRobberNearbyCurrentUser() 
     {

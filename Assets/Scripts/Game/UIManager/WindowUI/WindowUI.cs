@@ -16,6 +16,7 @@ public class WindowUI : MonoBehaviour
     private GameObject cardsButtonPrefab;
     private GameObject exchangeButtonPrefab;
     private GameObject exchangeFormPrefab;
+    private GameObject exchangeOfferFormPrefab;
 
     private void Awake()
     {
@@ -30,6 +31,7 @@ public class WindowUI : MonoBehaviour
         cardsButtonPrefab = Resources.Load<GameObject>("Prefabs/Game/CardsButton");
         exchangeButtonPrefab = Resources.Load<GameObject>("Prefabs/Game/ExchangeButton");
         exchangeFormPrefab = Resources.Load<GameObject>("Prefabs/Form/ExchangeForm");
+        exchangeOfferFormPrefab = Resources.Load<GameObject>("Prefabs/Form/ExchangeOfferForm");
         Instantiate(tradeButtonPrefab, transform).GetComponent<Button>().onClick.AddListener(OpenTradeForm);
         Instantiate(cardsButtonPrefab, transform).GetComponent<Button>().onClick.AddListener(OpenCardsForm);
         Instantiate(exchangeButtonPrefab, transform).GetComponent<Button>().onClick.AddListener(OpenExchangeForm);
@@ -105,16 +107,21 @@ public class WindowUI : MonoBehaviour
         }
     }
 
-    public void OpenEscapeForm()
+    public void OnEscape()
     {
         if (!IsFormOpen())
         {
-            formGO = Instantiate(escapeFormPrefab, transform);
+            OpenEscapeForm();
         }
         else
         {
             Destroy(formGO);
         }
+    }
+
+    private void OpenEscapeForm()
+    {
+        formGO = Instantiate(escapeFormPrefab, transform);
     }
 
     public void OpenExchangeForm()
@@ -127,6 +134,18 @@ public class WindowUI : MonoBehaviour
         {
             Destroy(formGO);
         }
+    }
+
+    public void OpenExchangeOfferForm(User u, string targetResource, int targetAmountOfResource, string initiatorResource, int initiatorAmountOfResource, int exchangeId)
+    {
+        if (IsFormOpen())
+        {
+            Destroy(formGO);
+        }
+
+        formGO = Instantiate(exchangeOfferFormPrefab, transform);
+        ExchangeOfferForm exchangeOfferForm = formGO.GetComponent<ExchangeOfferForm>();
+        exchangeOfferForm.SetInfo(u, targetResource, targetAmountOfResource, initiatorResource, initiatorAmountOfResource, exchangeId);
     }
 
     public bool IsFormOpen()

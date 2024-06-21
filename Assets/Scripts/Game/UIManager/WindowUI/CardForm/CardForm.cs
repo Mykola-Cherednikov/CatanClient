@@ -19,9 +19,14 @@ public class CardForm : MonoBehaviour
 
             CreateCardRow((Card)card);
         }
+
+        GameManager.Instance.uiManager.CHANGE_UI_STATE += UpdateForm;
+        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateForm;
+        GameManager.Instance.cardManager.CARD_CHANGED_EVENT += UpdateForm;
+        UpdateForm();
     }
 
-    private void Update()
+    private void UpdateForm()
     {
         buyButton.interactable = GameManager.Instance.userManager.IsCurrentUserCanBuyCardNow();
     }
@@ -83,5 +88,12 @@ public class CardForm : MonoBehaviour
     {
         GameManager.Instance.cardManager.PlanUseRoadBuildingCard();
         Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.uiManager.CHANGE_UI_STATE -= UpdateForm;
+        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateForm;
+        GameManager.Instance.cardManager.CARD_CHANGED_EVENT -= UpdateForm;
     }
 }

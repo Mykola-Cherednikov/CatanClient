@@ -16,6 +16,7 @@ public class CardRow : MonoBehaviour
     {
         GameManager.Instance.cardManager.CARD_CHANGED_EVENT += UpdateInfo;
         GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateInfo;
+        GameManager.Instance.mapManager.MAP_CHANGED_EVENT += UpdateInfo;
         GameManager.Instance.uiManager.CHANGE_UI_STATE += UpdateInfo;
         cardToName = new()
         {
@@ -56,5 +57,6 @@ public class CardRow : MonoBehaviour
         GameManager.Instance.cardManager.CARD_CHANGED_EVENT -= UpdateInfo;
         GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateInfo;
         GameManager.Instance.uiManager.CHANGE_UI_STATE -= UpdateInfo;
+        GameManager.Instance.mapManager.MAP_CHANGED_EVENT -= UpdateInfo;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Resources;
 using UnityEngine;
@@ -175,7 +176,7 @@ public class ResourceManager : MonoBehaviour
     #endregion
 
     #region Exchange
-    public async void UserExchangeRequest(Resource initiatorResource, int initiatorResourceAmount, User targetUser, Resource targetResource, int targetResourceAmount)
+    public async void UserExchangeOfferRequest(Resource initiatorResource, int initiatorResourceAmount, User targetUser, Resource targetResource, int targetResourceAmount)
     {
         KeyValuePair<Resource, int> initiatorResources = new KeyValuePair<Resource, int>(initiatorResource, initiatorResourceAmount);
         KeyValuePair<Resource, int> targetResources = new KeyValuePair<Resource, int>(targetResource, targetResourceAmount);
@@ -189,14 +190,23 @@ public class ResourceManager : MonoBehaviour
             initiatorResourceAmount, targetUser.id, targetResource, targetResourceAmount);
     }
 
-    public void UserExchangeMoveResources(User initiatorUser, Resource initiatorResource, int initiatorResourceAmount, User targetUser, Resource targetResource, int targetResourceAmount)
+    public void UserExchangeMoveResources(User initiatorUser, string initiatorResourceString, int initiatorResourceAmount, User targetUser, string targetResourceString, int targetResourceAmount)
     {
+        Resource initiatorResource = (Resource)Enum.Parse(typeof(Resource), initiatorResourceString);
+        Resource targetResource = (Resource)Enum.Parse(typeof(Resource), targetResourceString);
+
         KeyValuePair<Resource, int> initiatorResources = new(initiatorResource, initiatorResourceAmount);
         KeyValuePair<Resource, int> targetResources = new(targetResource, targetResourceAmount);
+
         RemoveResourcesFromUserAndAddToAnotherUser(initiatorUser, targetUser, initiatorResources);
         RemoveResourcesFromUserAndAddToAnotherUser(targetUser, initiatorUser, targetResources);
 
         CallUserResourceChangedEvent();
+    }
+
+    public async void UserExchangeRequest(int exchangeId, bool isAccept)
+    {
+        await Multiplayer.Instance.SocketSendExchangeRequest(exchangeId, isAccept);
     }
     #endregion
 

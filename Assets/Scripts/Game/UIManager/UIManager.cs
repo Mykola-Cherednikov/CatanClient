@@ -60,7 +60,7 @@ public class UIManager : MonoBehaviour
         readyButtonUI = Instantiate(readyButtonUIPrefab, uiCanvas.transform);
         windowUI = Instantiate(windowUIPrefab, uiCanvas.transform).GetComponent<WindowUI>();
         GameManager.Instance.CHANGED_GAME_STATE += ChangeUIStateToGameState;
-        ESCAPE_PRESSED_EVENT += windowUI.OpenEscapeForm;
+        ESCAPE_PRESSED_EVENT += windowUI.OnEscape;
     }
 
     public void ClearAllElementsFromCanvas()
@@ -106,7 +106,7 @@ public class UIManager : MonoBehaviour
     {
         uiState = UIState.USER_MOVING_ROBBER;
         CHANGE_UI_STATE?.Invoke();
-        ESCAPE_PRESSED_EVENT -= windowUI.OpenEscapeForm;
+        ESCAPE_PRESSED_EVENT -= windowUI.OnEscape;
         ESCAPE_PRESSED_EVENT += buildingsUI.CancelMoveRobber;
     }
 
@@ -114,14 +114,14 @@ public class UIManager : MonoBehaviour
     {
         uiState = UIState.USER_TURN;
         CHANGE_UI_STATE?.Invoke();
-        ESCAPE_PRESSED_EVENT += windowUI.OpenEscapeForm;
+        ESCAPE_PRESSED_EVENT += windowUI.OnEscape;
         ESCAPE_PRESSED_EVENT -= buildingsUI.CancelMoveRobber;
     }
 
     private void OnDestroy()
     {
         GameManager.Instance.CHANGED_GAME_STATE -= ChangeUIStateToGameState;
-        ESCAPE_PRESSED_EVENT -= windowUI.OpenEscapeForm;
+        ESCAPE_PRESSED_EVENT -= windowUI.OnEscape;
         ESCAPE_PRESSED_EVENT -= buildingsUI.CancelMoveRobber;
     }
 }
