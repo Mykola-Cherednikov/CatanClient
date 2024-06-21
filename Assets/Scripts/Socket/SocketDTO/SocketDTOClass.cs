@@ -270,4 +270,6 @@ public class SocketBroadcastExchangeDTO : SocketDTOClass
 public class SocketRequestExchangeDTO : SocketDTOClass
 {
     public int exchangeId;
+
+    public bool isAccept;
 }

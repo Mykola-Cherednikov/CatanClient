@@ -66,8 +66,8 @@ public class GameManager : MonoBehaviour
         Multiplayer.Instance.BROADCAST_USE_MONOPOLY_CARD_EVENT.AddListener(OnUseMonopolyCard);
         Multiplayer.Instance.BROADCAST_USE_ROAD_BUILDING_CARD_EVENT.AddListener(OnUseRoadBuildingCard);
         Multiplayer.Instance.BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT.AddListener(OnUseYearOfPlentyCard);
-        Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY.AddListener(OnUserGetLargestArmy);
-        Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD.AddListener(OnUserGetLongestRoad);
+        Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY_EVENT.AddListener(OnUserGetLargestArmy);
+        Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD_EVENT.AddListener(OnUserGetLongestRoad);
         cameraGO = Camera.main.gameObject;
         cameraGO.transform.position = new Vector3(0f, 0f, -10f);
 
@@ -152,7 +152,7 @@ public class GameManager : MonoBehaviour
     {
         SocketBroadcastResourcesDTO dto = (SocketBroadcastResourcesDTO)dtoObject;
         Dictionary<Resource, int> resourcesToAmount = SimixmanUtils.ResourceListToResourceDictionary(dto.resources);
-        resourceManager.AddResourcesToUserAsGathering(userManager.GetUserById(dto.userId), resourcesToAmount);
+        resourceManager.GatheringMoveResources(userManager.GetUserById(dto.userId), resourcesToAmount);
     }
 
     private void OnTrade(object dtoObject)
@@ -161,8 +161,7 @@ public class GameManager : MonoBehaviour
         Resource sellResource = (Resource) Enum.Parse(typeof(Resource), dto.userSellResource);
         Resource buyResource = (Resource)Enum.Parse(typeof(Resource), dto.userBuyResource);
 
-        resourceManager.RemoveResourcesFromUserAsTrade(userManager.GetUserById(dto.userId), sellResource, dto.requestedAmountOfBuyResource);
-        resourceManager.AddResourcesToUserAsTrade(userManager.GetUserById(dto.userId), buyResource, dto.requestedAmountOfBuyResource);
+        resourceManager.UserTradeMoveResources(userManager.GetUserById(dto.userId), buyResource, sellResource, dto.requestedAmountOfBuyResource);
     }
 
     private void OnRobberyStart(object dtoObject)
@@ -175,7 +174,7 @@ public class GameManager : MonoBehaviour
     {
         SocketBroadcastResourcesDTO dto = (SocketBroadcastResourcesDTO)dtoObject;
         Dictionary<Resource, int> resourcesToAmount = SimixmanUtils.ResourceListToResourceDictionary(dto.resources);
-        resourceManager.RemoveResourcesFromUserAsRobberRobbery(userManager.GetUserById(dto.userId), resourcesToAmount);
+        resourceManager.RobberRobberyMoveResources(userManager.GetUserById(dto.userId), resourcesToAmount);
     }
 
     private void OnUserRobbery(object dtoObject)
@@ -184,8 +183,8 @@ public class GameManager : MonoBehaviour
 
         if (dto.victimUserId != -1)
         {
-            resourceManager.UserRobberResourcesFromAnotherUser(userManager.GetUserById(dto.victimUserId),
-                userManager.GetUserById(dto.robberUserId), (Resource)Enum.Parse(typeof(Resource), dto.resource));
+            resourceManager.UserRobberyMoveResources(userManager.GetUserById(dto.robberUserId),
+                userManager.GetUserById(dto.victimUserId), (Resource)Enum.Parse(typeof(Resource), dto.resource));
         }
 
         mapManager.PlaceRobber(dto.hexId);
@@ -260,7 +259,7 @@ public class GameManager : MonoBehaviour
         Multiplayer.Instance.BROADCAST_USE_MONOPOLY_CARD_EVENT.RemoveListener(OnUseMonopolyCard);
         Multiplayer.Instance.BROADCAST_USE_ROAD_BUILDING_CARD_EVENT.RemoveListener(OnUseRoadBuildingCard);
         Multiplayer.Instance.BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT.RemoveListener(OnUseYearOfPlentyCard);
-        Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY.RemoveListener(OnUserGetLargestArmy);
-        Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD.RemoveListener(OnUserGetLongestRoad);
+        Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY_EVENT.RemoveListener(OnUserGetLargestArmy);
+        Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD_EVENT.RemoveListener(OnUserGetLongestRoad);
     }
 }

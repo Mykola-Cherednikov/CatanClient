@@ -47,7 +47,7 @@ public class CardManager : MonoBehaviour
 
     public void BuyCard(User user, Card card)
     {
-        GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.Card);
+        GameManager.Instance.resourceManager.BuyGoods(user, Goods.Card);
         AddCardToUser(user, card);
     }
 
@@ -134,12 +134,12 @@ public class CardManager : MonoBehaviour
     {
         RemoveCardFromUser(user, Card.YEAR_OF_PLENTY);
         GameManager.Instance.resourceManager
-            .AddResourcesToUserAsYearOfPlenty(user, SimixmanUtils.ResourceListToResourceDictionary(resources));
+            .YearOfPlentyCardMoveResources(user, SimixmanUtils.ResourceListToResourceDictionary(resources));
     }
 
     public void UseMonopolyCard(User user, Resource resource)
     {
         RemoveCardFromUser(user, Card.MONOPOLY);
-        GameManager.Instance.resourceManager.MoveResourcesToUserAsMonopoly(user, resource);
+        GameManager.Instance.resourceManager.MonopolyCardMoveResources(user, resource);
     }
 }

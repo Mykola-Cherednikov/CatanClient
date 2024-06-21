@@ -112,9 +112,13 @@ public class Multiplayer : MonoBehaviour
 
     public UnityEvent<object> BROADCAST_USE_MONOPOLY_CARD_EVENT;
 
-    public UnityEvent<object> BROADCAST_USER_GET_LONGEST_ROAD;
+    public UnityEvent<object> BROADCAST_USER_GET_LONGEST_ROAD_EVENT;
 
-    public UnityEvent<object> BROADCAST_USER_GET_LARGEST_ARMY;
+    public UnityEvent<object> BROADCAST_USER_GET_LARGEST_ARMY_EVENT;
+
+    public UnityEvent<object> RESPONSE_EXCHANGE_OFFER_EVENT;
+
+    public UnityEvent<object> BROADCAST_EXCHANGE_EVENT;
     #endregion
 
     private void Awake()
@@ -145,7 +149,9 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USE_ROAD_BUILDING_CARD, typeof(SocketBroadcastUseRoadBuildingCardDTO) },
             { EventType.BROADCAST_USE_YEAR_OF_PLENTY_CARD, typeof(SocketBroadcastUseYearOfPlentyCardDTO) },
             { EventType.BROADCAST_USER_GET_LARGEST_ARMY, typeof(SocketBroadcastUserGetLargestArmyDTO) },
-            { EventType.BROADCAST_USER_GET_LONGEST_ROAD, typeof(SocketBroadcastUserGetLongestRoadDTO) }
+            { EventType.BROADCAST_USER_GET_LONGEST_ROAD, typeof(SocketBroadcastUserGetLongestRoadDTO) },
+            { EventType.RESPONSE_EXCHANGE_OFFER, typeof(SocketResponseExchangeOfferDTO) },
+            { EventType.BROADCAST_EXCHANGE, typeof(SocketBroadcastExchangeDTO) }
         };
         eventTypesToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
         {
@@ -172,8 +178,10 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USE_MONOPOLY_CARD, BROADCAST_USE_MONOPOLY_CARD_EVENT },
             { EventType.BROADCAST_USE_ROAD_BUILDING_CARD, BROADCAST_USE_ROAD_BUILDING_CARD_EVENT },
             { EventType.BROADCAST_USE_YEAR_OF_PLENTY_CARD, BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT },
-            { EventType.BROADCAST_USER_GET_LARGEST_ARMY, BROADCAST_USER_GET_LARGEST_ARMY },
-            { EventType.BROADCAST_USER_GET_LONGEST_ROAD, BROADCAST_USER_GET_LONGEST_ROAD }
+            { EventType.BROADCAST_USER_GET_LARGEST_ARMY, BROADCAST_USER_GET_LARGEST_ARMY_EVENT },
+            { EventType.BROADCAST_USER_GET_LONGEST_ROAD, BROADCAST_USER_GET_LONGEST_ROAD_EVENT },
+            { EventType.RESPONSE_EXCHANGE_OFFER, RESPONSE_EXCHANGE_OFFER_EVENT },
+            { EventType.BROADCAST_EXCHANGE, BROADCAST_EXCHANGE_EVENT }
         };
 
         RESPONSE_CONNECT_TO_LOBBY_EVENT.AddListener(ConnectFromServer);
@@ -443,11 +451,12 @@ public class Multiplayer : MonoBehaviour
         await clientSocket.SendToServer(dto);
     }
 
-    public async Task SocketSendExchangeRequest(int exchangeId)
+    public async Task SocketSendExchangeRequest(int exchangeId, bool isAccept)
     {
         SocketRequestExchangeDTO dto = new SocketRequestExchangeDTO();
         dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_EXCHANGE);
         dto.exchangeId = exchangeId;
+        dto.isAccept = isAccept;
         await clientSocket.SendToServer(dto);
     }
     #endregion

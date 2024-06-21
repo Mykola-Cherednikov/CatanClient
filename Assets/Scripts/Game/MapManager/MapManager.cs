@@ -205,7 +205,7 @@ public class MapManager : MonoBehaviour
             }
             else
             {
-                GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.Road);
+                GameManager.Instance.resourceManager.BuyGoods(user, Goods.Road);
             }            
         }
         Edge edge = edges.FirstOrDefault(v => v.id == edgeId);
@@ -217,7 +217,7 @@ public class MapManager : MonoBehaviour
     {
         if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.Settlement);
+            GameManager.Instance.resourceManager.BuyGoods(user, Goods.Settlement);
         }
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
         vertex.SetVertexBuilding(VertexBuildingType.SETTLEMENT, user);
@@ -228,7 +228,7 @@ public class MapManager : MonoBehaviour
     {
         if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.City);
+            GameManager.Instance.resourceManager.BuyGoods(user, Goods.City);
         }
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
         vertex.SetVertexBuilding(VertexBuildingType.CITY, user);

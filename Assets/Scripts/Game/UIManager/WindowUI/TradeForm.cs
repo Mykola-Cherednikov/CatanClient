@@ -37,7 +37,7 @@ public class TradeForm : MonoBehaviour
 
         int buyAmount = int.Parse(buyField.text);
         int sellAmount = GameManager.Instance.resourceManager
-            .GetAmountOfSellResourceDependOnUserHarbour(GameManager.Instance.userManager.currentUser, sellResource, buyAmount);
+            .GetAmountOfTradingSellResourceDependOnUserHarbour(GameManager.Instance.userManager.currentUser, sellResource, buyAmount);
 
         if (buyAmount <= 0)
         {

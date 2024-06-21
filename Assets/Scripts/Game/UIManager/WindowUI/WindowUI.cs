@@ -14,6 +14,8 @@ public class WindowUI : MonoBehaviour
     private GameObject robberyFormPrefab;
     private GameObject formGO;
     private GameObject cardsButtonPrefab;
+    private GameObject exchangeButtonPrefab;
+    private GameObject exchangeFormPrefab;
 
     private void Awake()
     {
@@ -26,8 +28,11 @@ public class WindowUI : MonoBehaviour
         robberyFormPrefab = Resources.Load<GameObject>("Prefabs/Form/RobberyForm");
         tradeButtonPrefab = Resources.Load<GameObject>("Prefabs/Game/TradeButton");
         cardsButtonPrefab = Resources.Load<GameObject>("Prefabs/Game/CardsButton");
+        exchangeButtonPrefab = Resources.Load<GameObject>("Prefabs/Game/ExchangeButton");
+        exchangeFormPrefab = Resources.Load<GameObject>("Prefabs/Form/ExchangeForm");
         Instantiate(tradeButtonPrefab, transform).GetComponent<Button>().onClick.AddListener(OpenTradeForm);
         Instantiate(cardsButtonPrefab, transform).GetComponent<Button>().onClick.AddListener(OpenCardsForm);
+        Instantiate(exchangeButtonPrefab, transform).GetComponent<Button>().onClick.AddListener(OpenExchangeForm);
     }
 
     void Update()
@@ -105,6 +110,18 @@ public class WindowUI : MonoBehaviour
         if (!IsFormOpen())
         {
             formGO = Instantiate(escapeFormPrefab, transform);
+        }
+        else
+        {
+            Destroy(formGO);
+        }
+    }
+
+    public void OpenExchangeForm()
+    {
+        if (!IsFormOpen())
+        {
+            formGO = Instantiate(exchangeFormPrefab, transform);
         }
         else
         {
