@@ -23,6 +23,8 @@ public class ResourceManager : MonoBehaviour
 {
     public Dictionary<Resource, int> storage;
 
+    private Dictionary<Resource, HarborType> resourceTypeToHarborType;
+
     public UnityAction RESOURCES_CHANGED_EVENT;
 
     private void Awake()
@@ -34,6 +36,15 @@ public class ResourceManager : MonoBehaviour
             { Resource.BRICK, 20 },
             { Resource.LUMBER, 20 },
             { Resource.GRAIN, 20 }
+        };
+
+        resourceTypeToHarborType = new Dictionary<Resource, HarborType>()
+        {
+            { Resource.WOOL, HarborType.WOOL },
+            { Resource.ORE, HarborType.ORE },
+            { Resource.GRAIN, HarborType.GRAIN },
+            { Resource.LUMBER, HarborType.LUMBER },
+            { Resource.BRICK, HarborType.BRICK }
         };
     }
 
@@ -51,8 +62,9 @@ public class ResourceManager : MonoBehaviour
         CallUserResourceChangedEvent();
     }
 
-    public void AddResourcesToUserAsTrade(User user, KeyValuePair<Resource, int> resourceToAmount)
+    public void AddResourcesToUserAsTrade(User user, Resource buyResource, int amount)
     {
+        KeyValuePair<Resource, int> resourceToAmount = new(buyResource, amount);
         AddResourceToUserAndRemoveFromStorage(user, resourceToAmount);
         CallUserResourceChangedEvent();
     }
@@ -69,7 +81,7 @@ public class ResourceManager : MonoBehaviour
     public void MoveResourcesToUserAsMonopoly(User user, Resource resource)
     {
         int numOfResources = 0;
-        foreach(var u in GameManager.Instance.userManager.users)
+        foreach (var u in GameManager.Instance.userManager.users)
         {
             if (u == user)
             {
@@ -130,9 +142,11 @@ public class ResourceManager : MonoBehaviour
         CallUserResourceChangedEvent();
     }
 
-    public void RemoveResourcesFromUserAsTrade(User user, KeyValuePair<Resource, int> resourceToAmount)
+    public void RemoveResourcesFromUserAsTrade(User user, Resource sellResource, int buyAmount)
     {
-        //Check if user have port with this resource type
+        int sellAmount = GetAmountOfSellResourceDependOnUserHarbour(user, sellResource, buyAmount);
+        KeyValuePair<Resource, int> resourceToAmount = new(sellResource, sellAmount);
+
         RemoveResourceFromUserAndAddToStorage(user, resourceToAmount);
         CallUserResourceChangedEvent();
     }
@@ -152,19 +166,34 @@ public class ResourceManager : MonoBehaviour
         storage[resourceToAmount.Key] += resourceToAmount.Value;
     }
 
-    public async void UserTradeResource(Resource incomeResource, Resource outgoingResource, int outgoingCount)
+    public async void UserTradeRequest(Resource sellResource, Resource buyResource, int buyAmount)
     {
-        int incomeCount = outgoingCount * 4;
+        int sellAmount = GetAmountOfSellResourceDependOnUserHarbour(GameManager.Instance.userManager.currentUser,
+            sellResource, buyAmount);
 
-        KeyValuePair<Resource, int> incomeResourceAmount = new KeyValuePair<Resource, int>(incomeResource, incomeCount);
-        KeyValuePair<Resource, int> outgoingResourceAmount = new KeyValuePair<Resource, int>(outgoingResource, outgoingCount);
+        KeyValuePair<Resource, int> sellResourceAmount = new KeyValuePair<Resource, int>(sellResource, sellAmount);
+        KeyValuePair<Resource, int> buyResourceAmount = new KeyValuePair<Resource, int>(buyResource, buyAmount);
 
-        if (!GameManager.Instance.userManager.IsCurrentUserCanTradeNow(incomeResourceAmount, outgoingResourceAmount))
+        if (!GameManager.Instance.userManager.IsCurrentUserCanTradeNow(sellResourceAmount, buyResourceAmount))
         {
             return;
         }
 
-        await Multiplayer.Instance.SocketSendUserTradeRequest(incomeResource, outgoingResource, outgoingCount);
+        await Multiplayer.Instance.SocketSendUserTradeRequest(sellResource, buyResource, buyAmount);
+    }
+
+    public async void UserExchangeRequest(Resource initiatorResource, int initiatorResourceAmount, User targetUser, Resource targetResource, int targetResourceAmount)
+    {
+        KeyValuePair<Resource, int> initiatorResources = new KeyValuePair<Resource, int>(initiatorResource, initiatorResourceAmount);
+        KeyValuePair<Resource, int> targetResources = new KeyValuePair<Resource, int>(targetResource, targetResourceAmount);
+
+        if(!GameManager.Instance.userManager.IsCurrentUserCanExchangeWithUserNow(targetUser, initiatorResources, targetResources))
+        {
+            return;
+        }
+
+        await Multiplayer.Instance.SocketSendExchangeOfferRequest(initiatorResource, 
+            initiatorResourceAmount, targetUser.id, targetResource, targetResourceAmount);
     }
 
     public void UserRobberResourcesFromAnotherUser(User robberUser, User victimUser, Resource resource)
@@ -176,5 +205,23 @@ public class ResourceManager : MonoBehaviour
     private void CallUserResourceChangedEvent()
     {
         RESOURCES_CHANGED_EVENT?.Invoke();
+    }
+
+    public int GetAmountOfSellResourceDependOnUserHarbour(User user, Resource sellResource, int buyAmount)
+    {
+        if (GameManager.Instance.mapManager.IsUserHaveHarbourWithType(user, resourceTypeToHarborType[sellResource]))
+        {
+            buyAmount *= 2;
+        }
+        else if (GameManager.Instance.mapManager.IsUserHaveHarbourWithType(user, HarborType.GENERIC))
+        {
+            buyAmount *= 3;
+        }
+        else
+        {
+            buyAmount *= 4;
+        }
+
+        return buyAmount;
     }
 }

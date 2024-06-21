@@ -7,8 +7,6 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
-    private MapBuilder mapBuilder;
-
     private List<Hex> hexes;
     private List<Vertex> vertices;
     private List<Edge> edges;
@@ -201,12 +199,18 @@ public class MapManager : MonoBehaviour
     {
         if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.Road);
+            if (user.buffDuration[Buff.ROAD_BUILDING] > 0)
+            {
+                user.buffDuration[Buff.ROAD_BUILDING]--;
+            }
+            else
+            {
+                GameManager.Instance.resourceManager.RemoveResourcesFromUserAsBuying(user, Goods.Road);
+            }            
         }
         Edge edge = edges.FirstOrDefault(v => v.id == edgeId);
         edge.SetEdgeBuilding(EdgeBuildingType.ROAD, user);
         SetColorToUserBuilding(edge, user);
-        Debug.Log(MapUtils.GetLongestRoadLengthForUser(user, edges));
     }
 
     public void BuildSettlement(int vertexId, User user)
@@ -289,7 +293,7 @@ public class MapManager : MonoBehaviour
         List<Vertex> vertices = GetUserVerticies(GameManager.Instance.userManager.currentUser);
         foreach (var vertex in vertices)
         {
-            hexes.AddRange(vertex.neighborHexes);
+            hexes.AddRange(vertex.neighbourHexes);
         }
         
         foreach (var hex in hexes)
@@ -301,6 +305,13 @@ public class MapManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    public bool IsUserHaveHarbourWithType(User user, HarborType harborType)
+    {
+        List<Vertex> harborVertices = GetUserVerticies(user).Where(h => h.harborType == harborType).ToList();
+
+        return harborVertices.Count > 0;
     }
 }
 

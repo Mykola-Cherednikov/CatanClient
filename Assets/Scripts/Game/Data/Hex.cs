@@ -44,9 +44,9 @@ public class Hex : MonoBehaviour
     [SerializeField] private Sprite hillSprite;
     [SerializeField] private Sprite mountainSprite;
 
-    public Dictionary<EdgeDirection, Hex> edgeDirectionToNeighborHexes;
+    public Dictionary<EdgeDirection, Hex> edgeDirectionToneighbourHexes;
 
-    public Dictionary<VertexDirection, Vertex> vertexDirectionToContainedVertiñes;
+    public Dictionary<VertexDirection, Vertex> vertexDirectionToContainedVertices;
 
     public Dictionary<EdgeDirection, Edge> edgeDirectionToContainedEdges;
 
@@ -56,7 +56,7 @@ public class Hex : MonoBehaviour
 
     public void Awake()
     {
-        edgeDirectionToNeighborHexes = new Dictionary<EdgeDirection, Hex>
+        edgeDirectionToneighbourHexes = new Dictionary<EdgeDirection, Hex>
             {
                 { EdgeDirection.TR, null! },
                 { EdgeDirection.R, null! },
@@ -66,7 +66,7 @@ public class Hex : MonoBehaviour
                 { EdgeDirection.TL, null! }
             };
 
-        vertexDirectionToContainedVertiñes = new Dictionary<VertexDirection, Vertex>()
+        vertexDirectionToContainedVertices = new Dictionary<VertexDirection, Vertex>()
             {
                 { VertexDirection.N, null! },
                 { VertexDirection.NE, null! },

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class BuildingsUI : MonoBehaviour
 {
@@ -116,14 +118,32 @@ public class BuildingsUI : MonoBehaviour
     #region Find Place And Do Action
     public void FindObjectAndDoAction<T>(UnityAction<int> planToBuild) where T : Place
     {
-        T objectCollider = GetColliderFromMousePosition<T>();
+        T objectCollider = GetColliderFromMousePositionIfNotPlacedAtDragAndDropBlockPlace<T>();
+
         if (objectCollider != null)
         {
             int id = objectCollider.id;
             planToBuild(id);
         }
     }
-    
+
+    private T GetColliderFromMousePositionIfNotPlacedAtDragAndDropBlockPlace<T>() where T : Place
+    {
+        if (IsUIBlockPlacement())
+        {
+            return default;
+        }
+
+        Vector2 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        List<RaycastHit2D> hits = Physics2D.BoxCastAll(position, new Vector2(0.5f, 0.5f), 90f, Vector2.zero).ToList();
+        RaycastHit2D hit = hits.FirstOrDefault(h => h.collider.GetComponent<T>() != null);
+        if (hit.collider == null)
+        {
+            return default;
+        }
+        return hit.collider.GetComponent<T>();
+    }
+
     public void FindEdgeAndBuildRoad()
     {
         FindObjectAndDoAction<Edge>(id => GameManager.Instance.mapManager.PlanToBuildRoadAndEndTurnIfPlaceOnPreparation(id));
@@ -184,18 +204,6 @@ public class BuildingsUI : MonoBehaviour
     public void CancelMoveRobber()
     {
         GameManager.Instance.uiManager.StopUserMoveRobberState();
-    }
-
-    private T GetColliderFromMousePosition<T>() where T : Place
-    {
-        Vector2 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        List<RaycastHit2D> hits = Physics2D.BoxCastAll(position, new Vector2(0.5f, 0.5f), 90f, Vector2.zero).ToList();
-        RaycastHit2D hit = hits.FirstOrDefault(h => h.collider.GetComponent<T>() != null);
-        if (hit.collider == null)
-        {
-            return null;
-        }
-        return hit.collider.GetComponent<T>();
     }
 
     public void HideOrShow()
@@ -282,6 +290,24 @@ public class BuildingsUI : MonoBehaviour
         }
     }
     #endregion
+
+    private bool IsUIBlockPlacement()
+    {
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current);
+        pointerEventData.position = Input.mousePosition;
+
+        List<RaycastResult> uiRaycastResults = new();
+        EventSystem.current.RaycastAll(pointerEventData, uiRaycastResults);
+        uiRaycastResults.RemoveAll(u => u.gameObject.GetComponent<DragAndDropObject>() != null);
+        uiRaycastResults.RemoveAll(u => u.gameObject.GetComponent<GameNotificationText>() != null);
+
+        if (uiRaycastResults.Count > 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     private void OnDestroy()
     {

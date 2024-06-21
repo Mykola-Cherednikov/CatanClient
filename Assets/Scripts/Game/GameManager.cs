@@ -63,6 +63,11 @@ public class GameManager : MonoBehaviour
         Multiplayer.Instance.BROADCAST_USER_ROBBERY_EVENT.AddListener(OnUserRobbery);
         Multiplayer.Instance.BROADCAST_BUY_CARD_EVENT.AddListener(OnBuyCard);
         Multiplayer.Instance.BROADCAST_USE_KNIGHT_CARD_EVENT.AddListener(OnUseKnightCard);
+        Multiplayer.Instance.BROADCAST_USE_MONOPOLY_CARD_EVENT.AddListener(OnUseMonopolyCard);
+        Multiplayer.Instance.BROADCAST_USE_ROAD_BUILDING_CARD_EVENT.AddListener(OnUseRoadBuildingCard);
+        Multiplayer.Instance.BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT.AddListener(OnUseYearOfPlentyCard);
+        Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY.AddListener(OnUserGetLargestArmy);
+        Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD.AddListener(OnUserGetLongestRoad);
         cameraGO = Camera.main.gameObject;
         cameraGO.transform.position = new Vector3(0f, 0f, -10f);
 
@@ -153,15 +158,11 @@ public class GameManager : MonoBehaviour
     private void OnTrade(object dtoObject)
     {
         SocketBroadcastTradeDTO dto = (SocketBroadcastTradeDTO)dtoObject;
-        Resource incomeResource = (Resource) Enum.Parse(typeof(Resource), dto.userIncomingResources);
-        Resource outgoingResource = (Resource)Enum.Parse(typeof(Resource), dto.userOutgoingResources);
-        int incomeCount = dto.requestedCountOfOutgoingResource * 4;
-        int outgoingCount = dto.requestedCountOfOutgoingResource;
-        KeyValuePair<Resource, int> addResources = new KeyValuePair<Resource, int>(outgoingResource, outgoingCount);
-        KeyValuePair<Resource, int> removeResources = new KeyValuePair<Resource, int>(incomeResource, incomeCount);
+        Resource sellResource = (Resource) Enum.Parse(typeof(Resource), dto.userSellResource);
+        Resource buyResource = (Resource)Enum.Parse(typeof(Resource), dto.userBuyResource);
 
-        resourceManager.RemoveResourcesFromUserAsTrade(userManager.GetUserById(dto.userId), removeResources);
-        resourceManager.AddResourcesToUserAsTrade(userManager.GetUserById(dto.userId), addResources);
+        resourceManager.RemoveResourcesFromUserAsTrade(userManager.GetUserById(dto.userId), sellResource, dto.requestedAmountOfBuyResource);
+        resourceManager.AddResourcesToUserAsTrade(userManager.GetUserById(dto.userId), buyResource, dto.requestedAmountOfBuyResource);
     }
 
     private void OnRobberyStart(object dtoObject)
@@ -209,6 +210,37 @@ public class GameManager : MonoBehaviour
         cardManager.UseKnightCard(userManager.GetUserById(dto.userId), dto.hexId);
     }
 
+    private void OnUseMonopolyCard(object dtoObject)
+    {
+        SocketBroadcastUseMonopolyCardDTO dto = (SocketBroadcastUseMonopolyCardDTO)dtoObject;
+        Resource resource = (Resource)Enum.Parse(typeof(Resource), dto.resource);
+        cardManager.UseMonopolyCard(userManager.GetUserById(dto.userId), resource);
+    }
+
+    private void OnUseYearOfPlentyCard(object dtoObject)
+    {
+        SocketBroadcastUseYearOfPlentyCardDTO dto = (SocketBroadcastUseYearOfPlentyCardDTO)dtoObject;
+        cardManager.UseYearOfPlentyCard(userManager.GetUserById(dto.userId), dto.resources);
+    }
+
+    private void OnUseRoadBuildingCard(object dtoObject)
+    {
+        SocketBroadcastUseRoadBuildingCardDTO dto = (SocketBroadcastUseRoadBuildingCardDTO)dtoObject;
+        cardManager.UseRoadBuildingCard(userManager.GetUserById(dto.userId));
+    }
+
+    private void OnUserGetLongestRoad(object dtoObject)
+    {
+        SocketBroadcastUserGetLongestRoadDTO dto = (SocketBroadcastUserGetLongestRoadDTO)dtoObject;
+        userManager.SetLongestRoadToUserAndClearFromOthers(userManager.GetUserById(dto.userId));
+    }
+
+    private void OnUserGetLargestArmy(object dtoObject)
+    {
+        SocketBroadcastUserGetLargestArmyDTO dto = (SocketBroadcastUserGetLargestArmyDTO)dtoObject;
+        userManager.SetLargestArmyToUserAndClearFromOthers(userManager.GetUserById(dto.userId));
+    }
+
     private void OnDestroy()
     {
         Multiplayer.Instance.CONNECTION_ERROR_EVENT.RemoveListener(OnConnectionError);
@@ -225,5 +257,10 @@ public class GameManager : MonoBehaviour
         Multiplayer.Instance.BROADCAST_USER_ROBBERY_EVENT.RemoveListener(OnUserRobbery);
         Multiplayer.Instance.BROADCAST_BUY_CARD_EVENT.RemoveListener(OnBuyCard);
         Multiplayer.Instance.BROADCAST_USE_KNIGHT_CARD_EVENT.RemoveListener(OnUseKnightCard);
+        Multiplayer.Instance.BROADCAST_USE_MONOPOLY_CARD_EVENT.RemoveListener(OnUseMonopolyCard);
+        Multiplayer.Instance.BROADCAST_USE_ROAD_BUILDING_CARD_EVENT.RemoveListener(OnUseRoadBuildingCard);
+        Multiplayer.Instance.BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT.RemoveListener(OnUseYearOfPlentyCard);
+        Multiplayer.Instance.BROADCAST_USER_GET_LARGEST_ARMY.RemoveListener(OnUserGetLargestArmy);
+        Multiplayer.Instance.BROADCAST_USER_GET_LONGEST_ROAD.RemoveListener(OnUserGetLongestRoad);
     }
 }

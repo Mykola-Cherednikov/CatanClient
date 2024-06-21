@@ -11,6 +11,7 @@ public class UserInTabForm : MonoBehaviour
     [SerializeField] private TMP_Text grainText;
     [SerializeField] private TMP_Text woolText;
     [SerializeField] private Image colorImage;
+    [SerializeField] private TMP_Text victoryPointText;
     private User user;
 
     private void Awake()
@@ -32,6 +33,7 @@ public class UserInTabForm : MonoBehaviour
         oreText.text = "Ore: " + user.userResources[Resource.ORE];
         grainText.text = "Grain: " + user.userResources[Resource.GRAIN];
         woolText.text = "Wool: " + user.userResources[Resource.WOOL];
+        victoryPointText.text = "Victory points: " + GameManager.Instance.userManager.GetUserVictoryPoints(user);
         colorImage.color = user.color;
     }
 

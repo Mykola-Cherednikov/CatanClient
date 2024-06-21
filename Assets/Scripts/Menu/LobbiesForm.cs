@@ -25,7 +25,7 @@ public class LobbiesForm : Form
 
     public void LogOut()
     {
-        StaticVariables.TOKEN = null;
+        ConfigVariables.TOKEN = null;
         Instantiate(loginFormPrefab, transform.parent);
         Destroy(gameObject);
     }
@@ -60,7 +60,7 @@ public class LobbiesForm : Form
         }
         else
         {
-            Debug.Log("Connection to lobby failed");
+            SimixmanLogger.Log("Connection to lobby failed");
             TurnOnInteractables();
             joinButton.interactable = false;
         }
@@ -69,7 +69,7 @@ public class LobbiesForm : Form
     private void OnJoinLobbyError(string json)
     {
         CreateErrorForm(json);
-        Debug.Log(json);
+        SimixmanLogger.Log(json);
         TurnOnInteractables();
         joinButton.interactable = false;
     }
@@ -93,7 +93,7 @@ public class LobbiesForm : Form
 
     private void OnGetLobbiesSuccess(string json)
     {
-        Debug.Log(json);
+        SimixmanLogger.Log(json);
 
         var lobbies = JsonUtility.FromJson<SmallLobbiesResponseDTO>(SimixmanUtils.FixArrayJson(json));
 
@@ -112,7 +112,7 @@ public class LobbiesForm : Form
     private void OnGetLobbiesError(string json)
     {
         CreateErrorForm(json);
-        Debug.Log(json);
+        SimixmanLogger.Log(json);
         TurnOnInteractables();
         joinButton.interactable = false;
     }
@@ -135,7 +135,7 @@ public class LobbiesForm : Form
     private void OnCreateLobbyError(string json)
     {
         CreateErrorForm(json);
-        Debug.Log(json);
+        SimixmanLogger.Log(json);
         TurnOnInteractables();
         joinButton.interactable = false;
     }

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7051885403917217606}
   - component: {fileID: 7446970712732211154}
   - component: {fileID: 6544151937132953280}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SettlementDragAndDrop
   m_TagString: Untagged
   m_Icon: {fileID: 0}

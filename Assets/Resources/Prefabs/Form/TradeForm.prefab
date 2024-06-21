@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8438070739678563405}
   - component: {fileID: 3353225430620636815}
   m_Layer: 5
-  m_Name: OutgoingField
+  m_Name: BuyField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -693,10 +693,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tradeButton: {fileID: 995554957466391108}
-  incomeField: {fileID: 88818212772497814}
-  outgoingField: {fileID: 3353225430620636815}
-  incomeDropdown: {fileID: 5719360461390047457}
-  outgoingDropdown: {fileID: 8907553379411668110}
+  sellField: {fileID: 88818212772497814}
+  buyField: {fileID: 3353225430620636815}
+  sellDropdown: {fileID: 5719360461390047457}
+  buyDropdown: {fileID: 8907553379411668110}
 --- !u!1 &1486653028285946986
 GameObject:
   m_ObjectHideFlags: 0
@@ -1099,7 +1099,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 618371706483598706}
   m_OnClick:
     m_PersistentCalls:
@@ -1388,7 +1388,7 @@ GameObject:
   - component: {fileID: 3146747225999832328}
   - component: {fileID: 8907553379411668110}
   m_Layer: 5
-  m_Name: OutgoingDropdown
+  m_Name: BuyDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1931,7 +1931,7 @@ GameObject:
   - component: {fileID: 1487785080600781822}
   - component: {fileID: 5719360461390047457}
   m_Layer: 5
-  m_Name: IncomeDropdown
+  m_Name: SellDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3456,7 +3456,7 @@ GameObject:
   - component: {fileID: 1281684419808415581}
   - component: {fileID: 88818212772497814}
   m_Layer: 5
-  m_Name: IncomeField
+  m_Name: SellField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -22,6 +22,10 @@ public class User
 
     public Color color;
 
+    public bool isLongestRoad;
+
+    public bool isLargestArmy;
+
     public User()
     {
         userResources = new Dictionary<Resource, int>()
@@ -46,6 +50,8 @@ public class User
         { 
             { Buff.ROAD_BUILDING, 0 } 
         };
+
+        isLongestRoad = false;
     }
 }
 

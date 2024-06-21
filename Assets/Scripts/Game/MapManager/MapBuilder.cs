@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +10,10 @@ public class MapBuilder : MonoBehaviour
     [SerializeField] private GameObject edgePrefab;
     [SerializeField] private GameObject numberTokenPrefab;
 
-    private Dictionary<EdgeDirection, Vector2> edgeDirectionsToNeighborHexOffset;
+    private Dictionary<EdgeDirection, Vector2> edgeDirectionsToNeighbourHexOffset;
     private Dictionary<VertexDirection, Vector2> vertexDirectionsToVertexOffset;
     private Dictionary<EdgeDirection, Vector2> edgeDirectionsToEdgeOffset;
-    private Dictionary<EdgeDirection, List<VertexDirection>> edgeDirectionsToNeighborVertexDirections;
+    private Dictionary<EdgeDirection, List<VertexDirection>> edgeDirectionsToNeighbourVertexDirections;
     private Dictionary<EdgeDirection, float> edgeDirectionsToEdgeRotation;
     private Dictionary<Vector2, Hex> coordinatesToHexes;
     private Dictionary<Vector2, Vertex> coordinatesToVertices;
@@ -36,7 +35,7 @@ public class MapBuilder : MonoBehaviour
         edgePrefab = Resources.Load<GameObject>("Prefabs/Game/Edge");
         numberTokenPrefab = Resources.Load<GameObject>("Prefabs/Game/NumberToken");
 
-        edgeDirectionsToNeighborHexOffset = new Dictionary<EdgeDirection, Vector2>()
+        edgeDirectionsToNeighbourHexOffset = new Dictionary<EdgeDirection, Vector2>()
         {
             { EdgeDirection.TR, new Vector2(xOffsetBetweenHex / 2f, yOffsetBetweenHex) },
             { EdgeDirection.R, new Vector2(xOffsetBetweenHex, 0f)},
@@ -66,7 +65,7 @@ public class MapBuilder : MonoBehaviour
             { EdgeDirection.TL, new Vector2(-xVertexOffsetFromHexCentre / 2f, yMiddleVertexOffsetFromHexCenter)}
         };
 
-        edgeDirectionsToNeighborVertexDirections = new Dictionary<EdgeDirection, List<VertexDirection>>()
+        edgeDirectionsToNeighbourVertexDirections = new Dictionary<EdgeDirection, List<VertexDirection>>()
         {
             { EdgeDirection.TR, new(){ VertexDirection.N, VertexDirection.NE} },
             { EdgeDirection.R, new(){ VertexDirection.NE, VertexDirection.SE} },
@@ -76,7 +75,7 @@ public class MapBuilder : MonoBehaviour
             { EdgeDirection.TL, new(){ VertexDirection.NW, VertexDirection.N} }
         };
 
-        edgeDirectionsToEdgeRotation = new Dictionary<EdgeDirection, float>() 
+        edgeDirectionsToEdgeRotation = new Dictionary<EdgeDirection, float>()
         {
             { EdgeDirection.TR, -30f},
             { EdgeDirection.R, 90f},
@@ -93,7 +92,7 @@ public class MapBuilder : MonoBehaviour
 
     public MapInfo CreateMap(List<int> hexesInRowCounts, int seed)
     {
-        mapRandom = new JavaRandom(seed);
+        mapRandom = new JavaRandom(200);
         this.hexesInRowCounts = hexesInRowCounts;
 
         GenerateMap();
@@ -104,12 +103,13 @@ public class MapBuilder : MonoBehaviour
     private void GenerateMap()
     {
         CreateHexes();
-        SetHexNeighbors();
+        SetHexneighbours();
         CreateVertices();
         CreateEdges();
-        LinkEdgesAndVerticesNeighbors();
+        LinkEdgesAndVerticesneighbours();
         GenerateAndSetHexTypes();
         GenerateHexNumberTokens();
+        GenerateHarbors();
     }
 
     private MapInfo GenerateMapInfoWithExistingInfo()
@@ -157,27 +157,27 @@ public class MapBuilder : MonoBehaviour
         coordinatesToHexes.Add(new Vector2(hexPosition.x, hexPosition.y), hex);
     }
 
-    private void SetHexNeighbors()
+    private void SetHexneighbours()
     {
         foreach (Hex hex in coordinatesToHexes.Values)
         {
-            SetNeighborsForHex(hex);
+            SetneighboursForHex(hex);
         }
     }
 
-    private void SetNeighborsForHex(Hex hex)
+    private void SetneighboursForHex(Hex hex)
     {
-        foreach (var directionOffsetPair in edgeDirectionsToNeighborHexOffset)
+        foreach (var directionOffsetPair in edgeDirectionsToNeighbourHexOffset)
         {
-            Vector2 neighborPosition = GetNeighborHexPosition(hex, directionOffsetPair.Value);
-            if (coordinatesToHexes.TryGetValue(neighborPosition, out Hex neighborHex))
+            Vector2 neighbourPosition = GetneighbourHexPosition(hex, directionOffsetPair.Value);
+            if (coordinatesToHexes.TryGetValue(neighbourPosition, out Hex neighbourHex))
             {
-                hex.edgeDirectionToNeighborHexes[directionOffsetPair.Key] = neighborHex;
+                hex.edgeDirectionToneighbourHexes[directionOffsetPair.Key] = neighbourHex;
             }
         }
     }
 
-    private Vector2 GetNeighborHexPosition(Hex hex, Vector2 offset)
+    private Vector2 GetneighbourHexPosition(Hex hex, Vector2 offset)
     {
         Vector2 hexPosition = new Vector2(hex.transform.position.x, hex.transform.position.y);
         return SimixmanUtils.DecimalSumOfTwoVectors2D(hexPosition, offset);
@@ -223,8 +223,8 @@ public class MapBuilder : MonoBehaviour
 
     private void AssignVertexToHex(Hex hex, Vertex vertex, VertexDirection direction)
     {
-        hex.vertexDirectionToContainedVertiñes[direction] = vertex;
-        vertex.neighborHexes.Add(hex);
+        hex.vertexDirectionToContainedVertices[direction] = vertex;
+        vertex.neighbourHexes.Add(hex);
     }
 
     private void CreateEdges()
@@ -248,7 +248,7 @@ public class MapBuilder : MonoBehaviour
             }
 
             AssignEdgeToHex(hex, edge, directionOffsetPair.Key);
-            
+
         }
     }
 
@@ -278,18 +278,18 @@ public class MapBuilder : MonoBehaviour
     private void AssignEdgeToHex(Hex hex, Edge edge, EdgeDirection direction)
     {
         hex.edgeDirectionToContainedEdges[direction] = edge;
-        edge.neighborHexes.Add(hex);
+        edge.neighbourHexes.Add(hex);
     }
 
-    private void LinkEdgesAndVerticesNeighbors()
+    private void LinkEdgesAndVerticesneighbours()
     {
         foreach (Hex hex in coordinatesToHexes.Values)
         {
-            LinkNeighborsEdgesAndVerticesForHex(hex);
+            LinkneighboursEdgesAndVerticesForHex(hex);
         }
     }
 
-    private void LinkNeighborsEdgesAndVerticesForHex(Hex hex)
+    private void LinkneighboursEdgesAndVerticesForHex(Hex hex)
     {
         foreach (var edgeDirectionPair in hex.edgeDirectionToContainedEdges)
         {
@@ -299,19 +299,19 @@ public class MapBuilder : MonoBehaviour
 
     private void LinkEdgeWithVertices(Hex hex, EdgeDirection edgeDirection, Edge edge)
     {
-        foreach (VertexDirection vertexDirection in edgeDirectionsToNeighborVertexDirections[edgeDirection])
+        foreach (VertexDirection vertexDirection in edgeDirectionsToNeighbourVertexDirections[edgeDirection])
         {
-            Vertex vertex = hex.vertexDirectionToContainedVertiñes[vertexDirection];
+            Vertex vertex = hex.vertexDirectionToContainedVertices[vertexDirection];
             AddVertexToEdgeIfNotExists(edge, vertex);
         }
     }
 
     private void AddVertexToEdgeIfNotExists(Edge edge, Vertex vertex)
     {
-        if (!edge.neighborVertices.Contains(vertex))
+        if (!edge.neighbourVertices.Contains(vertex))
         {
-            edge.neighborVertices.Add(vertex);
-            vertex.neighborEdges.Add(edge);
+            edge.neighbourVertices.Add(vertex);
+            vertex.neighbourEdges.Add(edge);
         }
     }
 
@@ -407,5 +407,58 @@ public class MapBuilder : MonoBehaviour
             int num = numberTokensQueue.Dequeue();
             hexes[i].numberToken.numberText.text = num.ToString();
         }
+    }
+
+    private void GenerateHarbors()
+    {
+        List<Edge> boundaryEdges = coordinatesToEdges.Values.Where(e => e.neighbourHexes.Count == 1).ToList();
+        List<Edge> boundaryEdgesInOrder = GetBoundaryEdgesInRightOrder(boundaryEdges);
+
+        List<int> spacesBetweenHarbors = new() { 3, 3, 4 };
+        List<HarborType> harborTypes = new() { HarborType.ORE, HarborType.BRICK, HarborType.LUMBER, HarborType.GRAIN, HarborType.WOOL, HarborType.GENERIC, HarborType.GENERIC, HarborType.GENERIC, HarborType.GENERIC };
+        Shuffle(harborTypes);
+        int startIndexEdge = mapRandom.NextInt(boundaryEdgesInOrder.Count);
+        int finalIndexEdge = startIndexEdge + boundaryEdges.Count;
+        int index = startIndexEdge;
+
+        int i = 0;
+        while (index < finalIndexEdge)
+        {
+            List<Vertex> vertices = boundaryEdgesInOrder[index % boundaryEdgesInOrder.Count].neighbourVertices;
+            HarborType harborType = harborTypes[i % harborTypes.Count];
+            SimixmanLogger.Log("Harbor at: " + boundaryEdgesInOrder[index % boundaryEdgesInOrder.Count].id 
+                + " with type: " + Enum.GetName(typeof(HarborType), harborType));
+            index += spacesBetweenHarbors[i % spacesBetweenHarbors.Count];
+            i++;
+
+            foreach (Vertex vertex in vertices)
+            {
+                vertex.harborType = harborType;
+            }
+        }
+    }
+
+    private List<Edge> GetBoundaryEdgesInRightOrder(List<Edge> boundaryEdges)
+    {
+        HashSet<Edge> boundaryEdgesInOrder = new HashSet<Edge>();
+        Edge currentEdge = boundaryEdges[0];
+        boundaryEdgesInOrder.Add(currentEdge);
+        bool isFound = true;
+
+        while (isFound)
+        {
+            isFound = false;
+            currentEdge = MapUtils.GetneighbourEdgesToEdge(currentEdge)
+            .Where(e => boundaryEdges.Contains(e) && !boundaryEdgesInOrder.Contains(e)).FirstOrDefault();
+
+            if (currentEdge != null)
+            {
+                isFound = true;
+                boundaryEdgesInOrder.Add(currentEdge);
+
+            }
+        }
+
+        return boundaryEdgesInOrder.ToList();
     }
 }

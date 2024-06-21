@@ -4,42 +4,51 @@ using Unity.VisualScripting;
 
 public class MapUtils
 {
-    public static List<Edge> GetNeighborEdgesToEdgeWithBuildingType(Edge e, EdgeBuildingType edgeBuildingType)
+    public static List<Edge> GetneighbourEdgesToEdge(Edge e)
     {
-        List<Edge> neighborEdgesToEdge = new List<Edge>();
-        List<Vertex> neighborVertices = e.neighborVertices;
+        List<Edge> neighbourEdgesToEdge = new List<Edge>();
+        List<Vertex> neighbourVertices = e.neighbourVertices;
 
-        foreach (var v in neighborVertices)
+        foreach (var v in neighbourVertices)
         {
-            foreach (var edge in v.neighborEdges)
+            foreach (var edge in v.neighbourEdges)
             {
-                if (edge.type == edgeBuildingType && edge != e)
+                if (edge != e)
                 {
-                    neighborEdgesToEdge.Add(edge);
+                    neighbourEdgesToEdge.Add(edge);
                 }
             }
         }
 
-        return neighborEdgesToEdge;
+        return neighbourEdgesToEdge;
     }
 
-    public static List<Vertex> GetNeighborVerticesToVertex(Vertex v)
+    public static List<Edge> GetneighbourEdgesToEdgeWithBuildingType(Edge e, EdgeBuildingType edgeBuildingType)
     {
-        List<Vertex> neighborVerticesToVertex = new List<Vertex>();
-        List<Edge> neighborEdgex = v.neighborEdges;
+        List<Edge> neighbourEdgesToEdge = GetneighbourEdgesToEdge(e);
 
-        foreach (var e in neighborEdgex)
+        neighbourEdgesToEdge = neighbourEdgesToEdge.Where(edge => edge.type == edgeBuildingType).ToList();
+
+        return neighbourEdgesToEdge;
+    }
+
+    public static List<Vertex> GetneighbourVerticesToVertex(Vertex v)
+    {
+        List<Vertex> neighbourVerticesToVertex = new List<Vertex>();
+        List<Edge> neighbourEdgex = v.neighbourEdges;
+
+        foreach (var e in neighbourEdgex)
         {
-            foreach (var vertex in e.neighborVertices)
+            foreach (var vertex in e.neighbourVertices)
             {
                 if (vertex != v)
                 {
-                    neighborVerticesToVertex.Add(vertex);
+                    neighbourVerticesToVertex.Add(vertex);
                 }
             }
         }
 
-        return neighborVerticesToVertex;
+        return neighbourVerticesToVertex;
     }
 
     public static List<Edge> GetAvailableEdgesForUser(User user, List<Vertex> vertices, List<Edge> edges)
@@ -49,7 +58,7 @@ public class MapUtils
         List<Vertex> userVertices = vertices.FindAll(v => v.user == user);
         foreach (var v in userVertices)
         {
-            foreach (var edge in v.neighborEdges)
+            foreach (var edge in v.neighbourEdges)
             {
                 if (edge.type == EdgeBuildingType.NONE)
                 {
@@ -61,7 +70,7 @@ public class MapUtils
         List<Edge> userEdges = edges.FindAll(e => e.user == user);
         foreach (var edge in userEdges)
         {
-            availableEdges.AddRange(GetNeighborEdgesToEdgeWithBuildingType(edge, EdgeBuildingType.NONE));
+            availableEdges.AddRange(GetneighbourEdgesToEdgeWithBuildingType(edge, EdgeBuildingType.NONE));
         }
 
         return availableEdges.ToList();
@@ -73,7 +82,7 @@ public class MapUtils
         List<Edge> userEdges = edges.FindAll(e => e.user == thisUser);
         foreach (var e in userEdges)
         {
-            foreach (var vertex in e.neighborVertices)
+            foreach (var vertex in e.neighbourVertices)
             {
                 if (vertex.type == VertexBuildingType.NONE)
                 {
@@ -107,7 +116,7 @@ public class MapUtils
             return false;
         }
 
-        if(v.type != VertexBuildingType.SETTLEMENT)
+        if (v.type != VertexBuildingType.SETTLEMENT)
         {
             return false;
         }
@@ -117,7 +126,7 @@ public class MapUtils
 
     public static List<User> GetUniqueUsersInHex(Hex hex)
     {
-        List<Vertex> verticesToHex = hex.vertexDirectionToContainedVertiñes.Values.ToList();
+        List<Vertex> verticesToHex = hex.vertexDirectionToContainedVertices.Values.ToList();
         List<Vertex> verticiesWithUser = verticesToHex.Where(v => v.user != null).ToList();
         List<User> usersInHex = verticiesWithUser.Select(v => v.user).ToList();
         List<User> uniqueUsersInHex = usersInHex.Distinct().ToList();
@@ -132,8 +141,8 @@ public class MapUtils
         int maxNum = 0;
         foreach (var userEdge in userEdges)
         {
-            int currentNum = FindLongestRoadLength(userEdge, new List<Edge>(), new List<Edge>(), u);
-            if(currentNum > maxNum)
+            int currentNum = FindLongestRoadLength(userEdge, null, new List<Edge>(), u);
+            if (currentNum > maxNum)
             {
                 maxNum = currentNum;
             }
@@ -142,36 +151,27 @@ public class MapUtils
         return maxNum;
     }
 
-    public static int FindLongestRoadLength(Edge edge, List<Edge> currentRoad, List<Edge> previousNeighboursEdges, User u)
+    public static int FindLongestRoadLength(Edge currentEdge, Edge previousEdge, List<Edge> currentRoad, User u)
     {
-        currentRoad.Add(edge);
+        currentRoad.Add(currentEdge);
         int maxLength = currentRoad.Count;
-        List<Edge> previousEdges = GetNeighborEdgesToEdgeWithBuildingType(edge, EdgeBuildingType.ROAD);
-        List<Edge> nextEdges = GetNeighborEdgesToEdgeWithBuildingType(edge, EdgeBuildingType.ROAD);
 
+        List<Vertex> nextVerteces = currentEdge.neighbourVertices;
 
-        List<Vertex> edgeVertices = new List<Vertex>(edge.neighborVertices);
-        List<Vertex> previousNeighboursVertices = previousNeighboursEdges.SelectMany(e => e.neighborVertices).ToList();
-        Vertex checkingVertex = edgeVertices.FirstOrDefault(e => !previousNeighboursVertices.Contains(e));
-
-        if(checkingVertex.user != u)
+        if (previousEdge != null)
         {
-            return maxLength;
+            nextVerteces = nextVerteces.Except(previousEdge.neighbourVertices).ToList();
         }
 
-        nextEdges = nextEdges.Except(previousNeighboursEdges).ToList();
-        previousEdges.Add(edge);
+        List<Vertex> nextUserOrFreeVerteces = nextVerteces.Where(v => v.user == null || v.user == u).ToList();
+        List<Edge> nextUserEdges = nextUserOrFreeVerteces.SelectMany(v => v.neighbourEdges)
+            .Where(e => e.user == u && e != currentEdge).ToList();
 
-        foreach(var currentEdge in nextEdges)
+        foreach (var nextUserEdge in nextUserEdges)
         {
-            if(currentEdge.user != u)
-            {
-                continue;
-            }
+            int currentRoadLength = FindLongestRoadLength(nextUserEdge, currentEdge, new List<Edge>(currentRoad), u);
 
-            int currentRoadLength = FindLongestRoadLength(currentEdge, new List<Edge>(currentRoad), new List<Edge>(previousEdges), u);
-
-            if(currentRoadLength > maxLength)
+            if (currentRoadLength > maxLength)
             {
                 maxLength = currentRoadLength;
             }

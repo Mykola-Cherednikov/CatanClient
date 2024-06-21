@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8729318118802285873}
   - component: {fileID: 7349348500109763016}
   - component: {fileID: 7514488845238242591}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: RoadDragAndDrop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -66,8 +66,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: -7011661911796687584, guid: 33d01c54254e0344eaa9e26b6a1a29fa, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4

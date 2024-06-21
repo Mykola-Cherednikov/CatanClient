@@ -14,11 +14,11 @@ public static class SimixmanUtils
     public static async Task<RestResponseData> SendRequest<T>(string uri, T content, HttpMethod httpMethod, bool isBody = true, bool isAuthorized = false) where T : RestDTOClass
     {
         using HttpClient httpClient = new HttpClient();
-        httpClient.Timeout = TimeSpan.FromSeconds(StaticVariables.Timeout);
+        httpClient.Timeout = TimeSpan.FromSeconds(ConfigVariables.Timeout);
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         if (isAuthorized)
         {
-            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", StaticVariables.TOKEN);
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", ConfigVariables.TOKEN);
         }
         httpRequestMessage.RequestUri = new Uri(uri);
         httpRequestMessage.Method = httpMethod;
@@ -60,12 +60,12 @@ public static class SimixmanUtils
             string json = JsonUtility.ToJson(content) + "/nq";
             byte[] sendBuffer = Encoding.UTF8.GetBytes(json);
             await socket.SendAsync(sendBuffer, SocketFlags.None);
-            Debug.Log("Send To Server: Send data to server with type " + content.GetType().ToString());
+            SimixmanLogger.Log("Send To Server: Send data to server with type " + content.GetType().ToString());
             return true;
         }
         catch (Exception)
         {
-            Debug.Log("Send To Server: Failed to send data");
+            SimixmanLogger.Log("Send To Server: Failed to send data");
             return false;
         }
     }

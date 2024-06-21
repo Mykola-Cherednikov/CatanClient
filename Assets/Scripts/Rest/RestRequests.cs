@@ -13,7 +13,7 @@ public class RestRequests
         requestDTO.login = login;
         requestDTO.password = password;
 
-        var restResponse = await SimixmanUtils.SendRequest(StaticVariables.REST_URI_ADDRESS + "/auth/register",
+        var restResponse = await SimixmanUtils.SendRequest(ConfigVariables.REST_URI_ADDRESS + "/auth/register",
             requestDTO, HttpMethod.Post);
 
         if (restResponse.resultStatusCode == HttpStatusCode.OK)
@@ -33,7 +33,7 @@ public class RestRequests
         requestDTO.password = password;
 
         var restResponse = await SimixmanUtils.SendRequest(
-            StaticVariables.REST_URI_ADDRESS + "/auth/login",
+            ConfigVariables.REST_URI_ADDRESS + "/auth/login",
             requestDTO, HttpMethod.Post);
 
         if (restResponse.resultStatusCode == HttpStatusCode.OK)
@@ -49,7 +49,7 @@ public class RestRequests
     public static async Task GetLobbies(Action<string> onSuccess, Action<string> onError)
     {
         var restResponse = await SimixmanUtils.SendRequest(
-            StaticVariables.REST_URI_ADDRESS + "/lobbies/all",
+            ConfigVariables.REST_URI_ADDRESS + "/lobbies/all",
             new RestDTOClass(), HttpMethod.Get, false, true);
 
         HttpStatusCode resultStatusCode = restResponse.resultStatusCode;
@@ -67,7 +67,7 @@ public class RestRequests
     public static async Task JoinLobby(int lobbyId, Action<string> onSuccess, Action<string> onError)
     {
         var restResponse = await SimixmanUtils.SendRequest(
-            StaticVariables.REST_URI_ADDRESS + $"/lobbies/lobby/join/{lobbyId}",
+            ConfigVariables.REST_URI_ADDRESS + $"/lobbies/lobby/join/{lobbyId}",
             new RestDTOClass(), HttpMethod.Post, false, true);
 
         HttpStatusCode resultStatusCode = restResponse.resultStatusCode;
@@ -85,7 +85,7 @@ public class RestRequests
     public static async Task GetLobbyData(Action<string> onSuccess, Action<string> onError)
     {
         var restResponse = await SimixmanUtils.SendRequest(
-            StaticVariables.REST_URI_ADDRESS + $"/lobbies/lobby/details",
+            ConfigVariables.REST_URI_ADDRESS + $"/lobbies/lobby/details",
             new RestDTOClass(), HttpMethod.Get, false, true);
 
         HttpStatusCode resultStatusCode = restResponse.resultStatusCode;
@@ -106,7 +106,7 @@ public class RestRequests
         requestDTO.lobbyName = lobbyName;
 
         var result = await SimixmanUtils.SendRequest(
-            StaticVariables.REST_URI_ADDRESS + $"/lobbies/create",
+            ConfigVariables.REST_URI_ADDRESS + $"/lobbies/create",
             requestDTO, HttpMethod.Post, true, true);
 
         HttpStatusCode resultStatusCode = result.resultStatusCode;

@@ -8,13 +8,26 @@ public enum VertexBuildingType
     CITY
 }
 
+public enum HarborType
+{
+    NONE,
+    GENERIC,
+    BRICK,
+    LUMBER,
+    ORE,
+    GRAIN,
+    WOOL
+}
+
 public class Vertex : Place
 {
-    public List<Hex> neighborHexes;
+    public List<Hex> neighbourHexes;
 
-    public List<Edge> neighborEdges;
+    public List<Edge> neighbourEdges;
 
     public VertexBuildingType type;
+
+    public HarborType harborType;
 
     [SerializeField] private Sprite noneSprite;
     [SerializeField] private Sprite citySprite;
@@ -23,8 +36,8 @@ public class Vertex : Place
     protected override void Awake()
     {
         base.Awake();
-        neighborHexes = new();
-        neighborEdges = new();
+        neighbourHexes = new();
+        neighbourEdges = new();
         spriteRenderer.sprite = noneSprite;
         HideSpriteAndCollider();
     }

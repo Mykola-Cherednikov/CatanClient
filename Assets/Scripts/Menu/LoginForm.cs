@@ -48,8 +48,8 @@ public class LoginForm : Form
     private void OnLoginSuccess(string resultData)
     {
         LoginResponseDTO dto = JsonUtility.FromJson<LoginResponseDTO>(resultData);
-        StaticVariables.TOKEN = dto.token;
-        Debug.Log("Login success: " + dto.token);
+        ConfigVariables.TOKEN = dto.token;
+        SimixmanLogger.Log("Login success: " + dto.token);
         if (rememberMeToggle.isOn)
         {
             PlayerPrefs.SetString("Login", loginInputField.text);
@@ -69,7 +69,7 @@ public class LoginForm : Form
     private void OnLoginError(string resultData)
     {
         CreateErrorForm(resultData);
-        Debug.Log(resultData);
+        SimixmanLogger.Log(resultData);
     }
     #endregion
 }

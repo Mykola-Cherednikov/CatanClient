@@ -48,7 +48,13 @@ public enum EventType
     BROADCAST_USE_KNIGHT_CARD,
     BROADCAST_USE_MONOPOLY_CARD,
     BROADCAST_USE_YEAR_OF_PLENTY_CARD,
-    BROADCAST_USE_ROAD_BUILDING_CARD
+    BROADCAST_USE_ROAD_BUILDING_CARD,
+    BROADCAST_USER_GET_LONGEST_ROAD,
+    BROADCAST_USER_GET_LARGEST_ARMY,
+    REQUEST_EXCHANGE_OFFER,
+    RESPONSE_EXCHANGE_OFFER,
+    REQUEST_EXCHANGE,
+    BROADCAST_EXCHANGE
 }
 
 public class Multiplayer : MonoBehaviour
@@ -105,6 +111,10 @@ public class Multiplayer : MonoBehaviour
     public UnityEvent<object> BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT;
 
     public UnityEvent<object> BROADCAST_USE_MONOPOLY_CARD_EVENT;
+
+    public UnityEvent<object> BROADCAST_USER_GET_LONGEST_ROAD;
+
+    public UnityEvent<object> BROADCAST_USER_GET_LARGEST_ARMY;
     #endregion
 
     private void Awake()
@@ -130,7 +140,12 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_ROBBERY_START, typeof(SocketDTOClass) },
             { EventType.BROADCAST_ROBBER_ROBBERY, typeof(SocketBroadcastResourcesDTO) },
             { EventType.BROADCAST_USER_ROBBERY, typeof(SocketBroadcastUserRobberyDTO) },
-            { EventType.BROADCAST_USE_KNIGHT_CARD, typeof(SocketBroadcastUseKnightCardDTO) }
+            { EventType.BROADCAST_USE_KNIGHT_CARD, typeof(SocketBroadcastUseKnightCardDTO) },
+            { EventType.BROADCAST_USE_MONOPOLY_CARD, typeof(SocketBroadcastUseMonopolyCardDTO) },
+            { EventType.BROADCAST_USE_ROAD_BUILDING_CARD, typeof(SocketBroadcastUseRoadBuildingCardDTO) },
+            { EventType.BROADCAST_USE_YEAR_OF_PLENTY_CARD, typeof(SocketBroadcastUseYearOfPlentyCardDTO) },
+            { EventType.BROADCAST_USER_GET_LARGEST_ARMY, typeof(SocketBroadcastUserGetLargestArmyDTO) },
+            { EventType.BROADCAST_USER_GET_LONGEST_ROAD, typeof(SocketBroadcastUserGetLongestRoadDTO) }
         };
         eventTypesToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
         {
@@ -153,7 +168,12 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_ROBBERY_START, BROADCAST_ROBBERY_START_EVENT},
             { EventType.BROADCAST_ROBBER_ROBBERY, BROADCAST_ROBBER_ROBBERY_EVENT },
             { EventType.BROADCAST_USER_ROBBERY, BROADCAST_USER_ROBBERY_EVENT },
-            { EventType.BROADCAST_USE_KNIGHT_CARD, BROADCAST_USE_KNIGHT_CARD_EVENT }
+            { EventType.BROADCAST_USE_KNIGHT_CARD, BROADCAST_USE_KNIGHT_CARD_EVENT },
+            { EventType.BROADCAST_USE_MONOPOLY_CARD, BROADCAST_USE_MONOPOLY_CARD_EVENT },
+            { EventType.BROADCAST_USE_ROAD_BUILDING_CARD, BROADCAST_USE_ROAD_BUILDING_CARD_EVENT },
+            { EventType.BROADCAST_USE_YEAR_OF_PLENTY_CARD, BROADCAST_USE_YEAR_OF_PLENTY_CARD_EVENT },
+            { EventType.BROADCAST_USER_GET_LARGEST_ARMY, BROADCAST_USER_GET_LARGEST_ARMY },
+            { EventType.BROADCAST_USER_GET_LONGEST_ROAD, BROADCAST_USER_GET_LONGEST_ROAD }
         };
 
         RESPONSE_CONNECT_TO_LOBBY_EVENT.AddListener(ConnectFromServer);
@@ -166,26 +186,26 @@ public class Multiplayer : MonoBehaviour
     #region Connect To Lobby
     public async Task<bool> ConnectToLobby()
     {
-        Debug.Log("Connect To Lobby: Trying to connect");
+        SimixmanLogger.Log("Connect To Lobby: Trying to connect");
         try
         {
             clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             clientSocket.ReceiveBufferSize = 4096;
             clientSocket.SendBufferSize = 4096;
-            IPEndPoint serverEndPoint = new(IPAddress.Parse(StaticVariables.SERVER_ADDRESS), StaticVariables.SERVER_PORT);
-            Debug.Log("Connect To Lobby: Client socket creation successful");
+            IPEndPoint serverEndPoint = new(IPAddress.Parse(ConfigVariables.SERVER_IP_ADDRESS), ConfigVariables.SERVER_PORT);
+            SimixmanLogger.Log("Connect To Lobby: Client socket creation successful");
             await clientSocket.ConnectAsync(serverEndPoint);
-            Debug.Log("Connect To Lobby: Client socket connection successful");
+            SimixmanLogger.Log("Connect To Lobby: Client socket connection successful");
             await SocketSendConnectRequest();
-            Debug.Log("Connect To Lobby: Client socket send connection message to server");
+            SimixmanLogger.Log("Connect To Lobby: Client socket send connection message to server");
             await Task.Run(ReceiveConnectMessageFromServer);
-            Debug.Log("Connect To Lobby: Client socket receive connection message from server");
+            SimixmanLogger.Log("Connect To Lobby: Client socket receive connection message from server");
             ListenServerAndHandleMessages();
             return true;
         }
         catch (Exception e)
         {
-            Debug.LogError("Connect To Lobby: Connection error " + e);
+            SimixmanLogger.LogError("Connect To Lobby: Connection error " + e);
             CloseSocket();
             return false;
         }
@@ -194,12 +214,12 @@ public class Multiplayer : MonoBehaviour
     private void ConnectFromServer(object data)
     {
         SocketResponseConnectDTO dto = (SocketResponseConnectDTO)data;
-        Debug.Log(dto.message);
+        SimixmanLogger.Log(dto.message);
     }
 
     private void ReceiveConnectMessageFromServer()
     {
-        clientSocket.ReceiveTimeout = StaticVariables.Timeout * 1000;
+        clientSocket.ReceiveTimeout = ConfigVariables.Timeout * 1000;
         byte[] receiveBuffer = new byte[4096];
         int receivedNumOfBytes = clientSocket.Receive(receiveBuffer, SocketFlags.None);
         string message = Encoding.UTF8.GetString(receiveBuffer[..receivedNumOfBytes]);
@@ -213,13 +233,13 @@ public class Multiplayer : MonoBehaviour
     {
         try
         {
-            Debug.Log("Listen Server: Start listen server");
+            SimixmanLogger.Log("Listen Server: Start listen server");
             byte[] receiveBuffer = new byte[4096];
             int receivedNumOfBytes;
             StringBuilder message = new StringBuilder();
             while ((receivedNumOfBytes = await clientSocket.ReceiveAsync(receiveBuffer, SocketFlags.None)) != 0)
             {
-                //Debug.LogError(message.ToString());
+                //SimixmanLogger.LogError(message.ToString());
                 message.Append(Encoding.UTF8.GetString(receiveBuffer[..receivedNumOfBytes]));
                 if (message.ToString()[(message.Length - 2)..message.Length] == "\r\n")
                 {
@@ -227,11 +247,11 @@ public class Multiplayer : MonoBehaviour
                     message = new StringBuilder();
                 }
             }
-            Debug.LogError("Listen Server: Stop listen server");
+            SimixmanLogger.LogError("Listen Server: Stop listen server");
         }
         catch (Exception e)
         {
-            Debug.LogError("Listen Server: Error stop listen server. " + e.Message);
+            SimixmanLogger.LogError("Listen Server: Error stop listen server. " + e.Message);
         }
 
         CloseSocket();
@@ -251,7 +271,7 @@ public class Multiplayer : MonoBehaviour
         }
         catch
         {
-            Debug.LogError("Handle Message: " + message);
+            SimixmanLogger.LogError("Handle Message: " + message);
         }
     }
 
@@ -260,27 +280,27 @@ public class Multiplayer : MonoBehaviour
         try
         {
             SocketDTOClass dto = JsonUtility.FromJson<SocketDTOClass>(jsonQuery);
-            Debug.Log("Handle Message: Receive data from server with event: " + dto.eventType);
-            Debug.Log($"{jsonQuery}");
+            SimixmanLogger.Log("Handle Message: Receive data from server with event: " + dto.eventType);
+            SimixmanLogger.Log($"{jsonQuery}");
             EventType eventType = (EventType)Enum.Parse(typeof(EventType), dto.eventType);
             object objectFromJson = JsonUtility.FromJson(jsonQuery, eventTypesToDTOTypes[eventType]);
             eventTypesToUnityEvent[eventType]?.Invoke(objectFromJson);
         }
         catch (Exception e)
         {
-            Debug.LogError("Error: " + e);
-            Debug.LogError("Error in parse eventType: " + jsonQuery);
+            SimixmanLogger.LogError("Error: " + e);
+            SimixmanLogger.LogError("Error in parse eventType: " + jsonQuery);
         }
     }
     #endregion
 
     public void Disconnect()
     {
-        Debug.Log("Disconnect From Lobby: Trying to disconnect");
+        SimixmanLogger.Log("Disconnect From Lobby: Trying to disconnect");
 
         CloseSocket();
 
-        Debug.Log("Disconnect From Lobby: Disconnect success");
+        SimixmanLogger.Log("Disconnect From Lobby: Disconnect success");
     }
 
     private void CloseSocket()
@@ -348,13 +368,13 @@ public class Multiplayer : MonoBehaviour
         await clientSocket.SendToServer(dto);
     }
 
-    public async Task SocketSendUserTradeRequest(Resource incomeResource, Resource outgoingResource, int count)
+    public async Task SocketSendUserTradeRequest(Resource sellResource, Resource buyResource, int amount)
     {
         SocketRequestTradeDTO dto = new SocketRequestTradeDTO();
         dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_TRADE_RESOURCE);
-        dto.incomingResource = Enum.GetName(typeof(Resource), incomeResource);
-        dto.outgoingResource = Enum.GetName(typeof(Resource), outgoingResource);
-        dto.requestedCountOfOutgoingResource = count;
+        dto.sellResource = Enum.GetName(typeof(Resource), sellResource);
+        dto.buyResource = Enum.GetName(typeof(Resource), buyResource);
+        dto.requestedAmountOfBuyResource = amount;
         await clientSocket.SendToServer(dto);
     }
 
@@ -407,6 +427,27 @@ public class Multiplayer : MonoBehaviour
         SocketRequestUseKnightCardDTO dto = new SocketRequestUseKnightCardDTO();
         dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_USE_KNIGHT_CARD);
         dto.hexId = hexId;
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendExchangeOfferRequest(Resource initiatorResource, int initiatorAmountOfResource, int targetUserId, Resource targetResource, int targetAmountOfResource)
+    {
+        SocketRequestExchangeOfferDTO dto = new SocketRequestExchangeOfferDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_EXCHANGE_OFFER);
+        dto.targetUserId = targetUserId;
+        dto.targetAmountOfResource = targetAmountOfResource;
+        dto.initiatorAmountOfResource = initiatorAmountOfResource;
+        dto.targetResource = Enum.GetName(typeof(Resource), targetResource);
+        dto.initiatorResource = Enum.GetName(typeof(Resource), initiatorResource);
+
+        await clientSocket.SendToServer(dto);
+    }
+
+    public async Task SocketSendExchangeRequest(int exchangeId)
+    {
+        SocketRequestExchangeDTO dto = new SocketRequestExchangeDTO();
+        dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_EXCHANGE);
+        dto.exchangeId = exchangeId;
         await clientSocket.SendToServer(dto);
     }
     #endregion

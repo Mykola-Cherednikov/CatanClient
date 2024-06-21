@@ -28,12 +28,12 @@ public class RegistrationForm : Form
     private void OnRegistrationSuccess(string json)
     {
         CreateInfoForm("Registration success");
-        Debug.Log("Registration success");
+        SimixmanLogger.Log("Registration success");
     }
 
     private void OnRegistrationError(string json)
     {
         CreateErrorForm(json);
-        Debug.Log(json);
+        SimixmanLogger.Log(json);
     }
 }

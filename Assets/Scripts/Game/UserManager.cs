@@ -22,7 +22,7 @@ public class UserManager : MonoBehaviour
         isCurrentUserTurn = true;
 
         numOfAvailableDevelopmentCard = 5;
-        Debug.Log("User Manager");
+        SimixmanLogger.Log("User Manager");
 
         cardToSpecificCondition = new Dictionary<Card, Func<bool>>() { {Card.KNIGHT, GameManager.Instance.mapManager.IsRobberNearbyCurrentUser } };
     }
@@ -104,7 +104,7 @@ public class UserManager : MonoBehaviour
 
     private bool IsCurrentUserHaveEnoughResources(KeyValuePair<Resource, int> resources)
     {
-        if (currentUser.userResources[resources.Key] < resources.Value)
+        if (IsUserHaveEnoughResources(currentUser, resources))
         {
             return false;
         }
@@ -112,7 +112,17 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
-    public bool IsCurrentUserCanTradeNow(KeyValuePair<Resource, int> incomeResource, KeyValuePair<Resource, int> outgoingResource)
+    private bool IsUserHaveEnoughResources(User user, KeyValuePair<Resource, int> resources)
+    {
+        if (user.userResources[resources.Key] < resources.Value)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool IsCurrentUserCanTradeNow(KeyValuePair<Resource, int> sellResource, KeyValuePair<Resource, int> buyResource)
     {
         if (!isCurrentUserTurn)
         {
@@ -121,12 +131,27 @@ public class UserManager : MonoBehaviour
 
         //Check if user have port with this resource type
 
-        if (!GameManager.Instance.resourceManager.IsStorageHaveEnoughResources(outgoingResource))
+        if (!GameManager.Instance.resourceManager.IsStorageHaveEnoughResources(buyResource))
         {
             return false;
         }
 
-        if (!IsCurrentUserHaveEnoughResources(incomeResource))
+        if (!IsCurrentUserHaveEnoughResources(sellResource))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool IsCurrentUserCanExchangeWithUserNow(User targetUser, KeyValuePair<Resource, int> initiatorResources, KeyValuePair<Resource, int> targetResources)
+    {
+        if(!isCurrentUserTurn)
+        {
+            return false;
+        }
+
+        if(!IsCurrentUserHaveEnoughResources(initiatorResources) || !IsUserHaveEnoughResources(targetUser, targetResources))
         {
             return false;
         }
@@ -181,7 +206,7 @@ public class UserManager : MonoBehaviour
         }
         else if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Road))
+            if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Road) && currentUser.buffDuration[Buff.ROAD_BUILDING] <= 0)
             {
                 return false;
             }
@@ -257,6 +282,7 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
+    #region Check User Card
     public bool IsCurrentUserCanBuyCardNow()
     {
         if (!isCurrentUserTurn)
@@ -320,5 +346,53 @@ public class UserManager : MonoBehaviour
         }
 
         return true;
+    }
+    #endregion
+
+    public int GetUserVictoryPoints(User user)
+    {
+        int victoryPoint = 0;
+
+        List<Vertex> vertices = GameManager.Instance.mapManager.GetUserVerticies(user);
+
+        foreach (Vertex v in vertices)
+        {
+            if(v.type == VertexBuildingType.SETTLEMENT)
+            {
+                victoryPoint++;
+            }
+            else if(v.type==VertexBuildingType.CITY)
+            {
+                victoryPoint += 2;
+            }
+        }
+
+        victoryPoint += user.isLongestRoad ? 2 : 0;
+
+        victoryPoint += user.isLargestArmy ? 2 : 0;
+
+        victoryPoint += user.userCards[Card.VICTORY_POINT];
+
+        return victoryPoint;
+    }
+
+    public void SetLongestRoadToUserAndClearFromOthers(User u)
+    {
+        foreach(var user in users)
+        {
+            user.isLongestRoad = false;
+        }
+
+        u.isLongestRoad = true;
+    }
+
+    public void SetLargestArmyToUserAndClearFromOthers(User u)
+    {
+        foreach (var user in users)
+        {
+            user.isLargestArmy = false;
+        }
+
+        u.isLargestArmy = true;
     }
 }

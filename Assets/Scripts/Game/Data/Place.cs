@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using Unity.VisualScripting;
+using UnityEngine;
 
 public class Place : MonoBehaviour
 {
     public int id;
 
-    public User user;
+    [SerializeReference] public User user;
 
     public SpriteRenderer spriteRenderer;
 

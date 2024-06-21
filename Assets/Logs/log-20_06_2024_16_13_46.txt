@@ -1,0 +1,36 @@
+[20.06.2024 16:13:46] Login success: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IlNpbWl4bWFuIiwiZXhwIjoxNzE4OTc1NjI2fQ.FW7Y9G0QYwUWg5Fx6mQcxHdS4IWzJAcV4M528A8ngSA
+[20.06.2024 16:13:46] []
+[20.06.2024 16:13:46] Connect To Lobby: Trying to connect
+[20.06.2024 16:13:46] Connect To Lobby: Client socket creation successful
+[20.06.2024 16:13:46] Connect To Lobby: Client socket connection successful
+[20.06.2024 16:13:46] Send To Server: Send data to server with type SocketRequestConnectDTO
+[20.06.2024 16:13:46] Connect To Lobby: Client socket send connection message to server
+[20.06.2024 16:13:46] Handle Message: Receive data from server with event: BROADCAST_USER_CONNECTED
+[20.06.2024 16:13:46] {"eventType":"BROADCAST_USER_CONNECTED","message":"Simixman connected","connectedUser":{"id":1,"name":"Simixman","host":false}}
+[20.06.2024 16:13:46] Connect To Lobby: Client socket receive connection message from server
+[20.06.2024 16:13:46] Listen Server: Start listen server
+[20.06.2024 16:13:47] Send To Server: Send data to server with type SocketStartGameRequestDTO
+[20.06.2024 16:13:47] Handle Message: Receive data from server with event: BROADCAST_START_GAME
+[20.06.2024 16:13:47] {"eventType":"BROADCAST_START_GAME","hexesInRowCounts":[4,5,6,7,6,5,4],"seed":175688475,"users":[{"id":1,"name":"Simixman"}],"currentUser":{"id":1,"name":"Simixman"}}
+[20.06.2024 16:13:47] User Manager
+[20.06.2024 16:13:47] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:13:48] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS
+[20.06.2024 16:13:48] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS","userId":1,"numOfTurn":1}
+[20.06.2024 16:14:06] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:14:06] Send To Server: Send data to server with type SocketRequestBuildDTO
+[20.06.2024 16:14:06] Handle Message: Receive data from server with event: BROADCAST_BUILD_SETTLEMENT
+[20.06.2024 16:14:06] {"eventType":"BROADCAST_BUILD_SETTLEMENT","message":"Simixman build settlement","userId":1,"fieldId":0}
+[20.06.2024 16:14:06] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS
+[20.06.2024 16:14:06] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_SETTLEMENTS","userId":1,"numOfTurn":2}
+[20.06.2024 16:14:12] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:14:12] Send To Server: Send data to server with type SocketRequestBuildDTO
+[20.06.2024 16:14:12] Handle Message: Receive data from server with event: BROADCAST_BUILD_SETTLEMENT
+[20.06.2024 16:14:12] {"eventType":"BROADCAST_BUILD_SETTLEMENT","message":"Simixman build settlement","userId":1,"fieldId":42}
+[20.06.2024 16:14:12] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS
+[20.06.2024 16:14:12] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS","userId":1,"numOfTurn":1}
+[20.06.2024 16:14:20] Send To Server: Send data to server with type SocketDTOClass
+[20.06.2024 16:14:20] Send To Server: Send data to server with type SocketRequestBuildDTO
+[20.06.2024 16:14:20] Handle Message: Receive data from server with event: BROADCAST_BUILD_ROAD
+[20.06.2024 16:14:20] {"eventType":"BROADCAST_BUILD_ROAD","message":"Simixman build road","userId":1,"fieldId":55}
+[20.06.2024 16:14:20] Handle Message: Receive data from server with event: BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS
+[20.06.2024 16:14:20] {"eventType":"BROADCAST_PREPARATION_USER_TURN_BUILD_ROADS","userId":1,"numOfTurn":2}

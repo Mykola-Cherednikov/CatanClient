@@ -6,12 +6,12 @@ using UnityEngine.UI;
 public class TradeForm : MonoBehaviour
 {
     [SerializeField] private Button tradeButton;
-    [SerializeField] private TMP_InputField incomeField;
-    [SerializeField] private TMP_InputField outgoingField;
-    [SerializeField] private TMP_Dropdown incomeDropdown;
-    [SerializeField] private TMP_Dropdown outgoingDropdown;
+    [SerializeField] private TMP_InputField sellField;
+    [SerializeField] private TMP_InputField buyField;
+    [SerializeField] private TMP_Dropdown sellDropdown;
+    [SerializeField] private TMP_Dropdown buyDropdown;
 
-    private void FixedUpdate()
+    private void Update()
     {
         ValidateForm();
     }
@@ -20,36 +20,37 @@ public class TradeForm : MonoBehaviour
     {
         tradeButton.interactable = true;
 
-        Resource incomeResource = (Resource)incomeDropdown.value;
-        Resource outgoingResource = (Resource)outgoingDropdown.value;
+        Resource sellResource = (Resource)sellDropdown.value;
+        Resource buyResource = (Resource)buyDropdown.value;
 
-        if (incomeResource == outgoingResource)
+        if (sellResource == buyResource)
         {
             tradeButton.interactable = false;
         }
 
-        if (outgoingField.text.Length == 0)
+        if (buyField.text.Length == 0)
         {
-            incomeField.text = "";
+            sellField.text = "";
             tradeButton.interactable = false;
             return;
         }
 
-        int outgoingNum = int.Parse(outgoingField.text);
-        int incomeNum = outgoingNum * 4;
+        int buyAmount = int.Parse(buyField.text);
+        int sellAmount = GameManager.Instance.resourceManager
+            .GetAmountOfSellResourceDependOnUserHarbour(GameManager.Instance.userManager.currentUser, sellResource, buyAmount);
 
-        if (outgoingNum <= 0)
+        if (buyAmount <= 0)
         {
             tradeButton.interactable = false;
-            incomeField.text = "0";
+            sellField.text = "0";
         }
 
-        incomeField.text = incomeNum.ToString();
+        sellField.text = sellAmount.ToString();
 
-        KeyValuePair<Resource, int> incomeResourceAmount = new KeyValuePair<Resource, int>(incomeResource, incomeNum);
-        KeyValuePair<Resource, int> outgoingResourceAmount = new KeyValuePair<Resource, int>(outgoingResource, outgoingNum);
+        KeyValuePair<Resource, int> sellResourceAmount = new KeyValuePair<Resource, int>(sellResource, sellAmount);
+        KeyValuePair<Resource, int> buyResourceAmount = new KeyValuePair<Resource, int>(buyResource, buyAmount);
 
-        if (!GameManager.Instance.userManager.IsCurrentUserCanTradeNow(incomeResourceAmount, outgoingResourceAmount))
+        if (!GameManager.Instance.userManager.IsCurrentUserCanTradeNow(sellResourceAmount, buyResourceAmount))
         {
             tradeButton.interactable = false;
         }
@@ -57,10 +58,10 @@ public class TradeForm : MonoBehaviour
 
     public void Trade()
     {
-        Resource incomeResource = (Resource)incomeDropdown.value;
-        Resource outgoingResource = (Resource)outgoingDropdown.value;
-        int outgoingNum = int.Parse(outgoingField.text);
+        Resource sellResource = (Resource)sellDropdown.value;
+        Resource buyResource = (Resource)buyDropdown.value;
+        int buyNum = int.Parse(buyField.text);
 
-        GameManager.Instance.resourceManager.UserTradeResource(incomeResource, outgoingResource, outgoingNum);
+        GameManager.Instance.resourceManager.UserTradeRequest(sellResource, buyResource, buyNum);
     }
 }

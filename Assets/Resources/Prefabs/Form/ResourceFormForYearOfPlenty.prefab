@@ -394,4 +394,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   content: {fileID: 6670764064662776934}
-  resourceRowForYearOfPlentyPrefab: {fileID: 0}
+  resourceRowForYearOfPlentyPrefab: {fileID: 3748006204716405954, guid: 074271cf54a3a0849b26adc5d54a05b0, type: 3}
+  resources: 

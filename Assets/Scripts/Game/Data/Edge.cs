@@ -9,17 +9,17 @@ public enum EdgeBuildingType
 
 public class Edge : Place
 {
-    public List<Vertex> neighborVertices;
+    public List<Vertex> neighbourVertices;
 
-    public List<Hex> neighborHexes;
+    public List<Hex> neighbourHexes;
 
     public EdgeBuildingType type;
 
     protected override void Awake()
     {
         base.Awake();
-        neighborVertices = new List<Vertex>();
-        neighborHexes = new List<Hex>();
+        neighbourVertices = new List<Vertex>();
+        neighbourHexes = new List<Hex>();
     }
 
     public void SetEdgeBuilding(EdgeBuildingType type, User u)
