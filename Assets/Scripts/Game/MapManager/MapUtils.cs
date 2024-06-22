@@ -104,14 +104,14 @@ public class MapUtils
         return e.user == null;
     }
 
-    public static bool IsVertexOccupiedByCurrentUser(Vertex v, User u)
+    public static bool IsVertexOccupiedByThisUser(Vertex v, User u)
     {
         return v.user == u;
     }
 
-    public static bool IsCurrentUserSettlementOnThisVertex(Vertex v, User u)
+    public static bool IsThisUserSettlementOnThisVertex(Vertex v, User u)
     {
-        if (!IsVertexOccupiedByCurrentUser(v, u))
+        if (!IsVertexOccupiedByThisUser(v, u))
         {
             return false;
         }

@@ -14,10 +14,7 @@ public class CardRow : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.Instance.cardManager.CARD_CHANGED_EVENT += UpdateInfo;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateInfo;
-        GameManager.Instance.mapManager.MAP_CHANGED_EVENT += UpdateInfo;
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += UpdateInfo;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(UpdateInfo);
         cardToName = new()
         {
             { Card.MONOPOLY, "Monopoly" },
@@ -38,13 +35,13 @@ public class CardRow : MonoBehaviour
     private void UpdateInfo()
     {
         nameText.text = cardToName[card];
-        amountText.text = GameManager.Instance.userManager.currentUser.userCards[card].ToString();
-        useButton.interactable = GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(card);
+        amountText.text = GameManager.Instance.userManager.thisUser.userCards[card].ToString();
+        useButton.interactable = GameManager.Instance.userManager.IsThisUserCanUseCardNow(card);
     }
 
     public void UseCard()
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(card))
+        if (!GameManager.Instance.userManager.IsThisUserCanUseCardNow(card))
         {
             return;
         }
@@ -54,9 +51,6 @@ public class CardRow : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameManager.Instance.cardManager.CARD_CHANGED_EVENT -= UpdateInfo;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateInfo;
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= UpdateInfo;
-        GameManager.Instance.mapManager.MAP_CHANGED_EVENT -= UpdateInfo;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(UpdateInfo);
     }
 }

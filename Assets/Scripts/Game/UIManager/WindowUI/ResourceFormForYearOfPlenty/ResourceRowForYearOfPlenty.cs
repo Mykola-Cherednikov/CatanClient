@@ -14,8 +14,7 @@ public class ResourceRowForYearOfPlenty : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateInfo;
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += UpdateInfo;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(UpdateInfo);
     }
 
     public void SetInfo(Resource resource, ResourceFormForYearOfPlenty form)
@@ -38,7 +37,7 @@ public class ResourceRowForYearOfPlenty : MonoBehaviour
         }
         numOfResouceText.text = numOfResource.ToString();
 
-        if (numOfResource > 0 && GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.YEAR_OF_PLENTY))
+        if (numOfResource > 0 && GameManager.Instance.userManager.IsThisUserCanUseCardNow(Card.YEAR_OF_PLENTY))
         {
             chooseButton.interactable = true;
         }
@@ -56,7 +55,6 @@ public class ResourceRowForYearOfPlenty : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateInfo;
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= UpdateInfo;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(UpdateInfo);
     }
 }

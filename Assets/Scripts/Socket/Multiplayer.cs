@@ -54,7 +54,8 @@ public enum EventType
     REQUEST_EXCHANGE_OFFER,
     RESPONSE_EXCHANGE_OFFER,
     REQUEST_EXCHANGE,
-    BROADCAST_EXCHANGE
+    BROADCAST_EXCHANGE,
+    BROADCAST_USER_WIN
 }
 
 public class Multiplayer : MonoBehaviour
@@ -119,6 +120,8 @@ public class Multiplayer : MonoBehaviour
     public UnityEvent<object> RESPONSE_EXCHANGE_OFFER_EVENT;
 
     public UnityEvent<object> BROADCAST_EXCHANGE_EVENT;
+
+    public UnityEvent<object> BROADCAST_USER_WIN_EVENT;
     #endregion
 
     private void Awake()
@@ -151,7 +154,8 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USER_GET_LARGEST_ARMY, typeof(SocketBroadcastUserGetLargestArmyDTO) },
             { EventType.BROADCAST_USER_GET_LONGEST_ROAD, typeof(SocketBroadcastUserGetLongestRoadDTO) },
             { EventType.RESPONSE_EXCHANGE_OFFER, typeof(SocketResponseExchangeOfferDTO) },
-            { EventType.BROADCAST_EXCHANGE, typeof(SocketBroadcastExchangeDTO) }
+            { EventType.BROADCAST_EXCHANGE, typeof(SocketBroadcastExchangeDTO) },
+            { EventType.BROADCAST_USER_WIN, typeof(SocketBroadcastUserWinDTO) }
         };
         eventTypesToUnityEvent = new Dictionary<EventType, UnityEvent<object>>
         {
@@ -181,7 +185,8 @@ public class Multiplayer : MonoBehaviour
             { EventType.BROADCAST_USER_GET_LARGEST_ARMY, BROADCAST_USER_GET_LARGEST_ARMY_EVENT },
             { EventType.BROADCAST_USER_GET_LONGEST_ROAD, BROADCAST_USER_GET_LONGEST_ROAD_EVENT },
             { EventType.RESPONSE_EXCHANGE_OFFER, RESPONSE_EXCHANGE_OFFER_EVENT },
-            { EventType.BROADCAST_EXCHANGE, BROADCAST_EXCHANGE_EVENT }
+            { EventType.BROADCAST_EXCHANGE, BROADCAST_EXCHANGE_EVENT },
+            { EventType.BROADCAST_USER_WIN, BROADCAST_USER_WIN_EVENT }
         };
 
         RESPONSE_CONNECT_TO_LOBBY_EVENT.AddListener(ConnectFromServer);
@@ -333,7 +338,7 @@ public class Multiplayer : MonoBehaviour
     public async Task SocketSendStartGameRequest()
     {
         SocketStartGameRequestDTO dto = new SocketStartGameRequestDTO();
-        dto.numHexesInMapRow = new List<int> { 4, 5, 6, 7, 6, 5, 4 };
+        dto.numHexesInMapRow = new List<int> { 3, 4, 5, 4, 3 };
         dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_START_GAME);
         await clientSocket.SendToServer(dto);
     }
@@ -456,7 +461,7 @@ public class Multiplayer : MonoBehaviour
         SocketRequestExchangeDTO dto = new SocketRequestExchangeDTO();
         dto.eventType = Enum.GetName(typeof(EventType), EventType.REQUEST_EXCHANGE);
         dto.exchangeId = exchangeId;
-        dto.isAccept = isAccept;
+        dto.accept = isAccept;
         await clientSocket.SendToServer(dto);
     }
     #endregion

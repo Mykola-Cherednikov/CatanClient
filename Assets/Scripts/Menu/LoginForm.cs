@@ -33,6 +33,11 @@ public class LoginForm : Form
         Destroy(gameObject);
     }
 
+    public void ExitApplication()
+    {
+        Application.Quit();
+    }
+
     #region Login
     public async void Login()
     {

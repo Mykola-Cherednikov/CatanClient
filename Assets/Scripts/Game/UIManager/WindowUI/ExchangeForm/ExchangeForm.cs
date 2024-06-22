@@ -18,7 +18,7 @@ public class ExchangeForm : MonoBehaviour
     {
         targetUsers = new List<User>();
         targetUsers.AddRange(GameManager.Instance.userManager.users
-            .Where(u => u != GameManager.Instance.userManager.currentUser));
+            .Where(u => u != GameManager.Instance.userManager.thisUser));
     }
 
     public void ExchangeOffer()

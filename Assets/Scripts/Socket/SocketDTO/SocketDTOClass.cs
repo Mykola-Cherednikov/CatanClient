@@ -253,13 +253,13 @@ public class SocketResponseExchangeOfferDTO : SocketDTOClass
 [SerializeField]
 public class SocketBroadcastExchangeDTO : SocketDTOClass
 {
-    public int initiatorId;
+    public int initiatorUserId;
 
-    public int targetId;
-
-    public int initiatorAmountOfResource;
+    public int targetUserId;
 
     public int targetAmountOfResource;
+
+    public int initiatorAmountOfResource;
 
     public string initiatorResource;
 
@@ -271,5 +271,11 @@ public class SocketRequestExchangeDTO : SocketDTOClass
 {
     public int exchangeId;
 
-    public bool isAccept;
+    public bool accept;
+}
+
+[SerializeField]
+public class SocketBroadcastUserWinDTO : SocketDTOClass
+{
+    public int userId;
 }

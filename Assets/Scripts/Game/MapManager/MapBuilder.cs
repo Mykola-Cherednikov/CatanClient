@@ -8,6 +8,7 @@ public class MapBuilder : MonoBehaviour
     [SerializeField] private GameObject hexPrefab;
     [SerializeField] private GameObject vertexPrefab;
     [SerializeField] private GameObject edgePrefab;
+    [SerializeField] private GameObject seaHexPrefab;
     [SerializeField] private GameObject numberTokenPrefab;
 
     private Dictionary<EdgeDirection, Vector2> edgeDirectionsToNeighbourHexOffset;
@@ -18,6 +19,7 @@ public class MapBuilder : MonoBehaviour
     private Dictionary<Vector2, Hex> coordinatesToHexes;
     private Dictionary<Vector2, Vertex> coordinatesToVertices;
     private Dictionary<Vector2, Edge> coordinatesToEdges;
+    private Dictionary<EdgeDirection, float> edgeDirectionsToSeaHexRotation;
     private List<int> hexesInRowCounts;
 
     private JavaRandom mapRandom;
@@ -34,6 +36,7 @@ public class MapBuilder : MonoBehaviour
         vertexPrefab = Resources.Load<GameObject>("Prefabs/Game/Vertex");
         edgePrefab = Resources.Load<GameObject>("Prefabs/Game/Edge");
         numberTokenPrefab = Resources.Load<GameObject>("Prefabs/Game/NumberToken");
+        seaHexPrefab = Resources.Load<GameObject>("Prefabs/Game/SeaHex");
 
         edgeDirectionsToNeighbourHexOffset = new Dictionary<EdgeDirection, Vector2>()
         {
@@ -85,6 +88,16 @@ public class MapBuilder : MonoBehaviour
             { EdgeDirection.TL, 30f}
         };
 
+        edgeDirectionsToSeaHexRotation = new Dictionary<EdgeDirection, float>()
+        {
+            { EdgeDirection.TR, 240f},
+            { EdgeDirection.R, 180f},
+            { EdgeDirection.DR, 120f},
+            { EdgeDirection.DL, 60f},
+            { EdgeDirection.L, 0f},
+            { EdgeDirection.TL, -60f}
+        };
+
         coordinatesToHexes = new();
         coordinatesToVertices = new();
         coordinatesToEdges = new();
@@ -92,7 +105,7 @@ public class MapBuilder : MonoBehaviour
 
     public MapInfo CreateMap(List<int> hexesInRowCounts, int seed)
     {
-        mapRandom = new JavaRandom(200);
+        mapRandom = new JavaRandom(seed);
         this.hexesInRowCounts = hexesInRowCounts;
 
         GenerateMap();
@@ -411,52 +424,90 @@ public class MapBuilder : MonoBehaviour
 
     private void GenerateHarbors()
     {
-        List<Edge> boundaryEdges = coordinatesToEdges.Values.Where(e => e.neighbourHexes.Count == 1).ToList();
-        List<Edge> boundaryEdgesInOrder = GetBoundaryEdgesInRightOrder(boundaryEdges);
+        var boundaryEdges = GetBoundaryEdges();
+        var boundaryEdgesInOrder = GetBoundaryEdgesInRightOrder(boundaryEdges);
+        var harborTypes = GetShuffledHarborTypes();
+        var spacesBetweenHarbors = new List<int> { 3, 3, 4 };
 
-        List<int> spacesBetweenHarbors = new() { 3, 3, 4 };
-        List<HarborType> harborTypes = new() { HarborType.ORE, HarborType.BRICK, HarborType.LUMBER, HarborType.GRAIN, HarborType.WOOL, HarborType.GENERIC, HarborType.GENERIC, HarborType.GENERIC, HarborType.GENERIC };
-        Shuffle(harborTypes);
         int startIndexEdge = mapRandom.NextInt(boundaryEdgesInOrder.Count);
         int finalIndexEdge = startIndexEdge + boundaryEdges.Count;
         int index = startIndexEdge;
+        int harborIndex = 0;
 
-        int i = 0;
         while (index < finalIndexEdge)
         {
-            List<Vertex> vertices = boundaryEdgesInOrder[index % boundaryEdgesInOrder.Count].neighbourVertices;
-            HarborType harborType = harborTypes[i % harborTypes.Count];
-            SimixmanLogger.Log("Harbor at: " + boundaryEdgesInOrder[index % boundaryEdgesInOrder.Count].id 
-                + " with type: " + Enum.GetName(typeof(HarborType), harborType));
-            index += spacesBetweenHarbors[i % spacesBetweenHarbors.Count];
-            i++;
+            var edge = boundaryEdgesInOrder[index % boundaryEdgesInOrder.Count];
+            var harborType = harborTypes[harborIndex % harborTypes.Count];
 
-            foreach (Vertex vertex in vertices)
-            {
-                vertex.harborType = harborType;
-            }
+            SimixmanLogger.Log($"Harbor at: {edge.id} with type: {Enum.GetName(typeof(HarborType), harborType)}");
+            SetVerticesHarborType(edge, harborType);
+            CreateSeaHex(edge, harborType);
+
+            index += spacesBetweenHarbors[harborIndex % spacesBetweenHarbors.Count];
+            harborIndex++;
         }
+    }
+
+    private List<Edge> GetBoundaryEdges()
+    {
+        return coordinatesToEdges.Values
+            .Where(e => e.neighbourHexes.Count == 1)
+            .ToList();
+    }
+
+    private List<HarborType> GetShuffledHarborTypes()
+    {
+        List<HarborType> harborTypes = new List<HarborType>()
+        {
+            HarborType.ORE, HarborType.BRICK, HarborType.LUMBER,
+            HarborType.GRAIN, HarborType.WOOL, HarborType.GENERIC,
+            HarborType.GENERIC, HarborType.GENERIC, HarborType.GENERIC
+        };
+
+        Shuffle(harborTypes);
+        return harborTypes;
+    }
+
+    private void SetVerticesHarborType(Edge edge, HarborType harborType)
+    {
+        foreach (var vertex in edge.neighbourVertices)
+        {
+            vertex.harborType = harborType;
+        }
+    }
+
+    private void CreateSeaHex(Edge edge, HarborType harborType)
+    {
+        var edgeHex = edge.neighbourHexes.First();
+        var edgeDirection = edgeHex.edgeDirectionToContainedEdges
+            .FirstOrDefault(e => e.Value == edge).Key;
+
+        var newSeaHexPosition = SimixmanUtils.DecimalSumOfTwoVectors2D(
+            edgeHex.transform.position,
+            edgeDirectionsToNeighbourHexOffset[edgeDirection]
+        );
+
+        var seaHexGO = Instantiate(seaHexPrefab, transform);
+        seaHexGO.transform.position = newSeaHexPosition;
+        seaHexGO.transform.eulerAngles = new Vector3(0, 0, edgeDirectionsToSeaHexRotation[edgeDirection]);
+        seaHexGO.GetComponent<SeaHex>().SetInfo(harborType);
     }
 
     private List<Edge> GetBoundaryEdgesInRightOrder(List<Edge> boundaryEdges)
     {
-        HashSet<Edge> boundaryEdgesInOrder = new HashSet<Edge>();
-        Edge currentEdge = boundaryEdges[0];
+        var boundaryEdgesInOrder = new HashSet<Edge>();
+        var currentEdge = boundaryEdges.First();
         boundaryEdgesInOrder.Add(currentEdge);
-        bool isFound = true;
 
-        while (isFound)
+        while (true)
         {
-            isFound = false;
             currentEdge = MapUtils.GetneighbourEdgesToEdge(currentEdge)
-            .Where(e => boundaryEdges.Contains(e) && !boundaryEdgesInOrder.Contains(e)).FirstOrDefault();
+                .FirstOrDefault(e => boundaryEdges.Contains(e) && !boundaryEdgesInOrder.Contains(e));
 
-            if (currentEdge != null)
-            {
-                isFound = true;
-                boundaryEdgesInOrder.Add(currentEdge);
+            if (currentEdge == null)
+                break;
 
-            }
+            boundaryEdgesInOrder.Add(currentEdge);
         }
 
         return boundaryEdgesInOrder.ToList();

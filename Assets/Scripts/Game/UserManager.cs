@@ -9,9 +9,9 @@ using UnityEngine.Events;
 public class UserManager : MonoBehaviour
 {
     public List<User> users;
-    public User currentUser;
+    public User thisUser;
 
-    [SerializeField] private bool isCurrentUserTurn;
+    [SerializeField] private bool isThisUserTurn;
 
     public int numOfAvailableDevelopmentCard;
 
@@ -19,13 +19,13 @@ public class UserManager : MonoBehaviour
 
     private void Awake()
     {
-        isCurrentUserTurn = true;
+        isThisUserTurn = false;
 
         numOfAvailableDevelopmentCard = 5;
         SimixmanLogger.Log("User Manager");
 
         cardToSpecificCondition = new Dictionary<Card, Func<bool>>() { 
-            { Card.KNIGHT, GameManager.Instance.mapManager.IsRobberNearbyCurrentUser },
+            { Card.KNIGHT, GameManager.Instance.mapManager.IsRobberNearbyThisUser },
             { Card.VICTORY_POINT, VictoryPointCardCondition }
         };
     }
@@ -33,7 +33,7 @@ public class UserManager : MonoBehaviour
     public void InitializeUsers(SocketBroadcastStartGameDTO dto)
     {
         users = dto.users;
-        currentUser = users.FirstOrDefault(u => u.id == dto.currentUser.id);
+        thisUser = users.FirstOrDefault(u => u.id == dto.currentUser.id);
 
         JavaRandom random = new JavaRandom(dto.seed);
         foreach (User user in users)
@@ -46,16 +46,16 @@ public class UserManager : MonoBehaviour
     {
         if (userWhoseTurn == null)
         {
-            isCurrentUserTurn = false;
+            isThisUserTurn = false;
             return;
         }
 
-        isCurrentUserTurn = userWhoseTurn == currentUser;
+        isThisUserTurn = userWhoseTurn == thisUser;
     }
 
     public async void UserTurnReady()
     {
-        if (!IsCurrentUserTurn())
+        if (!IsThisUserTurn())
         {
             return;
         }
@@ -69,13 +69,13 @@ public class UserManager : MonoBehaviour
         return users.FirstOrDefault(user => user.id == userId);
     }
 
-    public bool IsCurrentUserTurn()
+    public bool IsThisUserTurn()
     {
-        return isCurrentUserTurn;
+        return isThisUserTurn;
     }
 
-    #region Check If Current User Have Enough Resources
-    private bool IsCurrentUserHaveEnoughResourcesForGoods(Goods goods)
+    #region Check If This User Have Enough Resources
+    private bool IsThisUserHaveEnoughResourcesForGoods(Goods goods)
     {
         Dictionary<Resource, int> cost = new();
 
@@ -97,7 +97,7 @@ public class UserManager : MonoBehaviour
 
         foreach (var resourceToCost in cost)
         {
-            if (!IsCurrentUserHaveEnoughResources(resourceToCost))
+            if (!IsThisUserHaveEnoughResources(resourceToCost))
             {
                 return false;
             }
@@ -106,9 +106,9 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
-    private bool IsCurrentUserHaveEnoughResources(KeyValuePair<Resource, int> resources)
+    private bool IsThisUserHaveEnoughResources(KeyValuePair<Resource, int> resources)
     {
-        if (!IsUserHaveEnoughResources(currentUser, resources))
+        if (!IsUserHaveEnoughResources(thisUser, resources))
         {
             return false;
         }
@@ -126,21 +126,24 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
-    public bool IsCurrentUserCanTradeNow(KeyValuePair<Resource, int> sellResource, KeyValuePair<Resource, int> buyResource)
+    public bool IsThisUserCanTradeNow(Resource sellResource, KeyValuePair<Resource, int> buyResource)
     {
-        if (!isCurrentUserTurn)
+        if (!isThisUserTurn)
         {
             return false;
         }
 
-        //Check if user have port with this resource type
+        int sellAmount = GameManager.Instance.resourceManager.GetAmountOfTradingSellResourceDependOnUserHarbour(
+            GameManager.Instance.userManager.thisUser, sellResource, buyResource.Value);
+
+        KeyValuePair<Resource, int> sellResourceAmount = new KeyValuePair<Resource, int>(sellResource, sellAmount);
 
         if (!GameManager.Instance.resourceManager.IsStorageHaveEnoughResources(buyResource))
         {
             return false;
         }
 
-        if (!IsCurrentUserHaveEnoughResources(sellResource))
+        if (!IsThisUserHaveEnoughResources(sellResourceAmount))
         {
             return false;
         }
@@ -148,14 +151,14 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
-    public bool IsCurrentUserCanExchangeWithUserNow(User targetUser, KeyValuePair<Resource, int> initiatorResources, KeyValuePair<Resource, int> targetResources)
+    public bool IsThisUserCanExchangeWithUserNow(User targetUser, KeyValuePair<Resource, int> initiatorResources, KeyValuePair<Resource, int> targetResources)
     {
-        if(!isCurrentUserTurn)
+        if(!isThisUserTurn)
         {
             return false;
         }
 
-        if(!IsCurrentUserHaveEnoughResources(initiatorResources) || !IsUserHaveEnoughResources(targetUser, targetResources))
+        if(!IsThisUserHaveEnoughResources(initiatorResources) || !IsUserHaveEnoughResources(targetUser, targetResources))
         {
             return false;
         }
@@ -165,9 +168,9 @@ public class UserManager : MonoBehaviour
     #endregion
 
     #region Check If User Already Build Something On Preparation
-    private bool IsCurrentUserAlreadyBuildRoadsOnPreparation(int numOfPreparationTurn)
+    private bool IsThisUserAlreadyBuildRoadsOnPreparation(int numOfPreparationTurn)
     {
-        int userEdgesCount = GameManager.Instance.mapManager.GetUserEdgex(currentUser).Count;
+        int userEdgesCount = GameManager.Instance.mapManager.GetUserEdgex(thisUser).Count;
 
         if (userEdgesCount >= numOfPreparationTurn)
         {
@@ -177,9 +180,9 @@ public class UserManager : MonoBehaviour
         return false;
     }
 
-    private bool IsCurrentUserAlreadyBuildSettlementOnPreparation(int numOfPreparationTurn)
+    private bool IsThisUserAlreadyBuildSettlementOnPreparation(int numOfPreparationTurn)
     {
-        int userVerticesCount = GameManager.Instance.mapManager.GetUserVerticies(currentUser).Count;
+        int userVerticesCount = GameManager.Instance.mapManager.GetUserVerticies(thisUser).Count;
 
         if (userVerticesCount >= numOfPreparationTurn)
         {
@@ -190,10 +193,10 @@ public class UserManager : MonoBehaviour
     }
     #endregion
 
-    #region Check If Current User Can Build One Of The Buildings
-    public bool IsCurrentUserCanBuildRoadNow()
+    #region Check If This User Can Build One Of The Buildings
+    public bool IsThisUserCanBuildRoadNow()
     {
-        if (!isCurrentUserTurn)
+        if (!isThisUserTurn)
         {
             return false;
         }
@@ -201,7 +204,7 @@ public class UserManager : MonoBehaviour
 
         if (GameManager.Instance.gameState == GameState.PREPARATION_BUILD_ROADS)
         {
-            if (IsCurrentUserAlreadyBuildRoadsOnPreparation(GameManager.Instance.numOfTurn))
+            if (IsThisUserAlreadyBuildRoadsOnPreparation(GameManager.Instance.numOfTurn))
             {
                 return false;
             }
@@ -210,7 +213,7 @@ public class UserManager : MonoBehaviour
         }
         else if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Road) && currentUser.buffDuration[Buff.ROAD_BUILDING] <= 0)
+            if (!IsThisUserHaveEnoughResourcesForGoods(Goods.Road) && thisUser.buffDuration[Buff.ROAD_BUILDING] <= 0)
             {
                 return false;
             }
@@ -221,16 +224,16 @@ public class UserManager : MonoBehaviour
         return false;
     }
 
-    public bool IsCurrentUserCanBuildSettlementNow()
+    public bool IsThisUserCanBuildSettlementNow()
     {
-        if (!isCurrentUserTurn)
+        if (!isThisUserTurn)
         {
             return false;
         }
 
         if (GameManager.Instance.gameState == GameState.PREPARATION_BUILD_SETTLEMENTS)
         {
-            if (IsCurrentUserAlreadyBuildSettlementOnPreparation(GameManager.Instance.numOfTurn))
+            if (IsThisUserAlreadyBuildSettlementOnPreparation(GameManager.Instance.numOfTurn))
             {
                 return false;
             }
@@ -239,7 +242,7 @@ public class UserManager : MonoBehaviour
         }
         else if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Settlement))
+            if (!IsThisUserHaveEnoughResourcesForGoods(Goods.Settlement))
             {
                 return false;
             }
@@ -250,16 +253,16 @@ public class UserManager : MonoBehaviour
         return false;
     }
 
-    public bool IsCurrentUserCanBuildCityNow()
+    public bool IsThisUserCanBuildCityNow()
     {
         if (GameManager.Instance.gameState == GameState.USER_TURN)
         {
-            if (!isCurrentUserTurn)
+            if (!isThisUserTurn)
             {
                 return false;
             }
 
-            if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.City))
+            if (!IsThisUserHaveEnoughResourcesForGoods(Goods.City))
             {
                 return false;
             }
@@ -271,9 +274,9 @@ public class UserManager : MonoBehaviour
     }
     #endregion
 
-    public bool IsCurrentUserCanPlaceRobberNow()
+    public bool IsThisUserCanPlaceRobberNow()
     {
-        if (!isCurrentUserTurn)
+        if (!isThisUserTurn)
         {
             return false;
         }
@@ -287,9 +290,9 @@ public class UserManager : MonoBehaviour
     }
 
     #region Check User Card
-    public bool IsCurrentUserCanBuyCardNow()
+    public bool IsThisUserCanBuyCardNow()
     {
-        if (!isCurrentUserTurn)
+        if (!isThisUserTurn)
         {
             return false;
         }
@@ -299,7 +302,7 @@ public class UserManager : MonoBehaviour
             return false;
         }
 
-        if (!IsCurrentUserHaveEnoughResourcesForGoods(Goods.Card))
+        if (!IsThisUserHaveEnoughResourcesForGoods(Goods.Card))
         {
             return false;
         }
@@ -307,14 +310,14 @@ public class UserManager : MonoBehaviour
         return true;
     }
 
-    private bool IsCurrentUserHaveCard(Card card)
+    private bool IsThisUserHaveCard(Card card)
     {
-        return currentUser.userCards[card] > 0;
+        return thisUser.userCards[card] > 0;
     }
 
-    public bool IsCurrentUserCanUseCardNow(Card card)
+    public bool IsThisUserCanUseCardNow(Card card)
     {
-        if (!isCurrentUserTurn)
+        if (!isThisUserTurn)
         {
             return false;
         }
@@ -324,7 +327,7 @@ public class UserManager : MonoBehaviour
             return false;
         }
 
-        if(!IsCurrentUserHaveCard(card))
+        if(!IsThisUserHaveCard(card))
         {
             return false;
         }

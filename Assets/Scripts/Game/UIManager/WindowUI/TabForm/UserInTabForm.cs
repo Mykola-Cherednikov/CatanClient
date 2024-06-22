@@ -1,3 +1,4 @@
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,12 +12,13 @@ public class UserInTabForm : MonoBehaviour
     [SerializeField] private TMP_Text grainText;
     [SerializeField] private TMP_Text woolText;
     [SerializeField] private Image colorImage;
+    [SerializeField] private TMP_Text cardsText;
     [SerializeField] private TMP_Text victoryPointText;
     private User user;
 
     private void Awake()
     {
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateInfoForm;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(UpdateInfoForm);
     }
 
     public void SetUserInTabFormInfo(User user)
@@ -34,11 +36,12 @@ public class UserInTabForm : MonoBehaviour
         grainText.text = "Grain: " + user.userResources[Resource.GRAIN];
         woolText.text = "Wool: " + user.userResources[Resource.WOOL];
         victoryPointText.text = "Victory points: " + GameManager.Instance.userManager.GetUserVictoryPoints(user);
+        cardsText.text = "Cards: " + user.userCards.Values.Sum();
         colorImage.color = user.color;
     }
 
     private void OnDestroy()
     {
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateInfoForm;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(UpdateInfoForm);
     }
 }

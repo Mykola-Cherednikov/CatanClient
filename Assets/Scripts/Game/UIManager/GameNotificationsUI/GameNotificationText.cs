@@ -6,23 +6,28 @@ public class GameNotificationText : MonoBehaviour
 {
     [SerializeField] private TMP_Text gameInfoText;
 
-    private float disappearSpeed = 51f / 255f;
+    private float startTime;
+    private float timer = 0f;
 
 
     private void Update()
     {
-        gameInfoText.alpha -= Time.deltaTime * disappearSpeed;
+        timer -= Time.deltaTime;
 
-        if (gameInfoText.alpha <= 0f)
+        if (timer <= 0f)
         {
             Destroy(gameObject);
         }
+
+        gameInfoText.alpha = timer / startTime;
     }
 
-    public void SetText(string text, int fontSize)
+    public void SetText(string text, int fontSize, float time)
     {
         gameInfoText.text = text;
         gameInfoText.fontSize = fontSize;
+        startTime = time;
+        timer = startTime;
     }
 }
 

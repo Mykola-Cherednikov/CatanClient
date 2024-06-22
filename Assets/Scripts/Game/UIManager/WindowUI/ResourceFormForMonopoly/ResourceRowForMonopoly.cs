@@ -13,8 +13,7 @@ public class ResourceRowForMonopoly : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateInfo;
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += UpdateInfo;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(UpdateInfo);
     }
 
     public void SetInfo(Resource resource, MonopolyResourceForm form)
@@ -30,7 +29,7 @@ public class ResourceRowForMonopoly : MonoBehaviour
         int numOfResource = 0;
         foreach (User u in GameManager.Instance.userManager.users)
         {
-            if (u == GameManager.Instance.userManager.currentUser)
+            if (u == GameManager.Instance.userManager.thisUser)
             {
                 continue;
             }
@@ -38,7 +37,7 @@ public class ResourceRowForMonopoly : MonoBehaviour
         }
         numOfResouceText.text = numOfResource.ToString();
 
-        if (numOfResource > 0 && GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.MONOPOLY))
+        if (numOfResource > 0 && GameManager.Instance.userManager.IsThisUserCanUseCardNow(Card.MONOPOLY))
         {
             chooseButton.interactable = true;
         }
@@ -55,7 +54,6 @@ public class ResourceRowForMonopoly : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateInfo;
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= UpdateInfo;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(UpdateInfo);
     }
 }

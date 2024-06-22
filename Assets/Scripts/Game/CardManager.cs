@@ -16,9 +16,7 @@ public enum Card
 
 public class CardManager : MonoBehaviour
 {
-    private int numOfCardsInStorage;
-
-    public UnityAction CARD_CHANGED_EVENT;
+    public int numOfCardsInStorage;
 
     private void Awake()
     {
@@ -32,7 +30,7 @@ public class CardManager : MonoBehaviour
 
     public async void PlanToBuyCard()
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanBuyCardNow())
+        if (!GameManager.Instance.userManager.IsThisUserCanBuyCardNow())
         {
             return;
         }
@@ -53,7 +51,7 @@ public class CardManager : MonoBehaviour
 
     private void AddCardToUser(User user, Card card)
     {
-        if (user == GameManager.Instance.userManager.currentUser)
+        if (user == GameManager.Instance.userManager.thisUser)
         {
             user.userCards[card]++;
         }
@@ -62,12 +60,12 @@ public class CardManager : MonoBehaviour
             user.userCards[Card.UNKNOWN]++;
         }
         numOfCardsInStorage--;
-        CARD_CHANGED_EVENT?.Invoke();
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT?.Invoke();
     }
 
     private void RemoveCardFromUser(User user, Card card)
     {
-        if (user == GameManager.Instance.userManager.currentUser)
+        if (user == GameManager.Instance.userManager.thisUser)
         {
             user.userCards[card]--;
         }
@@ -75,12 +73,12 @@ public class CardManager : MonoBehaviour
         {
             user.userCards[Card.UNKNOWN]--;
         }
-        CARD_CHANGED_EVENT?.Invoke();
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT?.Invoke();
     }
     
     public async void PlanUseKnightCard(int hexId)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.KNIGHT))
+        if (!GameManager.Instance.userManager.IsThisUserCanUseCardNow(Card.KNIGHT))
         {
             return;
         }
@@ -90,7 +88,7 @@ public class CardManager : MonoBehaviour
 
     public async void PlanUseRoadBuildingCard()
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.ROAD_BUILDING))
+        if (!GameManager.Instance.userManager.IsThisUserCanUseCardNow(Card.ROAD_BUILDING))
         {
             return;
         }
@@ -100,7 +98,7 @@ public class CardManager : MonoBehaviour
 
     public async void PlanUseYearOfPlentyCard(List<Resource> resources)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.YEAR_OF_PLENTY))
+        if (!GameManager.Instance.userManager.IsThisUserCanUseCardNow(Card.YEAR_OF_PLENTY))
         {
             return;
         }
@@ -110,7 +108,7 @@ public class CardManager : MonoBehaviour
 
     public async void PlanUseMonopolyCard(Resource resource)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.MONOPOLY))
+        if (!GameManager.Instance.userManager.IsThisUserCanUseCardNow(Card.MONOPOLY))
         {
             return;
         }

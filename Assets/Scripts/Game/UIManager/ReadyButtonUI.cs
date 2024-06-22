@@ -10,12 +10,12 @@ public class ReadyButtonUI : MonoBehaviour
     private void Awake()
     {
         button = GetComponent<Button>();
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += ChangeReadyButton;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(ChangeReadyButton);
     }
 
     private void ChangeReadyButton()
     {
-        button.interactable = GameManager.Instance.userManager.IsCurrentUserTurn() && 
+        button.interactable = GameManager.Instance.userManager.IsThisUserTurn() && 
             GameManager.Instance.uiManager.uiState == UIState.USER_TURN;
     }
 
@@ -27,6 +27,6 @@ public class ReadyButtonUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= ChangeReadyButton;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(ChangeReadyButton);
     }
 }

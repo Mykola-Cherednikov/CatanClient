@@ -21,8 +21,7 @@ public class TradeFormTradeButton : MonoBehaviour
         buyInputField.onValueChanged.AddListener(OnChangeInputField);
         sellDropDown.onValueChanged.AddListener(OnChangeDropDown);
         buyDropDown.onValueChanged.AddListener(OnChangeDropDown);
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += StartChangeTradeButtonInteractable;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += StartChangeTradeButtonInteractable;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(StartChangeTradeButtonInteractable);
     }
 
     private void OnChangeInputField(string whyINeedThisVariable)
@@ -39,9 +38,16 @@ public class TradeFormTradeButton : MonoBehaviour
     {
         Resource buyResource = (Resource) buyDropDown.value;
         Resource sellResource = (Resource) sellDropDown.value;
-        int buyAmount = int.Parse(buyInputField.text);
+
+        int buyAmount = 0;
+
+        if(buyInputField.text.Length != 0)
+        {
+            buyAmount = int.Parse(buyInputField.text);
+        }
+
         int sellAmount = GameManager.Instance.resourceManager
-            .GetAmountOfTradingSellResourceDependOnUserHarbour(GameManager.Instance.userManager.currentUser,
+            .GetAmountOfTradingSellResourceDependOnUserHarbour(GameManager.Instance.userManager.thisUser,
             sellResource, buyAmount);
 
         ChangeTradeButtonInteractable(buyResource, sellResource, buyAmount, sellAmount);
@@ -61,10 +67,9 @@ public class TradeFormTradeButton : MonoBehaviour
             return;
         }
 
-        KeyValuePair<Resource, int> sellResourceAmount = new KeyValuePair<Resource, int>(sellResource, sellAmount);
         KeyValuePair<Resource, int> buyResourceAmount = new KeyValuePair<Resource, int>(buyResource, buyAmount);
 
-        if (!GameManager.Instance.userManager.IsCurrentUserCanTradeNow(sellResourceAmount, buyResourceAmount))
+        if (!GameManager.Instance.userManager.IsThisUserCanTradeNow(sellResource, buyResourceAmount))
         {
             return;
         }
@@ -78,7 +83,6 @@ public class TradeFormTradeButton : MonoBehaviour
         buyInputField.onValueChanged.RemoveListener(OnChangeInputField);
         sellDropDown.onValueChanged.RemoveListener(OnChangeDropDown);
         buyDropDown.onValueChanged.RemoveListener(OnChangeDropDown);
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= StartChangeTradeButtonInteractable;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= StartChangeTradeButtonInteractable;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(StartChangeTradeButtonInteractable);
     }
 }

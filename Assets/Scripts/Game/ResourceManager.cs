@@ -27,8 +27,6 @@ public class ResourceManager : MonoBehaviour
 
     private Dictionary<Resource, HarborType> resourceTypeToHarborType;
 
-    public UnityAction RESOURCES_CHANGED_EVENT;
-
     private void Awake()
     {
         storage = new Dictionary<Resource, int>()
@@ -57,7 +55,7 @@ public class ResourceManager : MonoBehaviour
         {
             AddResourceToUserAndRemoveFromStorage(user, resourceToAmount);
         }
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
     #endregion
 
@@ -77,13 +75,9 @@ public class ResourceManager : MonoBehaviour
 
     public async void UserTradeRequest(Resource sellResource, Resource buyResource, int buyAmount)
     {
-        int sellAmount = GetAmountOfTradingSellResourceDependOnUserHarbour(GameManager.Instance.userManager.currentUser,
-            sellResource, buyAmount);
-
-        KeyValuePair<Resource, int> sellResourceAmount = new KeyValuePair<Resource, int>(sellResource, sellAmount);
         KeyValuePair<Resource, int> buyResourceAmount = new KeyValuePair<Resource, int>(buyResource, buyAmount);
 
-        if (!GameManager.Instance.userManager.IsCurrentUserCanTradeNow(sellResourceAmount, buyResourceAmount))
+        if (!GameManager.Instance.userManager.IsThisUserCanTradeNow(sellResource, buyResourceAmount))
         {
             return;
         }
@@ -95,7 +89,7 @@ public class ResourceManager : MonoBehaviour
     {
         RemoveResourcesFromUserAsTrade(user, sellResource, buyAmount);
         AddResourcesToUserAsTrade(user, buyResource, buyAmount);
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
     #endregion
 
@@ -106,7 +100,7 @@ public class ResourceManager : MonoBehaviour
         {
             AddResourceToUserAndRemoveFromStorage(user, resourceToAmount);
         }
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
     #endregion
 
@@ -125,7 +119,7 @@ public class ResourceManager : MonoBehaviour
                 RemoveResourcesFromUserAndAddToAnotherUser(user, userWhichUseCard, removeResources);
             }
         }
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
     #endregion
 
@@ -154,7 +148,7 @@ public class ResourceManager : MonoBehaviour
         {
             RemoveResourceFromUserAndAddToStorage(user, resourceToAmount);
         }
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
     #endregion
 
@@ -162,7 +156,7 @@ public class ResourceManager : MonoBehaviour
     public void UserRobberyMoveResources(User robberUser, User victimUser, Resource resource)
     {
         RemoveResourcesFromUserAndAddToAnotherUser(victimUser, robberUser, new(resource, 1));
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
 
     public void RobberRobberyMoveResources(User user, Dictionary<Resource, int> resourcesToAmount)
@@ -171,7 +165,7 @@ public class ResourceManager : MonoBehaviour
         {
             RemoveResourceFromUserAndAddToStorage(user, resourceToAmount);
         }
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
     #endregion
 
@@ -181,7 +175,7 @@ public class ResourceManager : MonoBehaviour
         KeyValuePair<Resource, int> initiatorResources = new KeyValuePair<Resource, int>(initiatorResource, initiatorResourceAmount);
         KeyValuePair<Resource, int> targetResources = new KeyValuePair<Resource, int>(targetResource, targetResourceAmount);
 
-        if (!GameManager.Instance.userManager.IsCurrentUserCanExchangeWithUserNow(targetUser, initiatorResources, targetResources))
+        if (!GameManager.Instance.userManager.IsThisUserCanExchangeWithUserNow(targetUser, initiatorResources, targetResources))
         {
             return;
         }
@@ -201,7 +195,7 @@ public class ResourceManager : MonoBehaviour
         RemoveResourcesFromUserAndAddToAnotherUser(initiatorUser, targetUser, initiatorResources);
         RemoveResourcesFromUserAndAddToAnotherUser(targetUser, initiatorUser, targetResources);
 
-        CallUserResourceChangedEvent();
+        CallUserUIChangeEvent();
     }
 
     public async void UserExchangeRequest(int exchangeId, bool isAccept)
@@ -230,9 +224,9 @@ public class ResourceManager : MonoBehaviour
     }
     #endregion
 
-    private void CallUserResourceChangedEvent()
+    private void CallUserUIChangeEvent()
     {
-        RESOURCES_CHANGED_EVENT?.Invoke();
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT?.Invoke();
     }
 
     public int GetAmountOfTradingSellResourceDependOnUserHarbour(User user, Resource sellResource, int buyAmount)

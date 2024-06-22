@@ -11,7 +11,7 @@ public class ResourceRow : MonoBehaviour
 
     private void Awake()
     {
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateInfo;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(UpdateInfo);
     }
 
     public void SetInfo(Resource resource)
@@ -23,6 +23,11 @@ public class ResourceRow : MonoBehaviour
     private void UpdateInfo()
     {
         resourceText.text = Enum.GetName(typeof(Resource), resource);
-        numOfResouceText.text = GameManager.Instance.userManager.currentUser.userResources[resource].ToString();
+        numOfResouceText.text = GameManager.Instance.userManager.thisUser.userResources[resource].ToString();
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(UpdateInfo);
     }
 }

@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 401003ba138b611459e9f970c6a96a92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fromUserText: {fileID: 0}
+  fromUserText: {fileID: 3296559385676562203}
   getResourceText: {fileID: 4839282274138558356}
   giveResourceText: {fileID: 9184790654506990987}
 --- !u!1 &1564812384008115222

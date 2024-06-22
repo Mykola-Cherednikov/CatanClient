@@ -61,6 +61,7 @@ public static class SimixmanUtils
             byte[] sendBuffer = Encoding.UTF8.GetBytes(json);
             await socket.SendAsync(sendBuffer, SocketFlags.None);
             SimixmanLogger.Log("Send To Server: Send data to server with type " + content.GetType().ToString());
+            SimixmanLogger.Log("Send To Server: Json: " + json);
             return true;
         }
         catch (Exception)

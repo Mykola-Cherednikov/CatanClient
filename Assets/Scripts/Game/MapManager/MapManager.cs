@@ -2,7 +2,6 @@
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Events;
 
 
 
@@ -11,8 +10,6 @@ public class MapManager : MonoBehaviour
     private List<Hex> hexes;
     private List<Vertex> vertices;
     private List<Edge> edges;
-
-    public UnityAction MAP_CHANGED_EVENT;
 
     public void InitializeMap(SocketBroadcastStartGameDTO dto)
     {
@@ -66,7 +63,7 @@ public class MapManager : MonoBehaviour
 
     private void ShowAllAvailableVerticesForUser()
     {
-        List<Vertex> availableVertices = MapUtils.GetAvailableVerticiesForUser(GameManager.Instance.userManager.currentUser, edges);
+        List<Vertex> availableVertices = MapUtils.GetAvailableVerticiesForUser(GameManager.Instance.userManager.thisUser, edges);
         foreach (var v in availableVertices)
         {
             v.ShowSpriteAndCollider();
@@ -99,7 +96,7 @@ public class MapManager : MonoBehaviour
 
     private void ShowAllAvailableEdgesForUser()
     {
-        List<Edge> availableEdges = MapUtils.GetAvailableEdgesForUser(GameManager.Instance.userManager.currentUser, vertices, edges);
+        List<Edge> availableEdges = MapUtils.GetAvailableEdgesForUser(GameManager.Instance.userManager.thisUser, vertices, edges);
         foreach (var e in availableEdges)
         {
             e.ShowSpriteAndCollider();
@@ -140,7 +137,7 @@ public class MapManager : MonoBehaviour
     #region Plan To Build
     public async void PlanToBuildRoadAndEndTurnIfPlaceOnPreparation(int edgeId)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanBuildRoadNow())
+        if (!GameManager.Instance.userManager.IsThisUserCanBuildRoadNow())
         {
             return;
         }
@@ -160,7 +157,7 @@ public class MapManager : MonoBehaviour
 
     public async void PlanToBuildSettlementAndEndTurnIfPlaceOnPreparation(int vertexId)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanBuildSettlementNow())
+        if (!GameManager.Instance.userManager.IsThisUserCanBuildSettlementNow())
         {
             return;
         }
@@ -180,15 +177,15 @@ public class MapManager : MonoBehaviour
 
     public async void PlanToBuildCity(int vertexId)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanBuildCityNow())
+        if (!GameManager.Instance.userManager.IsThisUserCanBuildCityNow())
         {
             return;
         }
 
         Vertex vertex = vertices.FirstOrDefault(v => v.id == vertexId);
-        User currentUser = GameManager.Instance.userManager.currentUser;
+        User thisUser = GameManager.Instance.userManager.thisUser;
 
-        if (!MapUtils.IsCurrentUserSettlementOnThisVertex(vertex, currentUser))
+        if (!MapUtils.IsThisUserSettlementOnThisVertex(vertex, thisUser))
         {
             return;
         }
@@ -209,13 +206,13 @@ public class MapManager : MonoBehaviour
             else
             {
                 GameManager.Instance.resourceManager.BuyGoods(user, Goods.Road);
-            }            
+            }
         }
         Edge edge = edges.FirstOrDefault(v => v.id == edgeId);
         edge.SetEdgeBuilding(EdgeBuildingType.ROAD, user);
         SetColorToUserBuilding(edge, user);
 
-        MAP_CHANGED_EVENT?.Invoke();
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT?.Invoke();
     }
 
     public void BuildSettlement(int vertexId, User user)
@@ -228,7 +225,7 @@ public class MapManager : MonoBehaviour
         vertex.SetVertexBuilding(VertexBuildingType.SETTLEMENT, user);
         SetColorToUserBuilding(vertex, user);
 
-        MAP_CHANGED_EVENT?.Invoke();
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT?.Invoke();
     }
 
     public void BuildCity(int vertexId, User user)
@@ -241,7 +238,7 @@ public class MapManager : MonoBehaviour
         vertex.SetVertexBuilding(VertexBuildingType.CITY, user);
         SetColorToUserBuilding(vertex, user);
 
-        MAP_CHANGED_EVENT?.Invoke();
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT?.Invoke();
     }
     #endregion
 
@@ -255,7 +252,7 @@ public class MapManager : MonoBehaviour
     {
         foreach (var hex in hexes)
         {
-            if(hex.numberToken == null)
+            if (hex.numberToken == null)
             {
                 continue;
             }
@@ -281,7 +278,7 @@ public class MapManager : MonoBehaviour
     #region Plan Place Robber
     public async void PlanPlaceRobberAndPlanToRobUser(int hexId, int userId)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobberNow())
+        if (!GameManager.Instance.userManager.IsThisUserCanPlaceRobberNow())
         {
             return;
         }
@@ -293,26 +290,26 @@ public class MapManager : MonoBehaviour
     #region Place Robber
     public void PlaceRobber(int hexId)
     {
-        foreach(var hex in hexes)
+        foreach (var hex in hexes)
         {
             hex.numberToken.SetBanditOff();
         }
 
         hexes.FirstOrDefault(h => h.id == hexId).numberToken.SetBanditOn();
 
-        MAP_CHANGED_EVENT?.Invoke();
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT?.Invoke();
     }
     #endregion
 
-    public bool IsRobberNearbyCurrentUser() 
+    public bool IsRobberNearbyThisUser()
     {
         HashSet<Hex> hexes = new HashSet<Hex>();
-        List<Vertex> vertices = GetUserVerticies(GameManager.Instance.userManager.currentUser);
+        List<Vertex> vertices = GetUserVerticies(GameManager.Instance.userManager.thisUser);
         foreach (var vertex in vertices)
         {
             hexes.AddRange(vertex.neighbourHexes);
         }
-        
+
         foreach (var hex in hexes)
         {
             if (hex.numberToken.isBandit)

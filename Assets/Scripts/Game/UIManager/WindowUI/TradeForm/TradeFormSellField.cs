@@ -13,7 +13,7 @@ public class TradeFormSellField : MonoBehaviour
         sellInputField = GetComponent<TMP_InputField>();
         buyInputField.onValueChanged.AddListener(OnChangeBuyInputField);
         sellDropDown.onValueChanged.AddListener(OnChangeSellDropDown);
-        GameManager.Instance.mapManager.MAP_CHANGED_EVENT += StartChangeSellInputField;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(StartChangeSellInputField);
     }
 
     private void OnChangeBuyInputField(string buyInputFieldValue)
@@ -34,7 +34,7 @@ public class TradeFormSellField : MonoBehaviour
     private void ChangeSellInputField(int buyAmount, Resource sellResource)
     {
         int sellAmount = GameManager.Instance.resourceManager
-            .GetAmountOfTradingSellResourceDependOnUserHarbour(GameManager.Instance.userManager.currentUser,
+            .GetAmountOfTradingSellResourceDependOnUserHarbour(GameManager.Instance.userManager.thisUser,
             sellResource, buyAmount);
         sellInputField.text = sellAmount.ToString();
     }
@@ -53,6 +53,6 @@ public class TradeFormSellField : MonoBehaviour
     {
         buyInputField.onValueChanged.RemoveListener(OnChangeBuyInputField);
         sellDropDown.onValueChanged.RemoveListener(OnChangeSellDropDown);
-        GameManager.Instance.mapManager.MAP_CHANGED_EVENT -= StartChangeSellInputField;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(StartChangeSellInputField);
     }
 }

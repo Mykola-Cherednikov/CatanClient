@@ -33,7 +33,7 @@ public class ExchangeFormExchangeButton : MonoBehaviour
 
         targetUsers = new List<User>();
         targetUsers.AddRange(GameManager.Instance.userManager.users
-            .Where(u => u != GameManager.Instance.userManager.currentUser));
+            .Where(u => u != GameManager.Instance.userManager.thisUser));
 
         exchangeButton.onClick.AddListener(TimerStart);
         initiatorDropDown.onValueChanged.AddListener(OnChangeDropDown);
@@ -42,8 +42,7 @@ public class ExchangeFormExchangeButton : MonoBehaviour
         targetResourceDropDown.onValueChanged.AddListener(OnChangeDropDown);
         initiatorResourceAmountField.onValueChanged.AddListener(OnChangeInputField);
         targetResourceAmountField.onValueChanged.AddListener(OnChangeInputField);
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += StartChangeExchangeButtonInteractable;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += StartChangeExchangeButtonInteractable;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(StartChangeExchangeButtonInteractable);
     }
 
     private void Update()
@@ -83,7 +82,7 @@ public class ExchangeFormExchangeButton : MonoBehaviour
             return;
         }
 
-        User initiatorUser = GameManager.Instance.userManager.currentUser;
+        User initiatorUser = GameManager.Instance.userManager.thisUser;
         User targetUser = targetUsers[targetDropDown.value];
         Resource initiatorResource = (Resource)initiatorResourceDropDown.value;
         Resource targetResource = (Resource)targetResourceDropDown.value;
@@ -110,7 +109,7 @@ public class ExchangeFormExchangeButton : MonoBehaviour
         KeyValuePair<Resource, int> initiatorResourcesToAmount = new KeyValuePair<Resource, int>(initiatorResource, initiatorResourceAmount);
         KeyValuePair<Resource, int> targetResourcesToAmount = new KeyValuePair<Resource, int>(targetResource, targetResourceAmount);
 
-        if (!GameManager.Instance.userManager.IsCurrentUserCanExchangeWithUserNow(targetUser, initiatorResourcesToAmount, targetResourcesToAmount))
+        if (!GameManager.Instance.userManager.IsThisUserCanExchangeWithUserNow(targetUser, initiatorResourcesToAmount, targetResourcesToAmount))
         {
             return;
         }
@@ -120,6 +119,7 @@ public class ExchangeFormExchangeButton : MonoBehaviour
 
     private void TimerStart()
     {
+        exchangeButton.interactable = false;
         cooldownTimer = cooldownExchangeTime;
         isTimerEndCalled = false;
     }
@@ -151,7 +151,6 @@ public class ExchangeFormExchangeButton : MonoBehaviour
         targetResourceDropDown.onValueChanged.RemoveListener(OnChangeDropDown);
         initiatorResourceAmountField.onValueChanged.RemoveListener(OnChangeInputField);
         targetResourceAmountField.onValueChanged.RemoveListener(OnChangeInputField);
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= StartChangeExchangeButtonInteractable;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= StartChangeExchangeButtonInteractable;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(StartChangeExchangeButtonInteractable);
     }
 }

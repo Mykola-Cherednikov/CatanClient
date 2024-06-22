@@ -8,7 +8,6 @@ public enum UIState
     PREPARATION_BUILD_ROADS,
     USER_ROBBERY,
     USER_TURN,
-    PREPARING_USER_TURN,
     USER_MOVING_ROBBER
 }
 
@@ -22,25 +21,28 @@ public class UIManager : MonoBehaviour
     private GameObject gameNotificationsUIPrefab;
     private GameObject resourceBoxUIPrefab;
     private GameObject readyButtonUIPrefab;
+    private GameObject userTurnTextUIPrefab;
 
     public BuildingsUI buildingsUI;
     public GameNotificationsUI gameNotificationsUI;
     public WindowUI windowUI;
     public ResourceBoxUI resourceBoxUI;
-    public GameObject readyButtonUI;
 
-    public UnityAction CHANGE_UI_STATE;
-    [SerializeField]public UIState uiState;
+    public UnityEvent UPDATE_UI_EVENT;
+    [SerializeField] public UIState uiState;
 
-    private UnityAction ESCAPE_PRESSED_EVENT;
+    private UnityEvent ESCAPE_PRESSED_EVENT;
 
     private void Awake()
     {
+        UPDATE_UI_EVENT = new();
+        ESCAPE_PRESSED_EVENT = new();
         windowUIPrefab = Resources.Load<GameObject>("Prefabs/Game/WindowUI");
         buildingsUIPrefab = Resources.Load<GameObject>("Prefabs/Game/BuildingsUI");
         gameNotificationsUIPrefab = Resources.Load<GameObject>("Prefabs/Game/GameNotificationsUI");
         resourceBoxUIPrefab = Resources.Load<GameObject>("Prefabs/Game/ResourceBoxUI");
         readyButtonUIPrefab = Resources.Load<GameObject>("Prefabs/Game/ReadyButtonUI");
+        userTurnTextUIPrefab = Resources.Load<GameObject>("Prefabs/Game/UserTurnTextUI");
     }
 
     private void Update()
@@ -57,10 +59,12 @@ public class UIManager : MonoBehaviour
         buildingsUI = Instantiate(buildingsUIPrefab, uiCanvas.transform).GetComponent<BuildingsUI>();
         gameNotificationsUI = Instantiate(gameNotificationsUIPrefab, uiCanvas.transform).GetComponent<GameNotificationsUI>();
         resourceBoxUI = Instantiate(resourceBoxUIPrefab, uiCanvas.transform).GetComponent<ResourceBoxUI>();
-        readyButtonUI = Instantiate(readyButtonUIPrefab, uiCanvas.transform);
         windowUI = Instantiate(windowUIPrefab, uiCanvas.transform).GetComponent<WindowUI>();
-        GameManager.Instance.CHANGED_GAME_STATE += ChangeUIStateToGameState;
-        ESCAPE_PRESSED_EVENT += windowUI.OnEscape;
+        Instantiate(readyButtonUIPrefab, uiCanvas.transform);
+        Instantiate(userTurnTextUIPrefab, uiCanvas.transform);
+
+        GameManager.Instance.CHANGED_GAME_STATE.AddListener(ChangeUIStateToGameState);
+        ESCAPE_PRESSED_EVENT .AddListener( windowUI.OnEscape);
     }
 
     public void ClearAllElementsFromCanvas()
@@ -84,11 +88,8 @@ public class UIManager : MonoBehaviour
             case GameState.PREPARATION_BUILD_ROADS:
                 uiState = UIState.PREPARATION_BUILD_ROADS;
                 break;
-            case GameState.PREPARING_USER_TURN:
-                uiState = UIState.PREPARING_USER_TURN;
-                break;
             case GameState.ROBBERY:
-                if (!GameManager.Instance.userManager.IsCurrentUserTurn())
+                if (!GameManager.Instance.userManager.IsThisUserTurn())
                 {
                     return;
                 }
@@ -99,29 +100,29 @@ public class UIManager : MonoBehaviour
                 uiState = UIState.USER_TURN;
                 break;
         }
-        CHANGE_UI_STATE?.Invoke();
+        UPDATE_UI_EVENT?.Invoke();
     }
 
     public void StartUserMoveRobberState()
     {
         uiState = UIState.USER_MOVING_ROBBER;
-        CHANGE_UI_STATE?.Invoke();
-        ESCAPE_PRESSED_EVENT -= windowUI.OnEscape;
-        ESCAPE_PRESSED_EVENT += buildingsUI.CancelMoveRobber;
+        UPDATE_UI_EVENT?.Invoke();
+        ESCAPE_PRESSED_EVENT.RemoveListener(windowUI.OnEscape);
+        ESCAPE_PRESSED_EVENT.AddListener(buildingsUI.CancelMoveRobber);
     }
 
     public void StopUserMoveRobberState()
     {
         uiState = UIState.USER_TURN;
-        CHANGE_UI_STATE?.Invoke();
-        ESCAPE_PRESSED_EVENT += windowUI.OnEscape;
-        ESCAPE_PRESSED_EVENT -= buildingsUI.CancelMoveRobber;
+        UPDATE_UI_EVENT?.Invoke();
+        ESCAPE_PRESSED_EVENT.AddListener(windowUI.OnEscape);
+        ESCAPE_PRESSED_EVENT.RemoveListener(buildingsUI.CancelMoveRobber);
     }
 
     private void OnDestroy()
     {
-        GameManager.Instance.CHANGED_GAME_STATE -= ChangeUIStateToGameState;
-        ESCAPE_PRESSED_EVENT -= windowUI.OnEscape;
-        ESCAPE_PRESSED_EVENT -= buildingsUI.CancelMoveRobber;
+        GameManager.Instance.CHANGED_GAME_STATE.RemoveListener(ChangeUIStateToGameState);
+        ESCAPE_PRESSED_EVENT.RemoveListener(windowUI.OnEscape);
+        ESCAPE_PRESSED_EVENT.RemoveListener(buildingsUI.CancelMoveRobber);
     }
 }

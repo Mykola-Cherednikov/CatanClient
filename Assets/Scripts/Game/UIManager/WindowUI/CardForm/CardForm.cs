@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,7 @@ public class CardForm : MonoBehaviour
     [SerializeField] private GameObject content;
     [SerializeField] private GameObject cardRowPrefab;
     [SerializeField] private Button buyButton;
+    [SerializeField] private TMP_Text buyButtonText;
 
     private void Awake()
     {
@@ -20,15 +22,14 @@ public class CardForm : MonoBehaviour
             CreateCardRow((Card)card);
         }
 
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += UpdateForm;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT += UpdateForm;
-        GameManager.Instance.cardManager.CARD_CHANGED_EVENT += UpdateForm;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(UpdateForm);
         UpdateForm();
     }
 
     private void UpdateForm()
     {
-        buyButton.interactable = GameManager.Instance.userManager.IsCurrentUserCanBuyCardNow();
+        buyButton.interactable = GameManager.Instance.userManager.IsThisUserCanBuyCardNow();
+        buyButtonText.text = $"Buy Card({GameManager.Instance.cardManager.numOfCardsInStorage})";
     }
 
     private void CreateCardRow(Card card)
@@ -44,7 +45,7 @@ public class CardForm : MonoBehaviour
 
     public void PlanToUseCard(Card card)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(card))
+        if (!GameManager.Instance.userManager.IsThisUserCanUseCardNow(card))
         {
             return;
         }
@@ -92,8 +93,6 @@ public class CardForm : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= UpdateForm;
-        GameManager.Instance.resourceManager.RESOURCES_CHANGED_EVENT -= UpdateForm;
-        GameManager.Instance.cardManager.CARD_CHANGED_EVENT -= UpdateForm;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(UpdateForm);
     }
 }

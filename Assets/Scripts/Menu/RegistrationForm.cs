@@ -36,4 +36,9 @@ public class RegistrationForm : Form
         CreateErrorForm(json);
         SimixmanLogger.Log(json);
     }
+
+    public void ExitApplication()
+    {
+        Application.Quit();
+    }
 }

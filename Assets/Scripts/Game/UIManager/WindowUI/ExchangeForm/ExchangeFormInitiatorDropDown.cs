@@ -11,7 +11,7 @@ public class ExchangeFormInitiatorDropDown : MonoBehaviour
     private void Awake()
     {
         initiatorDropDown = GetComponent<TMP_Dropdown>();
-        initiatorDropDown.options.Add(new(GameManager.Instance.userManager.currentUser.name));
+        initiatorDropDown.options.Add(new(GameManager.Instance.userManager.thisUser.name));
         initiatorDropDown.value = 0;
     }
 }

@@ -26,11 +26,13 @@ public class BuildingsUI : MonoBehaviour
     private RectTransform rect;
     private bool isHiden;
 
+    private UIState nowState;
+
     private void Awake()
     {
         isHiden = false;
         rect = GetComponent<RectTransform>();
-        GameManager.Instance.uiManager.CHANGE_UI_STATE += ChangeUIToAnotherGameState;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.AddListener(ChangeBuildingUIToAnotherGameState);
     }
 
     #region Create Drag And Drop Object
@@ -58,7 +60,7 @@ public class BuildingsUI : MonoBehaviour
             GameManager.Instance.mapManager.ShowPlacesForRoads,
             FindEdgeAndBuildRoad,
             GameManager.Instance.mapManager.HideAllAvailablePlaces,
-            GameManager.Instance.userManager.IsCurrentUserCanBuildRoadNow
+            GameManager.Instance.userManager.IsThisUserCanBuildRoadNow
         );
     }
 
@@ -71,7 +73,7 @@ public class BuildingsUI : MonoBehaviour
             GameManager.Instance.mapManager.ShowPlacesForSettlements,
             FindVertexAndBuildSettlement,
             GameManager.Instance.mapManager.HideAllAvailablePlaces,
-            GameManager.Instance.userManager.IsCurrentUserCanBuildSettlementNow
+            GameManager.Instance.userManager.IsThisUserCanBuildSettlementNow
         );
     }
 
@@ -84,7 +86,7 @@ public class BuildingsUI : MonoBehaviour
             GameManager.Instance.mapManager.ShowPlacesForCities,
             FindVertexAndBuildCity,
             GameManager.Instance.mapManager.HideAllAvailablePlaces,
-            GameManager.Instance.userManager.IsCurrentUserCanBuildCityNow
+            GameManager.Instance.userManager.IsThisUserCanBuildCityNow
         );
     }
 
@@ -97,7 +99,7 @@ public class BuildingsUI : MonoBehaviour
             GameManager.Instance.mapManager.ShowPlacesForRobber,
             FindNumberTokenAndPlaceRobberForRob,
             GameManager.Instance.mapManager.HideAllPlacesForRobber,
-            GameManager.Instance.userManager.IsCurrentUserCanPlaceRobberNow
+            GameManager.Instance.userManager.IsThisUserCanPlaceRobberNow
         );
     }
 
@@ -110,7 +112,7 @@ public class BuildingsUI : MonoBehaviour
             GameManager.Instance.mapManager.ShowPlacesForRobber,
             FindNumberTokenAndPlaceRobberForMove,
             GameManager.Instance.mapManager.HideAllPlacesForRobber,
-            () => { return GameManager.Instance.userManager.IsCurrentUserCanUseCardNow(Card.KNIGHT); }
+            () => { return GameManager.Instance.userManager.IsThisUserCanUseCardNow(Card.KNIGHT); }
         );
     }
     #endregion
@@ -172,14 +174,14 @@ public class BuildingsUI : MonoBehaviour
 
     private void SelectPlaceForRobberAndSelectVictimUser(int hexId)
     {
-        if (!GameManager.Instance.userManager.IsCurrentUserCanPlaceRobberNow())
+        if (!GameManager.Instance.userManager.IsThisUserCanPlaceRobberNow())
         {
             return;
         }
 
         Hex hex = GameManager.Instance.mapManager.GetHexById(hexId);
         List<User> uniqueUsers = MapUtils.GetUniqueUsersInHex(hex);
-        uniqueUsers.Remove(GameManager.Instance.userManager.currentUser);
+        uniqueUsers.Remove(GameManager.Instance.userManager.thisUser);
 
         switch (uniqueUsers.Count)
         {
@@ -215,9 +217,16 @@ public class BuildingsUI : MonoBehaviour
     }
 
     #region Change UI
-    public void ChangeUIToAnotherGameState()
+    public void ChangeBuildingUIToAnotherGameState()
     {
-        switch (GameManager.Instance.uiManager.uiState)
+        if(GameManager.Instance.uiManager.uiState == nowState)
+        {
+            return;
+        }
+
+        nowState = GameManager.Instance.uiManager.uiState;
+
+        switch (nowState)
         {
             case UIState.PREPARATION_BUILD_SETTLEMENTS:
                 ChangeUIToPreparationSettlementState();
@@ -300,6 +309,7 @@ public class BuildingsUI : MonoBehaviour
         EventSystem.current.RaycastAll(pointerEventData, uiRaycastResults);
         uiRaycastResults.RemoveAll(u => u.gameObject.GetComponent<DragAndDropObject>() != null);
         uiRaycastResults.RemoveAll(u => u.gameObject.GetComponent<GameNotificationText>() != null);
+        uiRaycastResults.RemoveAll(u => u.gameObject.layer != LayerMask.NameToLayer("UI"));
 
         if (uiRaycastResults.Count > 0)
         {
@@ -311,6 +321,6 @@ public class BuildingsUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameManager.Instance.uiManager.CHANGE_UI_STATE -= ChangeUIToAnotherGameState;
+        GameManager.Instance.uiManager.UPDATE_UI_EVENT.RemoveListener(ChangeBuildingUIToAnotherGameState);
     }
 }

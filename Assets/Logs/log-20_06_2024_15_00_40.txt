@@ -1,2 +1,0 @@
-[20.06.2024 15:00:40] Login success: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsInN1YiI6IlNpbWl4bWFuIiwiZXhwIjoxNzE4OTcxMjQwfQ.r_TZBbxXUI2yqkXqy6ADmFaTmB7GC7O4r9pqXLLbT58
-[20.06.2024 15:00:40] []
